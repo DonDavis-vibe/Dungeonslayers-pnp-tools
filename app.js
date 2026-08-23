@@ -13,6 +13,7 @@ function blankCharacter() {
         equipment: { melee: '', ranged: '', koerper: '', helm: '', schienen: '', schild: '' },
         lkCurrent: 0,
         gold: 10, silber: 0, kupfer: 0, bonusLk: 0, extraTp: 0,
+        ntp: 0,          // zweiter Talentpunkt-Topf, falls die Runde ihn führt
         portrait: '',
         talents: [], spells: [], inventory: [],
         notes: '', log: []
@@ -1007,7 +1008,9 @@ function openLevelUp() {
     openModal('levelup-modal');
 }
 
+// Steigerungskosten — Hausregeln haben Vorrang vor der Klassentabelle
 function lpCosts() {
+    if (typeof aktuelleLpKosten === 'function') return aktuelleLpKosten();
     const cls = activeClass();
     return cls ? cls.lpCosts : null;
 }
@@ -1020,7 +1023,7 @@ function renderLevelUp() {
         return;
     }
 
-    const costs = cls.lpCosts;
+    const costs = lpCosts();
     const lp = appData.lp || 0;
     const stufe = stufeFuerEp(appData.ep || 0, !!appData.heldenklasse);
 
@@ -1112,9 +1115,16 @@ function renderLevelUp() {
 }
 
 function grantLevelUp() {
+    const hr = typeof hausregeln !== 'undefined' ? hausregeln : null;
+    const tpZuwachs = hr ? hr.tpProStufe : 1;
+    const ntpZuwachs = (hr && hr.ntpAktiv) ? hr.ntpProStufe : 0;
+
     appData.lp = (appData.lp || 0) + 2;
-    appData.tp = (appData.tp || 0) + 1;
-    addLog('Stufenaufstieg: +2 Lernpunkte, +1 Talentpunkt', 'erfolg');
+    appData.tp = (appData.tp || 0) + tpZuwachs;
+    if (ntpZuwachs) appData.ntp = (appData.ntp || 0) + ntpZuwachs;
+
+    addLog(`Stufenaufstieg: +2 Lernpunkte, +${tpZuwachs} Talentpunkt${tpZuwachs === 1 ? '' : 'e'}` +
+        (ntpZuwachs ? `, +${ntpZuwachs} ${escapeHtml(hr.ntpName)}` : ''), 'erfolg');
     renderAll();
     renderLevelUp();
     scheduleSave();

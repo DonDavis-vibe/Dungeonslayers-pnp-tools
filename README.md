@@ -207,6 +207,21 @@ Nach Anhang B des Regelwerks gilt: **ein Feld = 1 Meter**.
   man Fehlgriffe korrigieren kann. Der Spielleiter sieht den Nebel halbdurchsichtig, die Spieler
   deckend; Gegner in ungedecktem Nebel werden gar nicht erst übertragen.
 
+### ⚙️ Hausregeln
+Dungeonslayers lebt von Fanwerken und Hausregeln — deshalb sind die wichtigsten Stellschrauben
+einstellbar, ohne die Regeldateien anzufassen:
+
+- **Steigerungskosten**: nach Regelwerk (günstige Eigenschaften 2 LP, übrige 3), **einheitlich**
+  (die häufigste Hausregel: jede Eigenschaft gleich teuer) oder je Posten frei einstellbar.
+- **Talentpunkte je Stufe** frei wählbar, dazu optional ein **zweiter, getrennt geführter Topf**
+  (z.B. für Talente außerhalb des Kampfes). Name und Anzahl bestimmt ihr; beim Lernen wählt man,
+  aus welchem Topf bezahlt wird, und beim Entfernen fließt der Punkt dorthin zurück.
+- **Eigene Talente, Zauber und Heldenklassen** anlegen — sie erscheinen in den Auswahllisten neben
+  den offiziellen, sind als *Hausregel* gekennzeichnet und unterliegen derselben Zugangsprüfung.
+
+Der **Spielleiter stellt die Regeln ein und schickt sie an die Runde**; wer später beitritt,
+bekommt sie automatisch. Zusätzlich lassen sie sich als Datei speichern und weitergeben.
+
 ### 💾 Sitzung speichern und laden (Spielleiter)
 Notizen, Gegner samt Lebenskraft und Position, Figurenplätze auf der Karte, Nebel, Markierungen
 und der Rundenzähler wandern in eine JSON-Datei — wahlweise mit oder ohne Kartenbild. Zusätzlich
@@ -260,6 +275,7 @@ Im Ordner [`beispiele/`](beispiele/) liegen zwei fertige Helden zum Ausprobieren
 | `combat.js` | Kampf- und Initiative-Tracker samt Bestiarium |
 | `battlemap.js` | **Eigenständiges Karten-Modul** — kennt kein Regelsystem, frei wiederverwendbar |
 | `mapui.js` | Anbindung der Karte an Bogen, Dashboard und Verbindung |
+| `hausregeln.js` | Einstellbare Hausregeln und eigene Talente, Zauber und Heldenklassen |
 | `session.js` | Sitzung des Spielleiters sichern, laden und nach einem Reload retten |
 | `multiplayer.js` | WebRTC-Verbindung und SL-Dashboard |
 | `discord.js` | Optionale Discord-Webhook-Anbindung |

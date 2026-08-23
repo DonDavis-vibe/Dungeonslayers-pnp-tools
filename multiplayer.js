@@ -339,7 +339,13 @@ function handleIncomingData(peerId, payload) {
         renderGmDashboard();
         // Laufender Kampf: aktualisierte LK/Initiative sofort in die Reihenfolge übernehmen
         if (combatActive) renderCombat();
-        if (isNew) addGmLog('System', `${payload.data.name || 'Ein Held'} ist beigetreten.`, 'erfolg');
+        if (isNew) {
+            addGmLog('System', `${payload.data.name || 'Ein Held'} ist beigetreten.`, 'erfolg');
+            // Neu Beigetretene bekommen die Hausregeln der Runde gleich mit
+            if (typeof hausregeln !== 'undefined' && typeof hausregelnAktiv === 'function' && hausregelnAktiv()) {
+                sendToPlayer(peerId, { type: 'hausregeln', regeln: hausregeln });
+            }
+        }
     } else if (payload.type === 'roll') {
         const player = connectedPlayers[peerId];
         addGmLog(player ? player.name : 'Unbekannt', payload.message, payload.status);
@@ -941,6 +947,10 @@ function handleGmCommand(payload) {
         case 'round':
             currentRound = payload.round;
             tickSpellCooldowns(payload.round);
+            break;
+        case 'hausregeln':
+            // Der Spielleiter gibt die Regeln der Runde vor
+            if (typeof hausregelnEmpfangen === 'function') hausregelnEmpfangen(payload.regeln);
             break;
     }
 }

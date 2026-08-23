@@ -6,6 +6,32 @@
 let talentFilter = '';
 let talentShowAll = false;
 
+// Talentliste inklusive eigener Ergänzungen aus den Hausregeln
+function talentListe() {
+    if (typeof alleTalente === 'function') return alleTalente();
+    return typeof DS4_TALENTS !== 'undefined' ? DS4_TALENTS : [];
+}
+
+// Führt die Runde einen zweiten Talentpunkt-Topf?
+function ntpAktiv() {
+    return typeof hausregeln !== 'undefined' && hausregeln.ntpAktiv;
+}
+function ntpName() {
+    return (typeof hausregeln !== 'undefined' && hausregeln.ntpName) || 'NTP';
+}
+
+// Aus welchem Topf wird gerade bezahlt? 'tp' oder 'ntp'
+let talentTopf = 'tp';
+
+function talentTopfWaehlen(topf) {
+    talentTopf = topf;
+    renderTalentPicker();
+}
+
+function verfuegbarePunkte(topf) {
+    return (topf === 'ntp' ? (appData.ntp || 0) : (appData.tp || 0));
+}
+
 // Welcher Klassenschlüssel gilt für den Zugang? Zauberwirker zählen über ihren Untertyp.
 function talentKlasseKey() {
     if (appData.klasse === 'zauberwirker') return appData.subtype || null;
@@ -72,9 +98,11 @@ function renderTalents() {
     const abweichung = summe - verdient;
 
     const head = `<div class="budget ${abweichung === 0 ? 'done' : (abweichung > 0 ? 'over' : '')}" style="margin-bottom:0.7rem">
-        Talentpunkte: <strong>${ausgegeben}</strong> ausgegeben · <strong>${tp}</strong> offen
+        Talentpunkte: <strong>${ausgegeben}</strong> ausgegeben · <strong>${tp}</strong> offen${ntpAktiv() ? ` · <strong>${appData.ntp || 0}</strong> ${escapeHtml(ntpName())}` : ''}
         <span class="hint" style="margin-left:auto">
-            ${abweichung === 0
+            ${ntpAktiv()
+                ? `Hausregeln aktiv — zwei getrennte Töpfe`
+                : abweichung === 0
                 ? `passt zu Stufe ${charStufe()} (${verdient} TP)`
                 : (abweichung > 0
                     ? `${abweichung} TP mehr als auf Stufe ${charStufe()} verdient (${verdient})`
@@ -88,7 +116,7 @@ function renderTalents() {
     }
 
     container.innerHTML = head + appData.talents.map(t => {
-        const data = typeof DS4_TALENTS !== 'undefined' ? DS4_TALENTS.find(x => x.name === t.name) : null;
+        const data = typeof DS4_TALENTS !== 'undefined' ? talentListe().find(x => x.name === t.name) : null;
         const zugang = data ? talentZugang(data) : null;
         const maxRang = zugang ? zugang.maxRang : (t.maxRang || 10);
         const rang = t.rang || 1;
@@ -102,13 +130,15 @@ function renderTalents() {
             <div class="talent-entry-head">
                 <strong>${escapeHtml(t.name)}</strong>
                 ${zugang && zugang.quelle === 'held' ? '<span class="tag">Heldenklasse</span>' : ''}
+                ${data && data.eigen ? '<span class="tag">Hausregel</span>' : ''}
+                ${t.topf === 'ntp' ? `<span class="tag">${escapeHtml(ntpName())}</span>` : ''}
                 ${warn}
                 <span class="talent-rank">
                     <button class="btn btn-sm" data-trank="${escapeHtml(t.name)}" data-delta="-1" title="Rang senken (TP zurück)">−</button>
                     <span class="rank-value">Rang ${rang}<span class="eig-abbr"> / ${maxRang}</span></span>
                     <button class="btn btn-sm" data-trank="${escapeHtml(t.name)}" data-delta="1"
-                        ${(rang >= maxRang || tp < 1) ? 'disabled style="opacity:0.35"' : ''}
-                        title="${rang >= maxRang ? 'Höchstrang erreicht' : (tp < 1 ? 'Keine Talentpunkte übrig' : 'Rang steigern (1 TP)')}">+</button>
+                        ${(rang >= maxRang || verfuegbarePunkte(t.topf === 'ntp' ? 'ntp' : 'tp') < 1) ? 'disabled style="opacity:0.35"' : ''}
+                        title="${rang >= maxRang ? 'Höchstrang erreicht' : 'Rang steigern (1 ' + (t.topf === 'ntp' ? escapeHtml(ntpName()) : 'TP') + ')'}">+</button>
                 </span>
                 <button class="icon-btn" data-tremove="${escapeHtml(t.name)}" title="Talent entfernen">✕</button>
             </div>
@@ -130,20 +160,23 @@ function renderTalents() {
 function changeTalentRank(name, delta) {
     const entry = appData.talents.find(t => t.name === name);
     if (!entry) return;
-    const data = typeof DS4_TALENTS !== 'undefined' ? DS4_TALENTS.find(x => x.name === name) : null;
+    const data = typeof DS4_TALENTS !== 'undefined' ? talentListe().find(x => x.name === name) : null;
     const zugang = data ? talentZugang(data) : null;
     const maxRang = zugang ? zugang.maxRang : (entry.maxRang || 10);
 
     if (delta > 0) {
-        if ((appData.tp || 0) < 1) return;
+        // Aus dem Topf zahlen, aus dem das Talent ursprünglich bezahlt wurde
+        const topf = entry.topf === 'ntp' ? 'ntp' : 'tp';
+        if (verfuegbarePunkte(topf) < 1) return;
         if ((entry.rang || 1) >= maxRang) return;
         entry.rang = (entry.rang || 1) + 1;
-        appData.tp -= 1;
-        addLog(`<strong>${escapeHtml(name)}</strong> auf Rang ${entry.rang} gesteigert (1 TP)`, 'erfolg');
+        appData[topf] = verfuegbarePunkte(topf) - 1;
+        addLog(`<strong>${escapeHtml(name)}</strong> auf Rang ${entry.rang} gesteigert (1 ${topf === 'ntp' ? escapeHtml(ntpName()) : 'TP'})`, 'erfolg');
     } else {
         if ((entry.rang || 1) <= 1) { removeTalent(name); return; }
         entry.rang -= 1;
-        appData.tp = (appData.tp || 0) + 1;
+        const zurueck = entry.topf === 'ntp' ? 'ntp' : 'tp';
+        appData[zurueck] = verfuegbarePunkte(zurueck) + 1;
         addLog(`<strong>${escapeHtml(name)}</strong> auf Rang ${entry.rang} gesenkt (1 TP zurück)`, 'neutral');
     }
     renderTalents();
@@ -155,7 +188,8 @@ function removeTalent(name) {
     const entry = appData.talents.find(t => t.name === name);
     if (!entry) return;
     // Investierte Talentpunkte werden zurückgegeben
-    appData.tp = (appData.tp || 0) + (entry.rang || 1);
+    const zurueck = entry.topf === 'ntp' ? 'ntp' : 'tp';
+    appData[zurueck] = verfuegbarePunkte(zurueck) + (entry.rang || 1);
     appData.talents = appData.talents.filter(t => t.name !== name);
     addLog(`Talent <strong>${escapeHtml(name)}</strong> entfernt (${entry.rang || 1} TP zurück)`, 'neutral');
     renderTalents();
@@ -190,7 +224,7 @@ function renderTalentPicker() {
     }
 
     const suche = talentFilter.trim().toLowerCase();
-    const eintraege = DS4_TALENTS.map(t => ({ talent: t, zugang: talentZugang(t) }))
+    const eintraege = talentListe().map(t => ({ talent: t, zugang: talentZugang(t) }))
         .filter(e => e.zugang !== null)
         .filter(e => !suche || e.talent.name.toLowerCase().includes(suche) || (e.talent.effekt || '').toLowerCase().includes(suche))
         .filter(e => talentShowAll || e.zugang.erfuellt)
@@ -212,7 +246,11 @@ function renderTalentPicker() {
         </div>
         <div class="budget" style="margin-bottom:0.8rem">
             ${escapeHtml(klasseName)}${appData.heldenklasse ? ' / ' + escapeHtml(appData.heldenklasse) : ''} ·
-            Stufe <strong>${stufe}</strong> · Offene TP: <strong>${appData.tp || 0}</strong>
+            Stufe <strong>${stufe}</strong> ·
+            ${ntpAktiv() ? `Bezahlen aus:
+                <span class="radio-pill ${talentTopf === 'tp' ? 'selected' : ''}" onclick="talentTopfWaehlen('tp')">TP ${appData.tp || 0}</span>
+                <span class="radio-pill ${talentTopf === 'ntp' ? 'selected' : ''}" onclick="talentTopfWaehlen('ntp')" title="${escapeHtml(hausregeln.ntpHinweis)}">${escapeHtml(ntpName())} ${appData.ntp || 0}</span>`
+              : `Offene TP: <strong>${appData.tp || 0}</strong>`}
             <span class="hint" style="margin-left:auto">${eintraege.length} Talente</span>
         </div>`;
 
@@ -227,19 +265,21 @@ function renderTalentPicker() {
         const z = e.zugang;
         const rang = gelernterRang(t.name);
         const voll = rang >= z.maxRang;
-        const kannLernen = z.erfuellt && !voll && (appData.tp || 0) >= 1;
+        const topf = (ntpAktiv() && talentTopf === 'ntp') ? 'ntp' : 'tp';
+        const kannLernen = z.erfuellt && !voll && verfuegbarePunkte(topf) >= 1;
 
         let knopf;
         if (!z.erfuellt) knopf = `<span class="tag tag-warn">ab Stufe ${z.minStufe}</span>`;
         else if (voll) knopf = '<span class="tag">Höchstrang</span>';
         else if (!kannLernen) knopf = '<span class="tag tag-warn">kein TP frei</span>';
-        else knopf = `<button class="btn btn-sm btn-primary" data-tlearn="${escapeHtml(t.name)}">${rang ? 'Rang +1' : 'Lernen'} (1 TP)</button>`;
+        else knopf = `<button class="btn btn-sm btn-primary" data-tlearn="${escapeHtml(t.name)}">${rang ? 'Rang +1' : 'Lernen'} (1 ${topf === 'ntp' ? escapeHtml(ntpName()) : 'TP'})</button>`;
 
         return `<div class="talent-option ${z.erfuellt ? '' : 'locked'}">
             <div class="talent-entry-head">
                 <strong>${escapeHtml(t.name)}</strong>
                 ${rang ? `<span class="tag">Rang ${rang}/${z.maxRang}</span>` : `<span class="hint">max. Rang ${z.maxRang}</span>`}
                 ${z.quelle === 'held' ? '<span class="tag">Heldenklasse</span>' : ''}
+                ${t.eigen ? '<span class="tag">Hausregel</span>' : ''}
                 <span style="margin-left:auto">${knopf}</span>
             </div>
             <div class="talent-effect">${escapeHtml(t.effekt)}</div>
@@ -274,20 +314,21 @@ function wireTalentPickerHead() {
 }
 
 function learnTalent(name) {
-    const data = DS4_TALENTS.find(t => t.name === name);
+    const data = talentListe().find(t => t.name === name);
     if (!data) return;
     const zugang = talentZugang(data);
     if (!zugang || !zugang.erfuellt) return;
-    if ((appData.tp || 0) < 1) return;
+    const topf = (ntpAktiv() && talentTopf === 'ntp') ? 'ntp' : 'tp';
+    if (verfuegbarePunkte(topf) < 1) return;
 
     const entry = appData.talents.find(t => t.name === name);
     if (entry) {
         if ((entry.rang || 1) >= zugang.maxRang) return;
         entry.rang = (entry.rang || 1) + 1;
     } else {
-        appData.talents.push({ id: uid(), name, rang: 1, maxRang: zugang.maxRang, notiz: '' });
+        appData.talents.push({ id: uid(), name, rang: 1, maxRang: zugang.maxRang, notiz: '', topf });
     }
-    appData.tp -= 1;
+    appData[topf] = verfuegbarePunkte(topf) - 1;
 
     const neu = gelernterRang(name);
     addLog(`Talent <strong>${escapeHtml(name)}</strong> auf Rang ${neu} (1 TP)`, 'erfolg');

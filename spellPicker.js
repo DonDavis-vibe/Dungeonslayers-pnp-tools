@@ -3,6 +3,12 @@
 // Neue Zauber kosten weder Lern- noch Talentpunkte; pro Stufenaufstieg dürfen Zauber
 // gelernt werden, deren Zauberstufen zusammen die neue Charakterstufe ergeben (S.9).
 
+// Zauberliste inklusive eigener Ergänzungen aus den Hausregeln
+function zauberListe() {
+    if (typeof alleZauber === 'function') return alleZauber();
+    return typeof DS4_ZAUBER !== 'undefined' ? DS4_ZAUBER : [];
+}
+
 let spellFilter = '';
 let spellShowAll = false;
 
@@ -41,7 +47,7 @@ function renderSpells() {
     }
 
     container.innerHTML = kopf + appData.spells.map(s => {
-        const data = typeof DS4_ZAUBER !== 'undefined' ? DS4_ZAUBER.find(z => z.name === s.name) : null;
+        const data = typeof DS4_ZAUBER !== 'undefined' ? zauberListe().find(z => z.name === s.name) : null;
         const onCooldown = s.cooldownUntil && typeof currentRound === 'number' && currentRound > 0 && currentRound < s.cooldownUntil;
         const typ = data ? data.typ : (s.typ || 'normal');
         const probe = typ === 'ziel' ? 'Zielzauber' : 'Zaubern';
@@ -114,7 +120,7 @@ function renderSpellPicker() {
     }
 
     const suche = spellFilter.trim().toLowerCase();
-    const eintraege = DS4_ZAUBER.map(z => ({ zauber: z, zugang: zauberZugang(z) }))
+    const eintraege = zauberListe().map(z => ({ zauber: z, zugang: zauberZugang(z) }))
         .filter(e => e.zugang !== null)
         .filter(e => !suche || e.zauber.name.toLowerCase().includes(suche) || (e.zauber.effekt || '').toLowerCase().includes(suche))
         .filter(e => spellShowAll || e.zugang.erfuellt)
@@ -159,6 +165,7 @@ function renderSpellPicker() {
                 <span class="tag">Stufe ${zg.minStufe}</span>
                 <span class="tag">${z.typ === 'ziel' ? 'Zielzauber' : 'Zaubern'}</span>
                 ${z.geistesbeeinflussend ? '<span class="tag">geistesbeeinflussend</span>' : ''}
+                ${z.eigen ? '<span class="tag">Hausregel</span>' : ''}
                 <span style="margin-left:auto">${knopf}</span>
             </div>
             <div class="talent-effect">${escapeHtml(z.effekt)}</div>
@@ -191,7 +198,7 @@ function wireSpellPickerHead() {
 }
 
 function learnSpell(name) {
-    const data = DS4_ZAUBER.find(z => z.name === name);
+    const data = zauberListe().find(z => z.name === name);
     if (!data || kenntZauber(name)) return;
     const zugang = zauberZugang(data);
     if (!zugang || !zugang.erfuellt) return;
