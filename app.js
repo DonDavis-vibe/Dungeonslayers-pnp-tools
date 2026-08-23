@@ -579,7 +579,15 @@ function renderEquipmentInfo(derived) {
     // Besonderheiten der angelegten Ausrüstung
     const details = [];
     [melee, ranged].forEach(w => {
-        if (w && w.besonderes && w.besonderes !== '—') details.push(`<strong>${escapeHtml(w.name)}:</strong> ${escapeHtml(w.besonderes)}`);
+        if (!w) return;
+        const teile = [];
+        if (w.besonderes && w.besonderes !== '—') teile.push(escapeHtml(w.besonderes));
+        // Anhang B (S.153): ein Feld = 1m; diese Waffen reichen 2 Felder weit
+        if (w.reichweite && w.reichweite > 1) {
+            teile.push(`Reichweite ${w.reichweite} Felder (${w.reichweite}m)` +
+                (w.stosswaffe ? ', Stoßwaffe — trifft auch Ziele hinter einem Gegner' : ''));
+        }
+        if (teile.length) details.push(`<strong>${escapeHtml(w.name)}:</strong> ${teile.join(' · ')}`);
     });
     ['koerper', 'helm', 'schienen', 'schild'].forEach(slot => {
         const a = findArmor(appData.equipment[slot]);
@@ -1122,6 +1130,16 @@ function openRulesModal() {
             Lebenskraft = KÖR+HÄ+10 · Abwehr = KÖR+HÄ+PA · Initiative = AGI+BE · Laufen = AGI/2+1<br>
             Schlagen = KÖR+ST+WB · Schießen = AGI+GE+WB · Zaubern = GEI+AU+ZB−PA · Zielzauber = GEI+GE+ZB−PA
         </div>
+
+        <h4 style="color:var(--accent-bright);margin-top:1rem">Bewegung &amp; Reichweiten</h4>
+        <ul class="hint" style="margin:0.3rem 0 0 1.2rem">
+            <li>Pro Runde bis zu <em>Laufen</em> Meter bewegen — die Bewegung darf vor und nach der Aktion aufgeteilt werden.</li>
+            <li>Bei Bodenplänen und Rastermatten gilt: <strong>ein Feld = 1 Meter</strong> (Anhang B, S.153).</li>
+            <li>Im Nahkampf erreicht man normalerweise alle <strong>angrenzenden</strong> Felder.</li>
+            <li><strong>2 Felder weit</strong> reichen Bihänder, Hellebarde, Kampfstab, Schlachtbeil und Speer — sofern niemand dazwischen steht.</li>
+            <li><strong>Stoßwaffen</strong> (Hellebarde, Kampfstab, Speer) treffen auch Ziele, vor denen jemand steht.</li>
+            <li>Fernkampf: <strong>−1 je volle 10m</strong>, zusätzlich <strong>−2</strong> auf Ziele im Nahkampf. Schleuder und Wurfmesser stattdessen −1 je 2m.</li>
+        </ul>
 
         <h4 style="color:var(--accent-bright);margin-top:1rem">Kampf</h4>
         <ul class="hint" style="margin:0.3rem 0 0 1.2rem">

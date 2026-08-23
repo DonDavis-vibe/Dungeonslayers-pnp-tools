@@ -152,9 +152,9 @@ const DS4_WEAPONS = [
     { name: 'Wurfmesser', wb: 0, type: 'both', besonderes: '−1 pro 2m Distanz; auch im Nahkampf nutzbar', price: '2 GM' },
     { name: 'Axt', wb: 1, type: 'melee', besonderes: '—', price: '6 GM' },
     { name: 'Hammer', wb: 1, type: 'melee', gaMod: -1, besonderes: 'Gegnerabwehr −1', price: '7 GM' },
-    { name: 'Kampfstab', wb: 1, type: 'melee', twoHanded: true, besonderes: 'Zielzauber +1', price: '5 SM' },
+    { name: 'Kampfstab', wb: 1, type: 'melee', twoHanded: true, reichweite: 2, stosswaffe: true, besonderes: 'Zielzauber +1', price: '5 SM' },
     { name: 'Keule', wb: 1, type: 'melee', twoHanded: true, besonderes: '—', price: '2 SM' },
-    { name: 'Speer', wb: 1, type: 'both', besonderes: 'im Nahkampf oder als Wurfwaffe nutzbar', price: '1 GM' },
+    { name: 'Speer', wb: 1, type: 'both', reichweite: 2, stosswaffe: true, besonderes: 'im Nahkampf oder als Wurfwaffe nutzbar', price: '1 GM' },
     { name: 'Schwert, Breit-', wb: 1, type: 'melee', gaMod: -2, besonderes: 'Gegnerabwehr −2', price: '8 GM' },
     { name: 'Schwert, Kurz-', wb: 1, type: 'melee', besonderes: 'gilt auch für Krummsäbel', price: '6 GM' },
     { name: 'Bogen, Kurz-', wb: 1, type: 'ranged', twoHanded: true, initMod: 1, besonderes: 'Initiative +1', price: '6 GM' },
@@ -164,15 +164,15 @@ const DS4_WEAPONS = [
     { name: 'Bogen, Lang-', wb: 2, type: 'ranged', twoHanded: true, dwarfBanned: true, initMod: 1, besonderes: 'Initiative +1', price: '10 GM' },
     { name: 'Armbrust, leicht', wb: 2, type: 'ranged', twoHanded: true, initMod: -2, besonderes: 'Initiative −2', price: '8 GM' },
     { name: 'Flegel', wb: 2, type: 'melee', twoHanded: true, initMod: -2, besonderes: 'Initiative −2', price: '8 GM' },
-    { name: 'Hellebarde', wb: 2, type: 'melee', twoHanded: true, initMod: -2, besonderes: 'Initiative −2', price: '4 GM' },
+    { name: 'Hellebarde', wb: 2, type: 'melee', twoHanded: true, initMod: -2, reichweite: 2, stosswaffe: true, besonderes: 'Initiative −2', price: '4 GM' },
     { name: 'Streitaxt', wb: 3, type: 'melee', twoHanded: true, initMod: -2, besonderes: 'Initiative −2', price: '7 GM' },
     { name: 'Streithammer', wb: 3, type: 'melee', twoHanded: true, initMod: -4, besonderes: 'Initiative −4', price: '6 GM' },
-    { name: 'Bihänder', wb: 3, type: 'melee', twoHanded: true, dwarfBanned: true, initMod: -2, gaMod: -4, besonderes: 'Initiative −2, Gegnerabwehr −4', price: '10 GM' },
+    { name: 'Bihänder', wb: 3, type: 'melee', twoHanded: true, dwarfBanned: true, initMod: -2, gaMod: -4, reichweite: 2, besonderes: 'Initiative −2, Gegnerabwehr −4', price: '10 GM' },
     { name: 'Armbrust, schwer', wb: 3, type: 'ranged', twoHanded: true, initMod: -4, gaMod: -2, besonderes: 'Initiative −4, Gegnerabwehr −2', price: '15 GM' },
     { name: 'Bogen, Elfen-', wb: 3, type: 'ranged', twoHanded: true, dwarfBanned: true, initMod: 1, besonderes: 'Initiative +1', price: '75 GM' },
     { name: 'Zwergenaxt', wb: 3, type: 'melee', twoHanded: true, initMod: -1, gaMod: -2, besonderes: 'Initiative −1, Gegnerabwehr −2', price: '60 GM' },
     { name: 'Schlachtgeißel', wb: 3, type: 'melee', initMod: -4, gaMod: -4, besonderes: 'Initiative −4, Gegnerabwehr −4; Patzer beim Schlagen trifft einen selbst', price: '16 GM' },
-    { name: 'Schlachtbeil', wb: 4, type: 'melee', twoHanded: true, dwarfBanned: true, initMod: -6, gaMod: -4, besonderes: 'Initiative −6, Gegnerabwehr −4', price: '20 GM' }
+    { name: 'Schlachtbeil', wb: 4, type: 'melee', twoHanded: true, dwarfBanned: true, initMod: -6, gaMod: -4, reichweite: 2, besonderes: 'Initiative −6, Gegnerabwehr −4', price: '20 GM' }
 ];
 
 // slot: 'koerper' | 'helm' | 'schienen' | 'schild'
