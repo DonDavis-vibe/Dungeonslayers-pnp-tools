@@ -82,6 +82,40 @@ const DS4_TALENT_SITUATIV = {
     'Raserei': { wert: 'Schlagen', proRang: 2, bedingung: 'je Rang −1 Abwehr für +2 Schlagen, rundenweise umschichtbar' }
 };
 
+// Talente, die einen festen Bonus auf bestimmte typische Proben geben.
+// Zuordnung anhand der Effekttexte im Regelwerk (S.17-37); mehrfach erlernbare
+// Talente wie Handwerk, Instrument oder Wissensgebiet sind bewusst nicht dabei,
+// da sie sich je Erwerb auf ein eigenes Gebiet beziehen.
+const DS4_TALENT_PROBEN = {
+    'Wahrnehmung': { proRang: 2, proben: ['Bemerken'] },
+    'Akrobat': { proRang: 2, proben: ['Klettern', 'Springen'] },
+    'Kletterass': { proRang: 2, proben: ['Klettern'] },
+    'Heimlichkeit': { proRang: 2, proben: ['Schleichen', 'Verbergen', 'Taschendiebstahl'] },
+    'Diebeskunst': { proRang: 2, proben: ['Fallen entschärfen', 'Taschendiebstahl', 'Schlösser öffnen'] },
+    'Schlossknacker': { proRang: 2, proben: ['Schlösser öffnen'] },
+    'Jäger': { proRang: 2, proben: ['Spuren lesen'] },
+    'Schwimmen': { proRang: 3, proben: ['Schwimmen'] },
+    'Bildung': { proRang: 2, proben: ['Wissen'] },
+    'Schlitzohr': { proRang: 3, proben: ['Feilschen'] },
+    'Charmant': { proRang: 2, proben: ['Flirten'] },
+    'Beute schätzen': { proRang: 3, proben: ['Schätzen'] }
+};
+
+// Summiert die Talentboni für eine bestimmte typische Probe.
+function talentProbenBonus(talents, probenName) {
+    let summe = 0;
+    const quellen = [];
+    (talents || []).forEach(t => {
+        const d = DS4_TALENT_PROBEN[t.name];
+        const rang = t.rang || 0;
+        if (!d || !rang || !d.proben.includes(probenName)) return;
+        const bonus = d.proRang * rang;
+        summe += bonus;
+        quellen.push(`${t.name} ${rang}: +${bonus}`);
+    });
+    return { summe, quellen, text: quellen.join(', ') };
+}
+
 function talentRang(talents, name) {
     const t = (talents || []).find(x => x.name === name);
     return t ? (t.rang || 0) : 0;

@@ -826,15 +826,23 @@ function rollTypischeProbe() {
 
     const pw = probeWertFor(probe);
     let modifier = currentModifier();
-    let extra = '';
+    const quellen = [];
+
     // Elfen sind leichtfüßig: +2 auf Schleichen
     if (probe.name === 'Schleichen' && appData.volk === 'elf') {
         modifier += 2;
-        extra = 'inkl. +2 Leichtfüßig (Elf)';
+        quellen.push('Leichtfüßig (Elf): +2');
     }
+    // Talente, die genau auf diese Probe wirken (z.B. Wahrnehmung auf Bemerken)
+    const talentBonus = talentProbenBonus(appData.talents, probe.name);
+    if (talentBonus.summe) {
+        modifier += talentBonus.summe;
+        quellen.push(talentBonus.text);
+    }
+
     const result = rollProbe(pw, { label: probe.name, modifier });
-    showProbeResult(result);
-    logProbe(result, extra);
+    showProbeResult(result, '', quellen.join(' · '));
+    logProbe(result, quellen.length ? 'inkl. ' + quellen.join(', ') : '');
 }
 
 // Wertet die Formel einer typischen Probe gegen den Charakter aus.
@@ -873,10 +881,14 @@ function rollOpposedProbe() {
     const eigenerPw = probeWertFor(probe);
     const gegnerPw = parseInt(document.getElementById('f-opposed-pw').value, 10) || 0;
 
+    // Dieselben Boni wie bei der einfachen Probe gelten auch hier
+    let eigenerMod = currentModifier() + talentProbenBonus(appData.talents, probe.name).summe;
+    if (probe.name === 'Schleichen' && appData.volk === 'elf') eigenerMod += 2;
+
     const ergebnis = rollOpposed(
         eigenerPw, gegnerPw,
         characterName(), 'Gegenüber',
-        currentModifier(), 0
+        eigenerMod, 0
     );
 
     // Die eigene Probe steht in der großen Anzeige
