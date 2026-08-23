@@ -1,0 +1,915 @@
+// Dungeonslayers 4 — Live-Multiplayer (WebRTC via PeerJS) + Spielleiter-Dashboard
+// Serverlos: Spieler verbinden sich per Raum-Code direkt mit dem Spielleiter.
+
+let peer = null;
+let hostConnection = null;
+let clientConnections = {};
+let isGmMode = false;
+let connectedPlayers = {};
+
+let peerJsLoaded = false;
+let peerJsLoading = false;
+let peerJsCallbacks = [];
+let joinTimeout = null;
+let hostReconnectAttempts = 0;
+let hostReconnectPending = false;
+let roomOnline = false;
+
+const PEER_PREFIX = 'ds4-';
+const JOIN_TIMEOUT_MS = 20000;
+const SESSION_KEY = 'ds4_multiplayer_session';
+
+const STUN_SERVERS = [
+    { urls: 'stun:stun.l.google.com:19302' },
+    { urls: 'stun:stun1.l.google.com:19302' },
+    { urls: 'stun:stun2.l.google.com:19302' }
+];
+
+// PeerJS wird erst bei Bedarf nachgeladen — die App funktioniert auch offline solo.
+function ensurePeerJs(callback) {
+    if (peerJsLoaded && typeof Peer !== 'undefined') { callback(); return; }
+    peerJsCallbacks.push(callback);
+    if (peerJsLoading) return;
+    peerJsLoading = true;
+
+    const script = document.createElement('script');
+    script.src = 'https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js';
+    script.onload = () => {
+        peerJsLoaded = true;
+        peerJsLoading = false;
+        const callbacks = peerJsCallbacks;
+        peerJsCallbacks = [];
+        callbacks.forEach(cb => cb());
+    };
+    script.onerror = () => {
+        peerJsLoading = false;
+        peerJsCallbacks = [];
+        setMultiplayerStatus('Multiplayer-Komponente konnte nicht geladen werden (offline?).', 'var(--fail)');
+    };
+    document.head.appendChild(script);
+}
+
+// --- Session über Reload retten --------------------------------------------
+
+function saveSession(role, roomCode) {
+    try { sessionStorage.setItem(SESSION_KEY, JSON.stringify({ role, roomCode })); } catch (e) { /* blockiert */ }
+}
+function clearSession() {
+    try { sessionStorage.removeItem(SESSION_KEY); } catch (e) { /* blockiert */ }
+}
+function loadSession() {
+    try { return JSON.parse(sessionStorage.getItem(SESSION_KEY) || 'null'); } catch (e) { return null; }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const stored = loadSession();
+    if (!stored || !stored.roomCode) return;
+    setMultiplayerStatus('Stelle vorherige Sitzung wieder her...', 'var(--accent)');
+    if (stored.role === 'player') setConnectionBadge('connecting', stored.roomCode);
+    ensurePeerJs(() => {
+        if (stored.role === 'gm') hostMultiplayerSession(stored.roomCode);
+        else joinMultiplayerSession(stored.roomCode);
+    });
+});
+
+// --- Modal & Status ---------------------------------------------------------
+
+// Zuletzt genutzter Raum-Code — überlebt auch eine getrennte Verbindung, damit
+// ein Klick auf die Statusanzeige den Code für einen neuen Beitritt parat hat.
+let letzterRaumCode = '';
+
+function openMultiplayerModal() {
+    if (!peerJsLoaded) {
+        setMultiplayerStatus('Lade Multiplayer-Komponente...', 'var(--accent)');
+        ensurePeerJs(() => setMultiplayerStatus(''));
+    }
+    loadTurnSettings();
+    if (typeof loadDiscordSettings === 'function') loadDiscordSettings();
+
+    const feld = document.getElementById('multiplayer-join-code');
+    if (feld && letzterRaumCode && !feld.value) feld.value = letzterRaumCode;
+
+    openModal('multiplayer-modal');
+}
+function closeMultiplayerModal() { closeModal('multiplayer-modal'); }
+
+function setMultiplayerStatus(html, color = 'var(--text)') {
+    const el = document.getElementById('multiplayer-status');
+    if (!el) return;
+    el.innerHTML = html;
+    el.style.color = color;
+}
+
+// --- Dauerhafte Verbindungsanzeige in der Kopfzeile -------------------------
+
+// Bleibt unsichtbar, solange niemand Multiplayer nutzt. Sobald ein Beitritt
+// läuft, zeigt sie durchgehend an, ob die Verbindung zum Spielleiter steht.
+function setConnectionBadge(zustand, roomCode) {
+    const badge = document.getElementById('mp-badge');
+    const text = document.getElementById('mp-badge-text');
+    if (!badge || !text) return;
+
+    badge.classList.remove('visible', 'connected', 'connecting', 'lost');
+
+    if (!zustand) {
+        badge.removeAttribute('title');
+        return;
+    }
+
+    const raum = roomCode ? ` · Raum ${roomCode}` : '';
+    const zustaende = {
+        connecting: {
+            text: 'Verbinde...',
+            title: 'Verbindung zum Spielleiter wird aufgebaut.'
+        },
+        connected: {
+            text: `Mit Spielleiter verbunden${raum}`,
+            title: 'Würfe und Werte werden live an den Spielleiter übertragen. Klicken für das Multiplayer-Menü.'
+        },
+        lost: {
+            text: 'Verbindung getrennt',
+            title: 'Die Verbindung zum Spielleiter ist abgebrochen. Klicken, um erneut beizutreten.'
+        }
+    };
+
+    const konfig = zustaende[zustand];
+    if (!konfig) return;
+
+    badge.classList.add('visible', zustand);
+    text.textContent = konfig.text;
+    badge.title = konfig.title;
+}
+
+// --- TURN-Konfiguration -----------------------------------------------------
+
+function getCustomTurnServer() {
+    try {
+        const stored = JSON.parse(localStorage.getItem('ds4_turn') || 'null');
+        if (stored && stored.urls) return stored;
+    } catch (e) { /* unlesbar, ignorieren */ }
+    return null;
+}
+
+function peerConfig() {
+    const iceServers = [...STUN_SERVERS];
+    const custom = getCustomTurnServer();
+    if (custom) iceServers.push(custom);
+    return { config: { iceServers } };
+}
+
+function saveTurnSettings() {
+    const url = document.getElementById('turn-url').value.trim();
+    if (!url) {
+        localStorage.removeItem('ds4_turn');
+        setMultiplayerStatus('TURN-Server entfernt.', 'var(--text-dim)');
+        return;
+    }
+    if (!/^turns?:/i.test(url)) {
+        setMultiplayerStatus('TURN-URL muss mit turn: oder turns: beginnen.', 'var(--fail)');
+        return;
+    }
+    localStorage.setItem('ds4_turn', JSON.stringify({
+        urls: url,
+        username: document.getElementById('turn-user').value.trim(),
+        credential: document.getElementById('turn-pass').value
+    }));
+    setMultiplayerStatus('✓ TURN-Server gespeichert.', 'var(--success)');
+}
+
+function loadTurnSettings() {
+    const custom = getCustomTurnServer();
+    if (!custom) return;
+    document.getElementById('turn-url').value = Array.isArray(custom.urls) ? custom.urls[0] : custom.urls;
+    document.getElementById('turn-user').value = custom.username || '';
+    document.getElementById('turn-pass').value = custom.credential || '';
+}
+
+// --- Spielleiter (Host) -----------------------------------------------------
+
+function generateRoomCode() {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // ohne I/O/0/1 wegen Verwechslungsgefahr
+    let code = '';
+    for (let i = 0; i < 4; i++) code += chars.charAt(Math.floor(Math.random() * chars.length));
+    return code;
+}
+
+function hostMultiplayerSession(preferredCodeArg) {
+    const preferredCode = typeof preferredCodeArg === 'string' ? preferredCodeArg : undefined;
+
+    ensurePeerJs(() => {
+        if (peer) peer.destroy();
+        hostReconnectAttempts = 0;
+        hostReconnectPending = false;
+        roomOnline = false;
+
+        setMultiplayerStatus(preferredCode ? 'Stelle Raum wieder her...' : 'Eröffne Raum...', 'var(--accent)');
+        const roomCode = preferredCode || generateRoomCode();
+        peer = new Peer(PEER_PREFIX + roomCode, peerConfig());
+
+        // 'open' feuert auch nach einem Reconnect erneut — das Dashboard darf dann
+        // nicht neu initialisiert werden, sonst wäre das Live-Log mitten im Spiel weg.
+        peer.on('open', () => {
+            if (!isGmMode) {
+                closeMultiplayerModal();
+                enterGmMode(roomCode);
+            } else if (!roomOnline) {
+                addGmLog('System', 'Verbindung zum Signalling-Server wiederhergestellt.', 'neutral');
+            }
+            hostReconnectAttempts = 0;
+            setRoomStatus(true);
+            saveSession('gm', roomCode);
+        });
+
+        peer.on('disconnected', () => { setRoomStatus(false); reconnectHost(); });
+
+        peer.on('connection', conn => {
+            conn.on('data', data => handleIncomingData(conn.peer, data));
+            conn.on('close', () => {
+                const name = connectedPlayers[conn.peer] ? connectedPlayers[conn.peer].name : 'Ein Spieler';
+                delete clientConnections[conn.peer];
+                delete connectedPlayers[conn.peer];
+                renderGmDashboard();
+                addGmLog('System', `${name} hat den Raum verlassen.`, 'neutral');
+            });
+            conn.on('error', () => {
+                delete clientConnections[conn.peer];
+                renderGmDashboard();
+            });
+            clientConnections[conn.peer] = conn;
+        });
+
+        peer.on('error', err => {
+            if (err.type === 'unavailable-id') {
+                clearSession();
+                setMultiplayerStatus(preferredCode
+                    ? 'Der alte Raum-Code ist noch belegt. Kurz warten und neu hosten.'
+                    : 'Raum-Code bereits vergeben. Bitte erneut hosten.', 'var(--fail)');
+            } else {
+                setMultiplayerStatus('Fehler: ' + err.type, 'var(--fail)');
+            }
+        });
+    });
+}
+
+// Der Signalling-Server trennt inaktive Peers. PeerJS meldet sich nicht von selbst
+// neu an — ohne das hier wäre der Raum für neue Spieler unauffindbar.
+function reconnectHost() {
+    if (!peer || peer.destroyed || !isGmMode || peer.open || hostReconnectPending) return;
+    if (hostReconnectAttempts >= 8) {
+        addGmLog('System', 'Verbindung verloren. Bitte Dashboard schließen und neu hosten.', 'patzer');
+        return;
+    }
+
+    const delay = Math.min(2000 * Math.pow(2, hostReconnectAttempts), 30000);
+    hostReconnectAttempts++;
+    hostReconnectPending = true;
+
+    setTimeout(() => {
+        if (!peer || peer.destroyed || peer.open) { hostReconnectPending = false; return; }
+        try { peer.reconnect(); } catch (e) { /* nächster Versuch folgt */ }
+        setTimeout(() => {
+            hostReconnectPending = false;
+            if (!peer || peer.destroyed) return;
+            if (peer.open) {
+                hostReconnectAttempts = 0;
+                if (!roomOnline) { setRoomStatus(true); addGmLog('System', 'Verbindung wiederhergestellt.', 'neutral'); }
+            } else {
+                reconnectHost();
+            }
+        }, 3000);
+    }, delay);
+}
+
+function setRoomStatus(online) {
+    roomOnline = online;
+    const el = document.getElementById('gm-room-status');
+    if (!el) return;
+    el.innerHTML = online ? '🟢 Raum online' : '🔴 Raum offline';
+    el.style.color = online ? 'var(--success)' : 'var(--fail)';
+    el.title = online
+        ? 'Neue Spieler können beitreten.'
+        : 'Signalling-Server nicht erreichbar — bereits verbundene Spieler bleiben aktiv, neue können nicht beitreten.';
+}
+
+function enterGmMode(roomCode) {
+    isGmMode = true;
+    // Die Spieler-Verbindungsanzeige gehört nicht ins Dashboard — dort steht der Raumstatus
+    setConnectionBadge(null);
+    document.getElementById('player-view').style.display = 'none';
+    document.getElementById('gm-dashboard').style.display = 'block';
+    document.getElementById('gm-room-code').textContent = roomCode;
+    document.getElementById('gm-general-notes').value = localStorage.getItem('ds4_gm_notes') || '';
+    renderGmDashboard();
+    renderCombat();
+    addGmLog('System', `Sitzung gestartet — Raum-Code ${roomCode}`, 'erfolg');
+}
+
+function exitGmMode() {
+    if (peer) peer.destroy();
+    peer = null;
+    isGmMode = false;
+    clientConnections = {};
+    connectedPlayers = {};
+    clearSession();
+    document.getElementById('gm-dashboard').style.display = 'none';
+    document.getElementById('player-view').style.display = '';
+}
+
+function saveGmGeneralNotes(value) {
+    localStorage.setItem('ds4_gm_notes', value);
+}
+
+// --- Datenempfang beim Spielleiter -----------------------------------------
+
+function handleIncomingData(peerId, payload) {
+    if (!payload || typeof payload !== 'object') return;
+
+    if (payload.type === 'state') {
+        const isNew = !connectedPlayers[peerId];
+        connectedPlayers[peerId] = payload.data;
+        renderGmDashboard();
+        // Laufender Kampf: aktualisierte LK/Initiative sofort in die Reihenfolge übernehmen
+        if (combatActive) renderCombat();
+        if (isNew) addGmLog('System', `${payload.data.name || 'Ein Held'} ist beigetreten.`, 'erfolg');
+    } else if (payload.type === 'roll') {
+        const player = connectedPlayers[peerId];
+        addGmLog(player ? player.name : 'Unbekannt', payload.message, payload.status);
+    }
+}
+
+// --- GM Dashboard Rendering -------------------------------------------------
+
+const GM_COLORS = ['#d4a24c', '#6fa84a', '#4a90d4', '#c4569e', '#d4784a', '#8a6fd4', '#4ac4b8', '#c44a4a'];
+
+function colorForPlayer(name) {
+    const stored = localStorage.getItem('ds4_color_' + name);
+    if (stored) return stored;
+    let hash = 0;
+    for (let i = 0; i < (name || '').length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
+    return GM_COLORS[Math.abs(hash) % GM_COLORS.length];
+}
+
+function renderGmDashboard() {
+    const grid = document.getElementById('gm-players-grid');
+    const emptyHint = document.getElementById('gm-empty-hint');
+    if (!grid) return;
+
+    const peerIds = Object.keys(connectedPlayers);
+    document.getElementById('gm-player-count').textContent =
+        `${peerIds.length} verbunden`;
+    emptyHint.style.display = peerIds.length ? 'none' : '';
+
+    // Laufende Notizeingabe nicht durch das Neuzeichnen unterbrechen
+    const active = document.activeElement;
+    const focusedName = active && active.dataset && active.dataset.gmnote ? active.dataset.gmnote : null;
+    const cursor = focusedName ? [active.selectionStart, active.selectionEnd] : null;
+
+    grid.innerHTML = peerIds.map(peerId => {
+        const p = connectedPlayers[peerId];
+        const color = colorForPlayer(p.name);
+        const lkPct = p.lkMax > 0 ? Math.max(0, Math.min(100, (p.lkCurrent / p.lkMax) * 100)) : 0;
+        const lkColor = lkPct > 50 ? 'var(--success)' : (lkPct > 25 ? 'var(--accent)' : 'var(--fail)');
+        const notes = localStorage.getItem('ds4_gmnote_' + p.name) || '';
+
+        const statBox = (label, value) => `<div class="gm-stat"><span>${label}</span><strong>${value}</strong></div>`;
+
+        return `<div class="panel gm-player-card" style="border-top-color:${color}">
+            <div class="panel-head" style="background:linear-gradient(180deg, ${color}22, transparent)">
+                <h3 style="color:${color}">${escapeHtml(p.name || 'Namenlos')}</h3>
+                <div class="panel-actions"><span class="tag">Stufe ${p.stufe}</span></div>
+            </div>
+            <div class="panel-body">
+                <div class="hint">${escapeHtml(p.volk || '—')} ${escapeHtml(p.klasse || '')} ${p.spieler ? '· ' + escapeHtml(p.spieler) : ''}</div>
+
+                <div style="margin-top:0.6rem">
+                    <div style="display:flex;justify-content:space-between;font-size:0.8rem">
+                        <span>Lebenskraft</span>
+                        <strong style="color:${lkColor}">${p.lkCurrent} / ${p.lkMax}</strong>
+                    </div>
+                    <div class="lk-bar-track" style="margin-top:0.2rem">
+                        <div class="lk-bar-fill" style="width:${lkPct}%;background:${lkColor}"></div>
+                    </div>
+                    ${p.lkCurrent <= 0 ? '<div class="hint" style="color:var(--fail);margin-top:0.2rem"><strong>Bewusstlos!</strong></div>' : ''}
+                </div>
+
+                <div class="gm-stat-row">
+                    ${statBox('Abwehr', p.abwehr)}
+                    ${statBox('Init', p.initiative)}
+                    ${statBox('Schlagen', p.schlagen)}
+                    ${statBox('Schießen', p.schiessen)}
+                    ${p.isCaster ? statBox('Zaubern', p.zaubern) : ''}
+                    ${p.isCaster ? statBox('Zielz.', p.zielzauber) : ''}
+                </div>
+
+                <details style="margin-top:0.6rem">
+                    <summary style="cursor:pointer;font-size:0.85rem;color:var(--text-dim)">Werte &amp; Ausrüstung</summary>
+                    <div class="hint" style="margin-top:0.4rem">
+                        <strong>Attribute:</strong> KÖR ${p.attribute.koerper} · AGI ${p.attribute.agilitaet} · GEI ${p.attribute.geist}<br>
+                        <strong>Eigenschaften:</strong> ${Object.entries(p.eigenschaften).map(([k, v]) => `${DS4_EIGENSCHAFT_ABBR[k]} ${v}`).join(' · ')}<br>
+                        <strong>Waffen:</strong> ${escapeHtml(p.equipment.melee || '—')} / ${escapeHtml(p.equipment.ranged || '—')}<br>
+                        <strong>Rüstung:</strong> PA ${p.panzerung}<br>
+                        <strong>EP/LP/TP:</strong> ${p.ep ?? 0} EP · ${p.lp ?? 0} LP · ${p.tp ?? 0} TP offen<br>
+                        <strong>Münzen:</strong> ${p.gold} GM · ${p.silber} SM · ${p.kupfer} KM
+                        ${p.talents && p.talents.length ? `<br><strong>Talente:</strong> ${p.talents.map(t => escapeHtml(t.name) + ' ' + (t.rang || 1)).join(', ')}` : ''}
+                    </div>
+                </details>
+
+                ${p.spells && p.spells.length ? `
+                <details style="margin-top:0.4rem">
+                    <summary style="cursor:pointer;font-size:0.85rem;color:var(--text-dim)">Zauber (${p.spells.length})</summary>
+                    <div class="hint" style="margin-top:0.4rem">
+                        ${p.spells.map(s => `${s.prepared ? '★ ' : ''}${escapeHtml(s.name)}${s.cooldownUntil ? ` <span style="color:var(--fail)">(abklingend bis Runde ${s.cooldownUntil})</span>` : ''}`).join('<br>')}
+                    </div>
+                </details>` : (p.preparedSpell ? `<div class="hint" style="margin-top:0.4rem"><strong>Vorbereitet:</strong> ${escapeHtml(p.preparedSpell)}</div>` : '')}
+
+                ${p.inventory && p.inventory.length ? `
+                <details style="margin-top:0.4rem">
+                    <summary style="cursor:pointer;font-size:0.85rem;color:var(--text-dim)">Inventar (${p.inventory.length})</summary>
+                    <div class="hint" style="margin-top:0.4rem">
+                        ${p.inventory.map(i => `${escapeHtml(i.name)}${i.menge > 1 ? ' ×' + i.menge : ''}`).join(' · ')}
+                    </div>
+                </details>` : ''}
+
+                <div style="display:flex;gap:0.3rem;margin-top:0.6rem;flex-wrap:wrap">
+                    <button class="btn btn-sm btn-danger" data-card-attack="${peerId}">Angreifen</button>
+                    <button class="btn btn-sm" data-card-heal="${peerId}">Heilen</button>
+                    <button class="btn btn-sm btn-ghost" data-card-probe="${peerId}">Probe fordern</button>
+                    <button class="btn btn-sm btn-ghost" data-card-msg="${peerId}">Flüstern</button>
+                    <button class="btn btn-sm btn-ghost" data-card-ep="${peerId}">EP</button>
+                </div>
+
+                <div style="margin-top:0.6rem">
+                    <div class="hint" style="margin-bottom:0.2rem">Geheime SL-Notizen</div>
+                    <textarea rows="3" style="width:100%" data-gmnote="${escapeHtml(p.name)}">${escapeHtml(notes)}</textarea>
+                </div>
+            </div>
+        </div>`;
+    }).join('');
+
+    grid.querySelectorAll('[data-gmnote]').forEach(area => {
+        area.addEventListener('input', () => {
+            localStorage.setItem('ds4_gmnote_' + area.dataset.gmnote, area.value);
+        });
+    });
+
+    grid.querySelectorAll('[data-card-attack]').forEach(btn => btn.addEventListener('click', () => {
+        const eingabe = parseDamageInput(prompt(
+            'Schaden des Angriffs (Wurfergebnis) — der Spieler würfelt selbst die Abwehr.\n' +
+            'Gegnerabwehr optional dahinter, z.B. "14 -2":'));
+        if (eingabe) gmAttackPlayer(btn.dataset.cardAttack, eingabe.schaden, 'Spielleiter', eingabe.ga);
+    }));
+    grid.querySelectorAll('[data-card-heal]').forEach(btn => btn.addEventListener('click', () => {
+        const amount = parseInt(prompt('Wie viele LK heilen?'), 10);
+        if (!isNaN(amount)) gmHealPlayer(btn.dataset.cardHeal, amount);
+    }));
+    grid.querySelectorAll('[data-card-probe]').forEach(btn => btn.addEventListener('click', () => {
+        const name = prompt('Welche Probe?\n\n' + DS4_TYPISCHE_PROBEN.map(p => p.name).join(', '), 'Bemerken');
+        if (name) gmRequestProbe(btn.dataset.cardProbe, name);
+    }));
+    grid.querySelectorAll('[data-card-msg]').forEach(btn => btn.addEventListener('click', () => {
+        const text = prompt('Nachricht an diesen Spieler:');
+        if (text) gmSendMessage(btn.dataset.cardMsg, text);
+    }));
+    grid.querySelectorAll('[data-card-ep]').forEach(btn => btn.addEventListener('click', () => {
+        const amount = parseInt(prompt('Wie viele EP für diesen Helden?'), 10);
+        if (!isNaN(amount) && amount !== 0) gmGrantEp(btn.dataset.cardEp, amount);
+    }));
+
+    if (focusedName) {
+        const restored = grid.querySelector(`[data-gmnote="${CSS.escape(focusedName)}"]`);
+        if (restored) { restored.focus(); restored.setSelectionRange(cursor[0], cursor[1]); }
+    }
+}
+
+// --- GM Log & Würfel --------------------------------------------------------
+
+let gmLog = [];
+
+function addGmLog(source, message, status = 'neutral') {
+    const time = new Date().toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    gmLog.unshift({ time, source, message, status });
+    if (gmLog.length > 80) gmLog.length = 80;
+    renderGmLog();
+}
+
+function renderGmLog() {
+    const list = document.getElementById('gm-live-log');
+    if (!list) return;
+    if (!gmLog.length) { list.innerHTML = '<div class="empty-hint">Noch keine Aktivität.</div>'; return; }
+    list.innerHTML = gmLog.map(e => {
+        const color = e.source === 'System' ? 'var(--text-dim)' : colorForPlayer(e.source);
+        return `<li class="${e.status}">
+            <span class="log-time">${e.time}</span>
+            <strong style="color:${color}">${escapeHtml(e.source)}</strong><br>${e.message}
+        </li>`;
+    }).join('');
+}
+
+function clearGmLog() {
+    gmLog = [];
+    renderGmLog();
+}
+
+function rollGmProbe() {
+    const pw = parseInt(document.getElementById('gm-pw').value, 10) || 0;
+    const result = rollProbe(pw, { label: 'SL-Probe' });
+    showProbeResult(result, 'gm-');
+    let msg = `<strong>SL-Probe</strong> (PW ${result.pw}) — ${DS4_STATUS_TEXT[result.status]} · Wurf ${result.rolls.map(r => r.die).join('+')}`;
+    if (result.success) msg += ` · Ergebnis <strong>${result.total}</strong>`;
+    addGmLog('Spielleiter', msg, result.status);
+    if (typeof discordPostProbe === 'function') discordPostProbe(result, '');
+}
+
+function rollGmPlainD20() {
+    const die = d20();
+    document.getElementById('gm-dice-number').textContent = die;
+    document.getElementById('gm-dice-label').textContent = 'Blanker 1W20';
+    document.getElementById('gm-dice-status').textContent = '';
+    document.getElementById('gm-dice-detail').textContent = '';
+    document.getElementById('gm-dice-display').className = 'dice-display';
+    addGmLog('Spielleiter', `Blanker 1W20: <strong>${die}</strong>`, 'neutral');
+}
+
+// --- Spieler (Client) -------------------------------------------------------
+
+function joinMultiplayerSession(codeArg) {
+    const raw = typeof codeArg === 'string' ? codeArg : document.getElementById('multiplayer-join-code').value;
+    const code = (raw || '').trim().toUpperCase();
+    if (code.length !== 4) {
+        setMultiplayerStatus('Bitte den 4-stelligen Raum-Code eingeben.', 'var(--fail)');
+        return;
+    }
+
+    letzterRaumCode = code;
+
+    ensurePeerJs(() => {
+        setMultiplayerStatus('Verbinde...', 'var(--accent)');
+        setConnectionBadge('connecting', code);
+        if (peer) peer.destroy();
+        peer = new Peer(peerConfig());
+
+        peer.on('open', () => {
+            hostConnection = peer.connect(PEER_PREFIX + code, { reliable: true });
+
+            // PeerJS kennt keinen Timeout für den DataChannel — ohne das hier bliebe
+            // die Anzeige bei einem gescheiterten Verbindungsaufbau ewig auf "Verbinde...".
+            clearTimeout(joinTimeout);
+            joinTimeout = setTimeout(() => {
+                if (hostConnection && hostConnection.open) return;
+                diagnoseFailedConnection(hostConnection);
+            }, JOIN_TIMEOUT_MS);
+
+            hostConnection.on('open', () => {
+                clearTimeout(joinTimeout);
+                setMultiplayerStatus('✓ Verbunden mit dem Spielleiter.', 'var(--success)');
+                setConnectionBadge('connected', code);
+                saveSession('player', code);
+                setTimeout(closeMultiplayerModal, 1000);
+                syncMultiplayerState();
+                addLog('Mit Spielleiter verbunden (Raum ' + code + ')', 'erfolg');
+            });
+
+            hostConnection.on('data', payload => handleGmCommand(payload));
+
+            hostConnection.on('close', () => {
+                hostConnection = null;
+                clearSession();
+                setConnectionBadge('lost', code);
+                showGmMessage('Die Verbindung zum Spielleiter wurde getrennt.');
+                addLog('Verbindung zum Spielleiter getrennt.', 'fehlschlag');
+            });
+
+            hostConnection.on('error', () => {
+                clearTimeout(joinTimeout);
+                setMultiplayerStatus('Verbindungsfehler.', 'var(--fail)');
+                setConnectionBadge('lost', code);
+            });
+        });
+
+        peer.on('error', err => {
+            clearTimeout(joinTimeout);
+            setConnectionBadge('lost', code);
+            if (err.type === 'peer-unavailable') {
+                clearSession();
+                setMultiplayerStatus(`Raum <strong>${escapeHtml(code)}</strong> nicht gefunden.<br>
+                    <span style="font-weight:normal;font-size:0.85rem">Code prüfen — oder der Spielleiter muss den Raum neu eröffnen.</span>`, 'var(--fail)');
+            } else if (['network', 'server-error', 'socket-error'].includes(err.type)) {
+                setMultiplayerStatus('Signalling-Server nicht erreichbar. Später erneut versuchen.', 'var(--fail)');
+            } else {
+                setMultiplayerStatus('Fehler: ' + err.type, 'var(--fail)');
+            }
+        });
+    });
+}
+
+// Nach dem Timeout die ICE-Kandidaten auswerten — sie verraten, woran es lag.
+async function diagnoseFailedConnection(conn) {
+    clearSession();
+    setConnectionBadge('lost');
+    const pc = conn && conn.peerConnection;
+    let localTypes = [];
+    let remoteCount = 0;
+
+    if (pc) {
+        try {
+            const stats = await pc.getStats();
+            stats.forEach(r => {
+                if (r.type === 'local-candidate' && r.candidateType) localTypes.push(r.candidateType);
+                if (r.type === 'remote-candidate') remoteCount++;
+            });
+        } catch (e) { /* Diagnose optional */ }
+    }
+
+    const hasUdp = localTypes.some(t => ['host', 'srflx', 'relay'].includes(t));
+    const hasRelay = localTypes.includes('relay');
+    const sub = 'font-weight:normal;font-size:0.85rem';
+
+    if (!hasUdp) {
+        setMultiplayerStatus(`WebRTC ist in diesem Browser blockiert.<br><span style="${sub}">
+            Häufigste Ursache: eine VPN- oder Privacy-Erweiterung mit WebRTC-Leak-Schutz.
+            Diese deaktivieren oder einen anderen Browser nutzen.</span>`, 'var(--fail)');
+    } else if (remoteCount === 0) {
+        setMultiplayerStatus(`Keine Antwort vom Spielleiter.<br><span style="${sub}">
+            Der Raum existiert, aber die Gegenseite hat keine Verbindungsdaten geschickt.
+            Beim Spielleiter könnte WebRTC blockiert sein.</span>`, 'var(--fail)');
+    } else if (!hasRelay && !getCustomTurnServer()) {
+        setMultiplayerStatus(`Keine direkte Verbindung möglich.<br><span style="${sub}">
+            Beide Seiten sitzen hinter strengem NAT (Mobilfunk/Firmennetz).
+            Dafür wird ein TURN-Server gebraucht — im Multiplayer-Menü unter "Erweitert".</span>`, 'var(--fail)');
+    } else {
+        setMultiplayerStatus(`Verbindungsaufbau fehlgeschlagen.<br><span style="${sub}">
+            Netzwerk oder TURN-Zugangsdaten prüfen.</span>`, 'var(--fail)');
+    }
+
+    if (conn) conn.close();
+}
+
+// --- Senden -----------------------------------------------------------------
+
+// Kompakter Zustand für das SL-Dashboard — nicht der komplette Bogen.
+function buildSharedState() {
+    const derived = computeDerived(charForRules());
+    const cls = activeClass();
+    const prepared = (appData.spells || []).find(s => s.prepared);
+
+    return {
+        name: characterName(),
+        spieler: appData.spieler,
+        volk: appData.volk ? DS4_RACES[appData.volk].name : '',
+        klasse: cls ? (cls.isCaster && appData.subtype ? cls.subtypes[appData.subtype].name : cls.name) : '',
+        isCaster: !!(cls && cls.isCaster),
+        stufe: stufeFuerEp(appData.ep || 0, !!appData.heldenklasse),
+        lkCurrent: appData.lkCurrent || 0,
+        lkMax: derived.lebenskraft,
+        abwehr: derived.abwehr,
+        initiative: derived.initiative,
+        schlagen: derived.schlagen,
+        schiessen: derived.schiessen,
+        zaubern: derived.zaubern,
+        zielzauber: derived.zielzauber,
+        panzerung: derived.panzerung,
+        attribute: appData.attribute,
+        eigenschaften: effectiveEigenschaften(),
+        equipment: appData.equipment,
+        talents: appData.talents,
+        preparedSpell: prepared ? prepared.name : '',
+        // Der Spielleiter muss auch sehen, was die Gruppe dabeihat und kann
+        spells: (appData.spells || []).map(s => ({ name: s.name, prepared: !!s.prepared, cooldownUntil: s.cooldownUntil || 0 })),
+        inventory: (appData.inventory || []).map(i => ({ name: i.name, menge: i.menge })),
+        ep: appData.ep || 0, lp: appData.lp || 0, tp: appData.tp || 0,
+        gold: appData.gold, silber: appData.silber, kupfer: appData.kupfer
+    };
+}
+
+function syncMultiplayerState() {
+    if (!hostConnection || !hostConnection.open) return;
+    hostConnection.send({ type: 'state', data: buildSharedState() });
+}
+
+// alsEreignis=false, wenn der Text bereits als Probe an Discord ging — sonst
+// stünde derselbe Wurf zweimal im Kanal.
+function sendMultiplayerLog(message, status = 'neutral', alsEreignis = true) {
+    if (alsEreignis && typeof discordPostEreignis === 'function') discordPostEreignis(message, status);
+    if (isGmMode) { addGmLog('Spielleiter', message, status); return; }
+    if (!hostConnection || !hostConnection.open) return;
+    hostConnection.send({ type: 'roll', message, status });
+}
+
+function sendMultiplayerRoll(result, extra) {
+    let msg = `<strong>${escapeHtml(result.label)}</strong> (PW ${result.pw}) — ${DS4_STATUS_TEXT[result.status]}`;
+    msg += ` · Wurf ${result.rolls.map(r => r.die).join('+')}`;
+    if (result.success) msg += ` · Ergebnis <strong>${result.total}</strong>`;
+    if (extra) msg += ` · ${extra}`;
+    sendMultiplayerLog(msg, result.status, false);
+}
+
+// --- Spielleiter → Spieler --------------------------------------------------
+
+function sendToPlayer(peerId, payload) {
+    const conn = clientConnections[peerId];
+    if (conn && conn.open) conn.send(payload);
+}
+
+function broadcastToPlayers(payload) {
+    Object.values(clientConnections).forEach(conn => { if (conn.open) conn.send(payload); });
+}
+
+// Der Spielleiter greift an: der Spieler würfelt selbst seine Abwehr (Regelwerk S.41)
+// und meldet den durchgekommenen Schaden zurück.
+function gmAttackPlayer(peerId, damage, quelle, gaMod = 0) {
+    const player = connectedPlayers[peerId];
+    if (!player) return;
+    sendToPlayer(peerId, { type: 'attack', damage, quelle, gaMod });
+    const gaText = gaMod ? ` (Gegnerabwehr ${gaMod > 0 ? '+' : ''}${gaMod})` : '';
+    addGmLog('Spielleiter', `Angriff auf <strong>${escapeHtml(player.name)}</strong>: ${damage} Schaden${quelle ? ' durch ' + escapeHtml(quelle) : ''}${gaText} — Abwehr läuft...`, 'neutral');
+}
+
+// Erfahrungspunkte vergeben — an einen Spieler oder an die ganze Gruppe.
+function gmGrantEp(peerId, amount) {
+    if (!amount) return;
+    if (peerId) {
+        sendToPlayer(peerId, { type: 'ep', amount });
+        const player = connectedPlayers[peerId];
+        addGmLog('Spielleiter', `<strong>${escapeHtml(player ? player.name : '?')}</strong> erhält ${amount} EP.`, 'erfolg');
+    } else {
+        broadcastToPlayers({ type: 'ep', amount });
+        addGmLog('Spielleiter', `Die Gruppe erhält je <strong>${amount} EP</strong>.`, 'erfolg');
+        if (typeof discordPostEreignis === 'function') discordPostEreignis(`Die Gruppe erhält je **${amount} EP**.`, 'erfolg');
+    }
+}
+
+// Summiert die EP aller besiegten Kreaturen im laufenden Kampf.
+function besiegteEp() {
+    return combatants
+        .filter(c => c.type === 'npc' && c.lkCurrent <= 0 && c.ep)
+        .reduce((sum, c) => sum + c.ep, 0);
+}
+
+function promptGrantEp() {
+    const vorschlag = besiegteEp();
+    const hinweis = vorschlag
+        ? `Besiegte Gegner in diesem Kampf ergeben ${vorschlag} EP.`
+        : 'Kein besiegter Gegner mit EP-Wert im laufenden Kampf.';
+    const eingabe = prompt(`${hinweis}\n\nWie viele EP bekommt jeder Held?`, vorschlag || '');
+    const amount = parseInt(eingabe, 10);
+    if (!isNaN(amount) && amount !== 0) gmGrantEp(null, amount);
+}
+
+function promptRequestProbe() {
+    const namen = DS4_TYPISCHE_PROBEN.map(p => p.name);
+    const eingabe = prompt(
+        'Welche Probe sollen die Spieler würfeln?\n\n' + namen.join(', '),
+        'Bemerken');
+    if (!eingabe) return;
+    broadcastToPlayers({ type: 'requestProbe', probeName: eingabe });
+    addGmLog('Spielleiter', `fordert von allen eine <strong>${escapeHtml(eingabe)}</strong>-Probe.`, 'neutral');
+}
+
+function gmApplyDamage(peerId, amount, quelle) {
+    const player = connectedPlayers[peerId];
+    if (!player) return;
+    sendToPlayer(peerId, { type: 'damage', amount, quelle });
+    addGmLog('Spielleiter', `<strong>${escapeHtml(player.name)}</strong> erleidet ${amount} Schaden (ohne Abwehr)${quelle ? ' durch ' + escapeHtml(quelle) : ''}.`, 'fehlschlag');
+}
+
+function gmHealPlayer(peerId, amount) {
+    const player = connectedPlayers[peerId];
+    if (!player) return;
+    sendToPlayer(peerId, { type: 'heal', amount });
+    addGmLog('Spielleiter', `<strong>${escapeHtml(player.name)}</strong> wird um ${amount} LK geheilt.`, 'erfolg');
+}
+
+function gmSendMessage(peerId, text) {
+    if (!text) return;
+    if (peerId) {
+        sendToPlayer(peerId, { type: 'message', text });
+        const player = connectedPlayers[peerId];
+        addGmLog('Spielleiter', `Flüstern an <strong>${escapeHtml(player ? player.name : '?')}</strong>: ${escapeHtml(text)}`, 'neutral');
+    } else {
+        broadcastToPlayers({ type: 'message', text });
+        addGmLog('Spielleiter', `An alle: ${escapeHtml(text)}`, 'neutral');
+        // Ansagen an alle gehören auch in den Discord-Kanal, Flüstern nicht
+        if (typeof discordPostEreignis === 'function') discordPostEreignis(text, 'neutral');
+    }
+}
+
+function promptBroadcast() {
+    const text = prompt('Ansage an alle Spieler:');
+    if (text) gmSendMessage(null, text);
+}
+
+function gmRequestProbe(peerId, probeName) {
+    sendToPlayer(peerId, { type: 'requestProbe', probeName });
+    const player = connectedPlayers[peerId];
+    addGmLog('Spielleiter', `fordert von <strong>${escapeHtml(player ? player.name : '?')}</strong> eine ${escapeHtml(probeName)}-Probe.`, 'neutral');
+}
+
+// --- Spieler: Befehle vom Spielleiter --------------------------------------
+
+function handleGmCommand(payload) {
+    if (!payload || typeof payload !== 'object') return;
+
+    switch (payload.type) {
+        case 'attack': {
+            // Abwehr ist eine automatische Probe, keine Aktion (Regelwerk S.41).
+            // Die Gegnerabwehr der angreifenden Waffe senkt den Probenwert.
+            const derived = computeDerived(charForRules());
+            const result = rollProbe(derived.abwehr, { label: 'Abwehr', modifier: payload.gaMod || 0 });
+            showProbeResult(result);
+
+            const reduced = result.success ? result.total : 0;
+            const finalDamage = Math.max(0, payload.damage - reduced);
+            applyIncomingDamage(finalDamage);
+
+            let extra = result.success
+                ? `Schaden ${payload.damage} − ${reduced} Abwehr = <strong>${finalDamage}</strong>`
+                : `Abwehr misslungen — voller Schaden <strong>${finalDamage}</strong>`;
+            if (result.patzer) extra += ` · ${DS4_KAMPFPATZER.abwehr}`;
+
+            addLog(`Angriff${payload.quelle ? ' von ' + escapeHtml(payload.quelle) : ''}: ${payload.damage} Schaden — ${DS4_STATUS_TEXT[result.status]} · ${extra}`, result.status);
+            sendMultiplayerLog(`<strong>Abwehr</strong> (PW ${result.pw}) — ${DS4_STATUS_TEXT[result.status]} · Wurf ${result.rolls.map(r => r.die).join('+')} · ${extra} · LK jetzt ${appData.lkCurrent}`, result.status);
+            break;
+        }
+        case 'damage':
+            applyIncomingDamage(payload.amount);
+            addLog(`${payload.amount} Schaden${payload.quelle ? ' durch ' + escapeHtml(payload.quelle) : ''} (keine Abwehr möglich) — LK ${appData.lkCurrent}`, 'fehlschlag');
+            sendMultiplayerLog(`erleidet ${payload.amount} Schaden — LK jetzt ${appData.lkCurrent}`, 'fehlschlag');
+            break;
+        case 'heal': {
+            const max = lastDerived ? lastDerived.lebenskraft : 0;
+            appData.lkCurrent = Math.min(max, (appData.lkCurrent || 0) + payload.amount);
+            refreshBoundInputs();
+            renderDerived();
+            scheduleSave();
+            addLog(`Geheilt um ${payload.amount} LK — jetzt ${appData.lkCurrent}/${max}`, 'erfolg');
+            sendMultiplayerLog(`wird um ${payload.amount} LK geheilt — jetzt ${appData.lkCurrent}/${max}`, 'erfolg');
+            break;
+        }
+        case 'message':
+            showGmMessage(payload.text);
+            addLog(`<strong>Spielleiter:</strong> ${escapeHtml(payload.text)}`, 'neutral');
+            break;
+        case 'requestProbe': {
+            showGmMessage(`Der Spielleiter fordert eine <strong>${escapeHtml(payload.probeName)}</strong>-Probe.`);
+            addLog(`Spielleiter fordert eine ${escapeHtml(payload.probeName)}-Probe.`, 'neutral');
+            // Passende typische Probe im Würfelbereich vorwählen
+            const idx = DS4_TYPISCHE_PROBEN.findIndex(p => p.name.toLowerCase() === String(payload.probeName).toLowerCase());
+            if (idx >= 0) {
+                const sel = document.getElementById('f-typische-probe');
+                if (sel) { sel.value = idx; sel.scrollIntoView({ block: 'center' }); }
+            }
+            break;
+        }
+        case 'ep': {
+            appData.ep = (appData.ep || 0) + payload.amount;
+            const vorher = stufeFuerEp((appData.ep || 0) - payload.amount, !!appData.heldenklasse);
+            const nachher = stufeFuerEp(appData.ep, !!appData.heldenklasse);
+            refreshBoundInputs();
+            renderMeta();
+            scheduleSave();
+            addLog(`<strong>+${payload.amount} EP</strong> vom Spielleiter — jetzt ${appData.ep} EP`, 'erfolg');
+            if (nachher > vorher) {
+                // Aufstieg bringt je Stufe +2 Lernpunkte und +1 Talentpunkt
+                const stufen = nachher - vorher;
+                appData.lp = (appData.lp || 0) + 2 * stufen;
+                appData.tp = (appData.tp || 0) + 1 * stufen;
+                refreshBoundInputs();
+                renderAll();
+                scheduleSave();
+                showGmMessage(`<strong>Stufenaufstieg!</strong> Stufe ${nachher} erreicht — ${2 * stufen} Lernpunkte und ${stufen} Talentpunkt${stufen > 1 ? 'e' : ''} gutgeschrieben.`);
+                addLog(`<strong>Stufe ${nachher} erreicht!</strong> +${2 * stufen} LP, +${stufen} TP`, 'erfolg');
+                sendMultiplayerLog(`steigt auf <strong>Stufe ${nachher}</strong> auf!`, 'immersieg');
+            }
+            syncMultiplayerState();
+            break;
+        }
+        case 'round':
+            currentRound = payload.round;
+            tickSpellCooldowns(payload.round);
+            break;
+    }
+}
+
+function applyIncomingDamage(amount) {
+    appData.lkCurrent = (appData.lkCurrent || 0) - amount;
+    refreshBoundInputs();
+    renderDerived();
+    scheduleSave();
+    syncMultiplayerState();
+}
+
+// Einblendung für Nachrichten des Spielleiters
+function showGmMessage(html) {
+    let box = document.getElementById('gm-message-toast');
+    if (!box) {
+        box = document.createElement('div');
+        box.id = 'gm-message-toast';
+        box.className = 'gm-toast';
+        document.body.appendChild(box);
+    }
+    box.innerHTML = `<div class="gm-toast-head">👑 Spielleiter</div><div>${html}</div>`;
+    box.classList.add('visible');
+    clearTimeout(box._timer);
+    box._timer = setTimeout(() => box.classList.remove('visible'), 9000);
+    box.onclick = () => box.classList.remove('visible');
+}

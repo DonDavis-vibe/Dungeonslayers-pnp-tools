@@ -1,0 +1,11 @@
+# Die Regelwerk-PDFs gehören nicht in ein öffentliches Repository.
+# Texte und Regelmechaniken stehen zwar unter CC BY-NC-SA 4.0, die Illustrationen,
+# das Covermotiv und die Logos aber ausdrücklich NICHT (siehe "DIE DS-LIZENZ", PDF S.2).
+# Beide PDFs gibt es kostenlos auf https://www.dungeonslayers.net/downloads/
+regeln/*.pdf
+
+# Entwurf für den Forenbeitrag — persönlicher Text, gehört nicht ins Repository
+forenbeitrag.md
+
+# Werkzeug-Konfiguration der lokalen Entwicklungsumgebung
+.claude/

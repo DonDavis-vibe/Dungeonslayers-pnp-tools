@@ -1,0 +1,474 @@
+// Dungeonslayers 4 — Kampf-Tracker für den Spielleiter
+// Initiative ist in DS4 ein fester Wert (AGI+BE, modifiziert durch Ausrüstung),
+// kein Wurf — die Reihenfolge ergibt sich absteigend. Gleichstand wird einmalig
+// pro Kampf per W20 ausgewürfelt ("Stechen", Regelwerk S.40).
+
+let combatActive = false;
+let currentRound = 0;
+let combatants = [];
+let turnIndex = 0;
+let npcCounter = 0;
+
+function makeNpc(preset = {}) {
+    npcCounter++;
+    return {
+        id: 'npc-' + npcCounter,
+        type: 'npc',
+        name: preset.name || 'Gegner ' + npcCounter,
+        initiative: preset.initiative != null ? preset.initiative : 8,
+        lkMax: preset.lkMax != null ? preset.lkMax : 15,
+        lkCurrent: preset.lkCurrent != null ? preset.lkCurrent : (preset.lkMax != null ? preset.lkMax : 15),
+        abwehr: preset.abwehr != null ? preset.abwehr : 10,
+        schlagen: preset.schlagen != null ? preset.schlagen : 12,
+        notiz: preset.notiz || '',
+        stechen: 0
+    };
+}
+
+function addNpc() {
+    combatants.push(makeNpc());
+    sortCombatants();
+    renderCombat();
+}
+
+// --- Bestiarium -------------------------------------------------------------
+
+let bestiaryFilter = '';
+
+function openBestiary() {
+    if (typeof DS4_BESTIARIUM === 'undefined') {
+        addNpc();
+        return;
+    }
+    bestiaryFilter = '';
+    renderBestiary();
+    openModal('bestiary-modal');
+}
+
+function renderBestiary() {
+    const body = document.getElementById('bestiary-body');
+    const suche = bestiaryFilter.trim().toLowerCase();
+
+    const treffer = DS4_BESTIARIUM
+        .filter(c => !suche || c.name.toLowerCase().includes(suche) || (c.kategorie || '').toLowerCase().includes(suche))
+        .sort((a, b) => (a.gh - b.gh) || a.name.localeCompare(b.name, 'de'));
+
+    const kopf = `
+        <div style="display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap;margin-bottom:0.8rem">
+            <input type="text" id="bestiary-search" placeholder="Kreatur oder Kategorie suchen..." value="${escapeHtml(bestiaryFilter)}" style="flex:1;min-width:180px">
+            <span class="hint">${treffer.length} von ${DS4_BESTIARIUM.length}</span>
+        </div>
+        <p class="hint-rule" style="margin-bottom:0.8rem">
+            <strong>GH</strong> = Gegnerhärte: die zusammengerechnete Heldenstufe einer Gruppe, die gegen
+            <em>ein</em> Exemplar gute Chancen haben sollte.
+        </p>`;
+
+    if (!treffer.length) {
+        body.innerHTML = kopf + '<div class="empty-hint">Keine Kreatur gefunden.</div>';
+        wireBestiarySearch();
+        return;
+    }
+
+    body.innerHTML = kopf + '<div class="talent-picker-list">' + treffer.map((c, i) => {
+        const idx = DS4_BESTIARIUM.indexOf(c);
+        const werte = [
+            c.lk != null ? `LK ${c.lk}` : null,
+            c.abwehr != null ? `Abwehr ${c.abwehr}` : null,
+            c.initiative != null ? `Ini ${c.initiative}` : null,
+            c.laufen != null ? `Laufen ${c.laufen}m` : null,
+            c.schlagen != null ? `Schlagen ${c.schlagen}` : null,
+            c.schiessen != null ? `Schießen ${c.schiessen}` : null,
+            c.zaubern != null ? `Zaubern ${c.zaubern}` : null,
+            c.zielzauber != null ? `Zielzauber ${c.zielzauber}` : null
+        ].filter(Boolean).join(' · ');
+
+        const faehigkeiten = (c.besonderes || []).map(b => b.name).join(', ');
+
+        return `<div class="talent-option">
+            <div class="talent-entry-head">
+                <strong>${escapeHtml(c.name)}</strong>
+                <span class="tag">GH ${c.gh}</span>
+                <span class="tag">${escapeHtml(c.kategorie)}</span>
+                ${c.ep != null ? `<span class="hint">${c.ep} EP</span>` : ''}
+                <span style="margin-left:auto">
+                    <button class="btn btn-sm btn-primary" data-badd="${idx}">In den Kampf</button>
+                </span>
+            </div>
+            <div class="talent-perrank">${escapeHtml(werte)}</div>
+            ${c.bewaffnung || c.panzerung ? `<div class="talent-effect">${escapeHtml([c.bewaffnung, c.panzerung].filter(Boolean).join(' · '))}</div>` : ''}
+            ${faehigkeiten ? `<div class="talent-effect">Besonderes: ${escapeHtml(faehigkeiten)}</div>` : ''}
+        </div>`;
+    }).join('') + '</div>';
+
+    wireBestiarySearch();
+    body.querySelectorAll('[data-badd]').forEach(btn => {
+        btn.addEventListener('click', () => addFromBestiary(parseInt(btn.dataset.badd, 10)));
+    });
+}
+
+function wireBestiarySearch() {
+    const search = document.getElementById('bestiary-search');
+    if (!search) return;
+    search.addEventListener('input', () => {
+        bestiaryFilter = search.value;
+        const pos = search.selectionStart;
+        renderBestiary();
+        const again = document.getElementById('bestiary-search');
+        if (again) { again.focus(); again.setSelectionRange(pos, pos); }
+    });
+}
+
+// Einige Statblocks führen Ausdrücke statt Zahlen ("5+1") oder den Schwarmwert "SCW"
+// (beim Schwarm sind LK/Abwehr/Schlagen der laufende Schwarmwert, keine feste Zahl).
+// Nicht auflösbare Werte landen in `bestiaryUnklar`, damit der Spielleiter sie nachträgt.
+let bestiaryUnklar = [];
+
+function bestiaryZahl(wert, ersatz, feld) {
+    if (typeof wert === 'number') return wert;
+    if (typeof wert === 'string') {
+        const summe = wert.split('+').map(t => parseInt(t.trim(), 10));
+        if (summe.every(Number.isFinite)) return summe.reduce((a, b) => a + b, 0);
+        if (feld) bestiaryUnklar.push(`${feld} = "${wert}"`);
+    }
+    return ersatz;
+}
+
+function addFromBestiary(index) {
+    const c = DS4_BESTIARIUM[index];
+    if (!c) return;
+
+    // Mehrere gleiche Gegner bekommen eine laufende Nummer
+    const gleiche = combatants.filter(x => x.bestiarium === c.name).length;
+    const name = gleiche ? `${c.name} ${gleiche + 1}` : c.name;
+
+    bestiaryUnklar = [];
+    const lk = bestiaryZahl(c.lk, 10, 'LK');
+
+    const npc = makeNpc({
+        name,
+        initiative: bestiaryZahl(c.initiative, 5, 'Initiative'),
+        lkMax: lk,
+        lkCurrent: lk,
+        abwehr: bestiaryZahl(c.abwehr, 10, 'Abwehr'),
+        schlagen: bestiaryZahl(c.schlagen, 10, 'Schlagen'),
+        notiz: (c.besonderes || []).map(b => b.name).join(', ')
+    });
+    npc.bestiarium = c.name;
+    npc.schiessen = bestiaryZahl(c.schiessen, null);
+    npc.laufen = c.laufen;
+    npc.ep = c.ep;
+
+    combatants.push(npc);
+    sortCombatants();
+    renderCombat();
+    renderBestiary();
+
+    addGmLog('System', `<strong>${escapeHtml(name)}</strong> in den Kampf gestellt (GH ${c.gh}, LK ${lk}, Abwehr ${npc.abwehr})`, 'neutral');
+    if (bestiaryUnklar.length) {
+        addGmLog('System', `<strong>${escapeHtml(name)}</strong>: ${escapeHtml(bestiaryUnklar.join(', '))} steht im Regelwerk nicht als feste Zahl — Platzhalter eingesetzt, bitte in der Zeile anpassen.`, 'fehlschlag');
+    }
+}
+
+function removeCombatant(id) {
+    combatants = combatants.filter(c => c.id !== id);
+    if (turnIndex >= combatants.length) turnIndex = 0;
+    renderCombat();
+}
+
+// Spieler aus dem Dashboard in den Kampf holen (Werte kommen live per Sync)
+function syncPlayersIntoCombat() {
+    Object.keys(connectedPlayers).forEach(peerId => {
+        const p = connectedPlayers[peerId];
+        const existing = combatants.find(c => c.peerId === peerId);
+        if (existing) {
+            existing.name = p.name;
+            existing.initiative = p.initiative;
+            existing.lkCurrent = p.lkCurrent;
+            existing.lkMax = p.lkMax;
+            existing.abwehr = p.abwehr;
+        } else {
+            combatants.push({
+                id: 'pl-' + peerId, peerId, type: 'player',
+                name: p.name, initiative: p.initiative,
+                lkCurrent: p.lkCurrent, lkMax: p.lkMax,
+                abwehr: p.abwehr, schlagen: p.schlagen, notiz: '', stechen: 0
+            });
+        }
+    });
+    // Spieler, die den Raum verlassen haben, fliegen aus der Reihenfolge
+    combatants = combatants.filter(c => c.type !== 'player' || connectedPlayers[c.peerId]);
+}
+
+function sortCombatants() {
+    combatants.sort((a, b) => (b.initiative - a.initiative) || (b.stechen - a.stechen));
+}
+
+function startCombat() {
+    syncPlayersIntoCombat();
+    if (!combatants.length) {
+        addGmLog('System', 'Kein Teilnehmer im Kampf — erst Spieler verbinden oder Gegner anlegen.', 'fehlschlag');
+        return;
+    }
+    // Einmaliges Stechen pro Kampf für Gleichstände
+    combatants.forEach(c => { c.stechen = d20(); });
+    sortCombatants();
+    combatActive = true;
+    currentRound = 1;
+    turnIndex = 0;
+    broadcastToPlayers({ type: 'round', round: currentRound });
+    const reihenfolge = combatants.map(c => escapeHtml(c.name)).join(' → ');
+    addGmLog('System', `<strong>Kampf beginnt</strong> — Runde 1. Reihenfolge: ${reihenfolge}`, 'erfolg');
+    if (typeof discordPostEreignis === 'function') {
+        discordPostEreignis(`⚔️ **Kampf beginnt** — Runde 1\nReihenfolge: ${combatants.map(c => c.name).join(' → ')}`, 'neutral');
+    }
+    renderCombat();
+}
+
+function endCombat() {
+    combatActive = false;
+    currentRound = 0;
+    turnIndex = 0;
+    broadcastToPlayers({ type: 'round', round: 0 });
+    addGmLog('System', 'Kampf beendet. Nicht vergessen: <strong>Verschnaufen</strong> heilt die Hälfte der im Kampf verlorenen LK.', 'erfolg');
+    if (typeof discordPostEreignis === 'function') {
+        discordPostEreignis('🏁 **Kampf beendet.** Verschnaufen heilt die Hälfte der im Kampf verlorenen LK.', 'erfolg');
+    }
+    renderCombat();
+}
+
+function nextTurn() {
+    if (!combatActive) return;
+    turnIndex++;
+    if (turnIndex >= combatants.length) {
+        turnIndex = 0;
+        currentRound++;
+        broadcastToPlayers({ type: 'round', round: currentRound });
+        addGmLog('System', `<strong>Runde ${currentRound}</strong>`, 'neutral');
+    }
+    renderCombat();
+}
+
+function prevTurn() {
+    if (!combatActive) return;
+    turnIndex--;
+    if (turnIndex < 0) {
+        turnIndex = Math.max(0, combatants.length - 1);
+        if (currentRound > 1) currentRound--;
+        broadcastToPlayers({ type: 'round', round: currentRound });
+    }
+    renderCombat();
+}
+
+// NSC greift an: Probe auf Schlagen, das Wurfergebnis IST der Schaden.
+// Der Spieler würfelt die Abwehr selbst (siehe handleGmCommand).
+function npcAttack(npcId, targetId) {
+    const npc = combatants.find(c => c.id === npcId);
+    const target = combatants.find(c => c.id === targetId);
+    if (!npc || !target) return;
+
+    const result = rollProbe(npc.schlagen, { label: `${npc.name}: Schlagen` });
+    showProbeResult(result, 'gm-');
+
+    if (!result.success) {
+        const extra = result.patzer ? ` · ${DS4_KAMPFPATZER.schlagen}` : '';
+        addGmLog('Spielleiter', `<strong>${escapeHtml(npc.name)}</strong> greift ${escapeHtml(target.name)} an — ${DS4_STATUS_TEXT[result.status]} (Wurf ${result.rolls.map(r => r.die).join('+')})${extra}`, result.status);
+        return;
+    }
+
+    const damage = result.total;
+    const ga = npc.gaMod || 0;
+    if (target.type === 'player') {
+        gmAttackPlayer(target.peerId, damage, npc.name, ga);
+        addGmLog('Spielleiter', `<strong>${escapeHtml(npc.name)}</strong> trifft ${escapeHtml(target.name)} für <strong>${damage}</strong> (Wurf ${result.rolls.map(r => r.die).join('+')}) — Abwehr beim Spieler`, result.status);
+    } else {
+        // NSC gegen NSC: Abwehr direkt hier auswürfeln
+        const def = rollProbe(target.abwehr, { label: `${target.name}: Abwehr`, modifier: ga });
+        const reduced = def.success ? def.total : 0;
+        const final = Math.max(0, damage - reduced);
+        target.lkCurrent -= final;
+        addGmLog('Spielleiter', `<strong>${escapeHtml(npc.name)}</strong> trifft ${escapeHtml(target.name)}: ${damage} − ${reduced} Abwehr = <strong>${final}</strong> (LK ${target.lkCurrent}/${target.lkMax})`, final > 0 ? 'fehlschlag' : 'erfolg');
+        renderCombat();
+    }
+}
+
+// Der Spielleiter würfelt die Abwehr eines NSC gegen einen Spielerangriff.
+// gaMod = Gegnerabwehr der angreifenden Waffe (senkt die Abwehr des Ziels).
+function npcDefend(npcId, damage, gaMod = 0) {
+    const npc = combatants.find(c => c.id === npcId);
+    if (!npc) return;
+    const result = rollProbe(npc.abwehr, { label: `${npc.name}: Abwehr`, modifier: gaMod });
+    showProbeResult(result, 'gm-');
+    const reduced = result.success ? result.total : 0;
+    const final = Math.max(0, damage - reduced);
+    npc.lkCurrent -= final;
+
+    const gaText = gaMod ? ` (inkl. ${gaMod > 0 ? '+' : ''}${gaMod} Gegnerabwehr)` : '';
+    let msg = `<strong>${escapeHtml(npc.name)}</strong> wehrt ab (PW ${result.pw}${gaText}) — ${DS4_STATUS_TEXT[result.status]}: ${damage} − ${reduced} = <strong>${final}</strong> Schaden · LK ${npc.lkCurrent}/${npc.lkMax}`;
+    if (npc.lkCurrent <= 0) msg += ' — <strong>besiegt!</strong>';
+    addGmLog('Spielleiter', msg, npc.lkCurrent <= 0 ? 'erfolg' : 'neutral');
+    renderCombat();
+}
+
+// Nimmt Eingaben wie "16" oder "16 -2" entgegen (Schaden plus Gegnerabwehr).
+function parseDamageInput(text) {
+    if (!text) return null;
+    const teile = String(text).trim().split(/\s+/);
+    const schaden = parseInt(teile[0], 10);
+    if (isNaN(schaden)) return null;
+    const ga = teile.length > 1 ? (parseInt(teile[1], 10) || 0) : 0;
+    return { schaden, ga };
+}
+
+function damageNpc(npcId, amount) {
+    const npc = combatants.find(c => c.id === npcId);
+    if (!npc) return;
+    npc.lkCurrent -= amount;
+    addGmLog('Spielleiter', `<strong>${escapeHtml(npc.name)}</strong>: ${amount > 0 ? amount + ' Schaden' : (-amount) + ' geheilt'} — LK ${npc.lkCurrent}/${npc.lkMax}${npc.lkCurrent <= 0 ? ' — <strong>besiegt!</strong>' : ''}`, amount > 0 ? 'fehlschlag' : 'erfolg');
+    renderCombat();
+}
+
+// --- Rendering --------------------------------------------------------------
+
+function renderCombat() {
+    const box = document.getElementById('combat-tracker');
+    if (!box) return;
+
+    if (combatActive) syncPlayersIntoCombat();
+
+    const header = `
+        <div style="display:flex;align-items:center;gap:0.6rem;flex-wrap:wrap;margin-bottom:0.8rem">
+            ${combatActive
+                ? `<span class="tag" style="font-size:0.9rem">Runde <strong>${currentRound}</strong></span>
+                   <button class="btn btn-sm" onclick="prevTurn()">← Zurück</button>
+                   <button class="btn btn-sm btn-primary" onclick="nextTurn()">Nächster Zug →</button>
+                   <button class="btn btn-sm btn-danger" onclick="endCombat()">Kampf beenden</button>`
+                : `<button class="btn btn-sm btn-primary" onclick="startCombat()">⚔️ Kampf starten</button>`}
+            <button class="btn btn-sm" onclick="openBestiary()">👹 Bestiarium</button>
+            <button class="btn btn-sm btn-ghost" onclick="addNpc()">+ Eigener Gegner</button>
+            <button class="btn btn-sm btn-ghost" onclick="syncPlayersIntoCombat();sortCombatants();renderCombat()">Spieler übernehmen</button>
+        </div>`;
+
+    if (!combatants.length) {
+        box.innerHTML = header + '<div class="empty-hint">Noch keine Teilnehmer. Gegner anlegen oder verbundene Spieler übernehmen.</div>';
+        return;
+    }
+
+    const targetOptions = combatants.map(c => `<option value="${c.id}">${escapeHtml(c.name)}</option>`).join('');
+
+    const rows = combatants.map((c, i) => {
+        const isTurn = combatActive && i === turnIndex;
+        const lkPct = c.lkMax > 0 ? Math.max(0, Math.min(100, (c.lkCurrent / c.lkMax) * 100)) : 0;
+        const lkColor = lkPct > 50 ? 'var(--success)' : (lkPct > 25 ? 'var(--accent)' : 'var(--fail)');
+        const down = c.lkCurrent <= 0;
+
+        return `<div class="combat-row ${isTurn ? 'active-turn' : ''} ${down ? 'defeated' : ''}">
+            <div class="combat-init" title="Initiative">${c.initiative}</div>
+            <div class="combat-main">
+                <div class="combat-name">
+                    ${isTurn ? '<span style="color:var(--accent-bright)">▶</span> ' : ''}
+                    ${c.type === 'player' ? '🛡️' : '👹'}
+                    ${c.type === 'npc'
+                        ? `<input type="text" value="${escapeHtml(c.name)}" data-cf="name" data-cid="${c.id}" style="width:9rem">`
+                        : `<strong>${escapeHtml(c.name)}</strong>`}
+                    ${down ? '<span class="tag tag-warn">besiegt</span>' : ''}
+                </div>
+                <div class="lk-bar-track" style="margin-top:0.25rem;height:10px">
+                    <div class="lk-bar-fill" style="width:${lkPct}%;background:${lkColor}"></div>
+                </div>
+                <div class="combat-stats">
+                    ${c.type === 'npc' ? `
+                        LK <input type="number" value="${c.lkCurrent}" data-cf="lkCurrent" data-cid="${c.id}" style="width:3.2rem">
+                        / <input type="number" value="${c.lkMax}" data-cf="lkMax" data-cid="${c.id}" style="width:3.2rem">
+                        · Ini <input type="number" value="${c.initiative}" data-cf="initiative" data-cid="${c.id}" style="width:3rem">
+                        · Abw <input type="number" value="${c.abwehr}" data-cf="abwehr" data-cid="${c.id}" style="width:3rem">
+                        · Schl <input type="number" value="${c.schlagen}" data-cf="schlagen" data-cid="${c.id}" style="width:3rem">
+                    ` : `
+                        LK <strong style="color:${lkColor}">${c.lkCurrent}/${c.lkMax}</strong>
+                        · Abwehr <strong>${c.abwehr}</strong> · Schlagen <strong>${c.schlagen}</strong>
+                    `}
+                </div>
+                <div class="combat-actions">
+                    ${c.type === 'npc' ? `
+                        <select data-attack-from="${c.id}" style="font-size:0.78rem;padding:0.15rem">
+                            <option value="">Ziel...</option>${targetOptions}
+                        </select>
+                        <button class="btn btn-sm" data-do-attack="${c.id}">Angriff</button>
+                        <button class="btn btn-sm btn-ghost" data-defend="${c.id}" title="Abwehr gegen Spielerangriff würfeln">Abwehr</button>
+                        <button class="btn btn-sm btn-danger" data-dmg="${c.id}">− LK</button>
+                    ` : `
+                        <button class="btn btn-sm btn-danger" data-pattack="${c.peerId}" title="Angriff — der Spieler würfelt seine Abwehr">Angreifen</button>
+                        <button class="btn btn-sm" data-pheal="${c.peerId}">Heilen</button>
+                        <button class="btn btn-sm btn-ghost" data-pmsg="${c.peerId}">Flüstern</button>
+                    `}
+                    <button class="icon-btn" data-crm="${c.id}" title="Entfernen">✕</button>
+                </div>
+            </div>
+        </div>`;
+    }).join('');
+
+    box.innerHTML = header + rows;
+    wireCombatControls(box);
+}
+
+function wireCombatControls(box) {
+    box.querySelectorAll('[data-cf]').forEach(input => {
+        input.addEventListener('input', () => {
+            const c = combatants.find(x => x.id === input.dataset.cid);
+            if (!c) return;
+            c[input.dataset.cf] = input.type === 'number' ? (parseInt(input.value, 10) || 0) : input.value;
+        });
+        input.addEventListener('change', () => { sortCombatants(); renderCombat(); });
+    });
+
+    box.querySelectorAll('[data-do-attack]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const id = btn.dataset.doAttack;
+            const sel = box.querySelector(`[data-attack-from="${id}"]`);
+            if (!sel.value) { addGmLog('System', 'Bitte erst ein Ziel wählen.', 'fehlschlag'); return; }
+            npcAttack(id, sel.value);
+        });
+    });
+
+    box.querySelectorAll('[data-defend]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const eingabe = parseDamageInput(prompt(
+                'Eingehender Schaden (Wurfergebnis des Spielers).\n' +
+                'Gegnerabwehr der Waffe optional dahinter, z.B. "16 -2":'));
+            if (eingabe) npcDefend(btn.dataset.defend, eingabe.schaden, eingabe.ga);
+        });
+    });
+
+    box.querySelectorAll('[data-dmg]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const dmg = parseInt(prompt('Schaden (negativ = Heilung):'), 10);
+            if (!isNaN(dmg)) damageNpc(btn.dataset.dmg, dmg);
+        });
+    });
+
+    box.querySelectorAll('[data-pattack]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const eingabe = parseDamageInput(prompt(
+                'Schaden des Angriffs (Wurfergebnis) — der Spieler würfelt selbst die Abwehr.\n' +
+                'Gegnerabwehr optional dahinter, z.B. "14 -2":'));
+            if (eingabe) gmAttackPlayer(btn.dataset.pattack, eingabe.schaden, 'Spielleiter', eingabe.ga);
+        });
+    });
+
+    box.querySelectorAll('[data-pheal]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const amount = parseInt(prompt('Wie viele LK heilen?'), 10);
+            if (!isNaN(amount)) gmHealPlayer(btn.dataset.pheal, amount);
+        });
+    });
+
+    box.querySelectorAll('[data-pmsg]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const text = prompt('Nachricht an diesen Spieler:');
+            if (text) gmSendMessage(btn.dataset.pmsg, text);
+        });
+    });
+
+    box.querySelectorAll('[data-crm]').forEach(btn => {
+        btn.addEventListener('click', () => removeCombatant(btn.dataset.crm));
+    });
+}

@@ -1,0 +1,72 @@
+Dieses Projekt steht unter zwei Lizenzen — je nachdem, ob es sich um
+Programmcode oder um Regeldaten aus dem Dungeonslayers-Regelwerk handelt.
+
+
+===============================================================================
+1. PROGRAMMCODE — MIT-Lizenz
+===============================================================================
+
+Betrifft: index.html, style.css, app.js, rules.js, wizard.js, combat.js,
+multiplayer.js, discord.js, talentPicker.js, spellPicker.js
+
+MIT License
+
+Copyright (c) 2026 Die Mitwirkenden dieses Projekts
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+
+===============================================================================
+2. REGELDATEN — CC BY-NC-SA 4.0
+===============================================================================
+
+Betrifft: data.js, talents.js, zauber.js, bestiarium.js, beispiele/*.json
+sowie die aufbereiteten Referenzen in regeln/*.md
+
+Diese Dateien sind aus dem Regelwerk "Dungeonslayers 4" abgeleitet.
+
+Dungeonslayers wurde geschaffen von Christian Kennig.
+Copyright (c) 2011 by Christian Kennig, Burning Books, Berlin.
+https://www.dungeonslayers.net
+
+Laut der Lizenzseite des Regelwerks stehen dessen Texte und Regelmechaniken —
+nicht aber die Grafiken, das Covermotiv, die Illustrationen und Logos — unter:
+
+    Creative Commons Namensnennung - Nicht kommerziell -
+    Weitergabe unter gleichen Bedingungen 4.0 (CC BY-NC-SA 4.0)
+    https://creativecommons.org/licenses/by-nc-sa/4.0/deed.de
+
+Die genannten Dateien stehen daher unter derselben Lizenz. Sämtliche
+Wirkungs- und Beschreibungstexte sind zusammengefasst und nicht wörtlich
+aus dem Regelwerk übernommen.
+
+Grafiken, Illustrationen, das Covermotiv und Logos aus dem Regelwerk sind in
+diesem Projekt bewusst NICHT enthalten, da sie ausdrücklich von der
+CC-Lizenzierung ausgenommen sind. Aus demselben Grund werden auch die
+Regelwerk-PDFs nicht mitverbreitet — sie stehen kostenlos auf
+https://www.dungeonslayers.net/downloads/ zum Download bereit.
+
+
+===============================================================================
+HINWEIS
+===============================================================================
+
+Dies ist ein nicht-kommerzielles Fan-Projekt. Es steht in keiner Verbindung
+zu Christian Kennig oder zum Burning Books Verlag und wird von diesen weder
+unterstützt noch geprüft.

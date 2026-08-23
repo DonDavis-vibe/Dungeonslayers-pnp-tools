@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://dondavis-vibe.github.io/Dungeonslayers-pnp-tools/sitemap.xml

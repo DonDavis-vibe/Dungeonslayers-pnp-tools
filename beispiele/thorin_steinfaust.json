@@ -1,0 +1,44 @@
+{
+  "name": "Thorin Steinfaust",
+  "spieler": "Beispiel",
+  "volk": "zwerg",
+  "klasse": "krieger",
+  "subtype": "",
+  "heldenklasse": "",
+  "ep": 300,
+  "lp": 4,
+  "tp": 0,
+  "attribute": { "koerper": 8, "agilitaet": 6, "geist": 6 },
+  "eigenschaften": { "staerke": 4, "haerte": 4, "bewegung": 0, "geschick": 0, "verstand": 0, "aura": 0 },
+  "volksbonus": "haerte",
+  "klassenbonus": "staerke",
+  "menschCapChoices": [],
+  "equipment": {
+    "melee": "Streitaxt",
+    "ranged": "Wurfmesser",
+    "koerper": "Kettenpanzer",
+    "helm": "Metallhelm",
+    "schienen": "Lederschienen",
+    "schild": ""
+  },
+  "lkCurrent": 23,
+  "gold": 2,
+  "silber": 6,
+  "kupfer": 0,
+  "bonusLk": 0,
+  "talents": [
+    { "id": "t1", "name": "Kämpfer", "rang": 1, "maxRang": 3, "notiz": "" },
+    { "id": "t2", "name": "Einstecker", "rang": 1, "maxRang": 5, "notiz": "" },
+    { "id": "t3", "name": "Parade", "rang": 1, "maxRang": 3, "notiz": "" }
+  ],
+  "spells": [],
+  "inventory": [
+    { "id": "i1", "name": "Heilkraut", "menge": 2, "notiz": "Startausrüstung" },
+    { "id": "i2", "name": "Fackel", "menge": 3, "notiz": "" },
+    { "id": "i3", "name": "Seil (10m)", "menge": 1, "notiz": "" },
+    { "id": "i4", "name": "Wasserschlauch", "menge": 1, "notiz": "Startausrüstung" },
+    { "id": "i5", "name": "Rucksack", "menge": 1, "notiz": "Startausrüstung" }
+  ],
+  "notes": "Ein wortkarger Zwergenkrieger aus den Tiefen des Eisenberges. Sucht die Axt seines Großvaters, die vor Jahrzehnten bei einem Überfall verloren ging.\n\nWerte-Check: LK 23 (KÖR 8 + HÄ 5 + 10) · Abwehr 18 (8 + 5 + 4 PA + 1 Zäh) · Schlagen 16 (8 + 5 + 3 Streitaxt) · Initiative 3 (AGI 6 − 1 Helm − 2 Streitaxt)",
+  "log": []
+}

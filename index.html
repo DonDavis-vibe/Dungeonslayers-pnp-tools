@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dungeonslayers Charakterbogen online — kostenloses Spielleiter-Tool für DS4</title>
+<meta name="description" content="Kostenloser digitaler Charakterbogen für das Pen-&amp;-Paper-Rollenspiel Dungeonslayers 4: Charaktererschaffung, Würfeln mit Immersieg und Patzer, Talente, Zauber, Bestiarium sowie ein Live-Spielleiter-Dashboard mit Kampf-Tracker. Läuft im Browser, ohne Anmeldung.">
+<meta name="keywords" content="Dungeonslayers, DS4, Pen &amp; Paper, PnP, Rollenspiel, Charakterbogen, Charakterbogen online, Charaktergenerator, OSR, Spielleiter, GM Tool, Kampf-Tracker, Bestiarium, Multiplayer, kostenlos, deutsch">
+<meta name="author" content="DonDavis — German Redneck Engineering">
+<link rel="canonical" href="https://dondavis-vibe.github.io/Dungeonslayers-pnp-tools/">
+
+<!-- Vorschau beim Teilen in Forum, Discord & Co. -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Dungeonslayers Online-Tool">
+<meta property="og:title" content="Dungeonslayers Charakterbogen online — kostenloses Spielleiter-Tool für DS4">
+<meta property="og:description" content="Charakterbogen, Kampf-Tracker und Live-Multiplayer für Dungeonslayers 4 — im Browser, ohne Anmeldung und ohne Server.">
+<meta property="og:url" content="https://dondavis-vibe.github.io/Dungeonslayers-pnp-tools/">
+<meta property="og:locale" content="de_DE">
+<meta name="twitter:card" content="summary">
+<meta name="theme-color" content="#14100c">
+
+<!-- Strukturierte Daten, damit Suchmaschinen das Tool als Anwendung einordnen -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Dungeonslayers Charakterbogen & Spielleiter-Tool",
+  "url": "https://dondavis-vibe.github.io/Dungeonslayers-pnp-tools/",
+  "applicationCategory": "GameApplication",
+  "operatingSystem": "Webbrowser",
+  "inLanguage": "de",
+  "browserRequirements": "Requires JavaScript",
+  "isAccessibleForFree": true,
+  "author": { "@type": "Person", "name": "DonDavis", "url": "https://github.com/DonDavis-vibe" },
+  "creator": { "@type": "Organization", "name": "German Redneck Engineering" },
+  "license": "https://creativecommons.org/licenses/by-nc-sa/4.0/deed.de",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "EUR" },
+  "description": "Digitaler Charakterbogen und Live-Spielleiter-Dashboard für das kostenlose deutsche Pen-&-Paper-Rollenspiel Dungeonslayers 4.",
+  "about": { "@type": "Game", "name": "Dungeonslayers", "author": { "@type": "Person", "name": "Christian Kennig" } },
+  "featureList": [
+    "Charaktererschaffung nach Regelwerk",
+    "Automatisch berechnete Kampfwerte",
+    "Würfelmechanik mit Immersieg und Patzer",
+    "125 Talente und 129 Zaubersprüche",
+    "Bestiarium mit 78 Kreaturen",
+    "Live-Multiplayer und Spielleiter-Dashboard",
+    "Initiative- und Kampf-Tracker"
+  ]
+}
+</script>
+
+<!-- W20 als Favicon, direkt eingebettet (kein zusätzlicher Netzwerkabruf) -->
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%2314100c'/%3E%3Cpath d='M16 3 29 10.5v11L16 29 3 21.5v-11z' fill='none' stroke='%23d4a24c' stroke-width='2' stroke-linejoin='round'/%3E%3Cpath d='M16 3 16 29M3 10.5 29 21.5M29 10.5 3 21.5' stroke='%23d4a24c' stroke-width='1' opacity='.45'/%3E%3Ctext x='16' y='20' font-family='Georgia,serif' font-size='11' font-weight='bold' fill='%23f0c069' text-anchor='middle'%3E20%3C/text%3E%3C/svg%3E">
+
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ============ SPIELER-ANSICHT ============ -->
+<div id="player-view">
+
+<div class="topbar">
+    <h1>⚔️ Dungeonslayers<small>Digitaler Charakterbogen</small></h1>
+
+    <!-- Verbindungsanzeige: nur sichtbar, sobald Multiplayer genutzt wird -->
+    <div id="mp-badge" class="mp-badge" onclick="openMultiplayerModal()" role="status" tabindex="0">
+        <span class="mp-dot"></span>
+        <span id="mp-badge-text"></span>
+    </div>
+
+    <div class="topbar-actions">
+        <button class="btn" onclick="openWizard()">🧙 Charakter erschaffen</button>
+        <button class="btn" onclick="openMultiplayerModal()">📡 Multiplayer</button>
+        <button class="btn" onclick="exportCharacter()">💾 Speichern</button>
+        <button class="btn" onclick="document.getElementById('import-file').click()">📂 Laden</button>
+        <input type="file" id="import-file" accept=".json" style="display:none" onchange="importCharacter(event)">
+        <button class="btn btn-ghost" onclick="openBeispiele()">👤 Beispiel</button>
+        <button class="btn btn-ghost" onclick="openRulesModal()">📖 Regeln</button>
+    </div>
+</div>
+
+<div class="app">
+<div class="col-main">
+
+    <!-- Charakterdaten -->
+    <div class="panel">
+        <div class="panel-head"><h2>Charakter</h2>
+            <div class="panel-actions"><span class="tag" id="tag-stufe">Stufe 1</span></div>
+        </div>
+        <div class="panel-body">
+            <div class="grid-2">
+                <div class="field"><label>Name</label><input type="text" id="f-name" data-bind="name"></div>
+                <div class="field"><label>Spieler</label><input type="text" id="f-spieler" data-bind="spieler"></div>
+                <div class="field"><label>Volk</label>
+                    <select id="f-volk" data-bind="volk">
+                        <option value="">—</option>
+                        <option value="elf">Elf</option>
+                        <option value="mensch">Mensch</option>
+                        <option value="zwerg">Zwerg</option>
+                    </select>
+                </div>
+                <div class="field"><label>Klasse</label>
+                    <select id="f-klasse" data-bind="klasse">
+                        <option value="">—</option>
+                        <option value="krieger">Krieger</option>
+                        <option value="spaeher">Späher</option>
+                        <option value="zauberwirker">Zauberwirker</option>
+                    </select>
+                </div>
+                <div class="field" id="field-subtype" style="display:none"><label>Zauberwirker-Typ</label>
+                    <select id="f-subtype" data-bind="subtype">
+                        <option value="">—</option>
+                        <option value="heiler">Heiler</option>
+                        <option value="zauberer">Zauberer</option>
+                        <option value="schwarzmagier">Schwarzmagier</option>
+                    </select>
+                </div>
+                <div class="field" id="field-held" style="display:none"><label>Heldenklasse (ab Stufe 10)</label>
+                    <select id="f-heldenklasse" data-bind="heldenklasse"><option value="">—</option></select>
+                </div>
+                <div class="field"><label>Erfahrungspunkte</label><input type="number" id="f-ep" data-bind="ep" min="0"></div>
+                <div class="field"><label>Lernpunkte (offen)</label><input type="number" id="f-lp" data-bind="lp" min="0"></div>
+                <div class="field"><label>Talentpunkte (offen)</label><input type="number" id="f-tp" data-bind="tp" min="0"></div>
+            </div>
+            <div style="margin-top:0.7rem">
+                <button class="btn btn-sm btn-primary" onclick="openLevelUp()">⬆️ Stufenaufstieg / Punkte ausgeben</button>
+            </div>
+            <div id="ep-progress" class="hint" style="margin-top:0.6rem"></div>
+            <div id="volk-traits" class="hint-rule" style="margin-top:0.6rem"></div>
+        </div>
+    </div>
+
+    <!-- Attribute & Eigenschaften -->
+    <div class="panel">
+        <div class="panel-head"><h2>Attribute &amp; Eigenschaften</h2>
+            <div class="panel-actions">
+                <span class="budget" id="budget-attr"></span>
+                <span class="budget" id="budget-eig"></span>
+            </div>
+        </div>
+        <div class="panel-body">
+            <div class="grid-3" id="attribute-container"></div>
+            <div class="hint-rule" style="margin-top:0.8rem">
+                Erschaffung: 20 Punkte auf die Attribute (max. 8 je Attribut), 8 Punkte auf die Eigenschaften
+                (max. 4 je Eigenschaft) — Volks- und Klassenbonus kommen danach obendrauf.
+            </div>
+        </div>
+    </div>
+
+    <!-- Kampfwerte -->
+    <div class="panel">
+        <div class="panel-head"><h2>Kampfwerte</h2>
+            <div class="panel-actions"><span class="hint">Klicken zum Würfeln</span></div>
+        </div>
+        <div class="panel-body">
+            <div class="lk-panel" style="margin-bottom:0.9rem" id="lk-panel">
+                <div style="min-width:110px">
+                    <div class="kw-label">Lebenskraft</div>
+                    <div class="lk-numbers">
+                        <input type="number" id="f-lk-current" data-bind="lkCurrent">
+                        <span style="color:var(--text-dim)">/</span>
+                        <span id="lk-max" style="font-size:1.15rem;font-weight:bold;color:var(--accent-bright)">—</span>
+                    </div>
+                </div>
+                <div class="lk-bar-wrap">
+                    <div class="lk-bar-track"><div class="lk-bar-fill" id="lk-bar" style="width:100%"></div></div>
+                    <div class="hint" style="margin-top:0.25rem" id="lk-hint"></div>
+                </div>
+                <div style="display:flex;gap:0.3rem;flex-wrap:wrap">
+                    <button class="btn btn-sm btn-danger" onclick="adjustLk(-1)">−1</button>
+                    <button class="btn btn-sm btn-danger" onclick="adjustLk(-5)">−5</button>
+                    <button class="btn btn-sm" onclick="adjustLk(1)">+1</button>
+                    <button class="btn btn-sm" onclick="adjustLk(5)">+5</button>
+                    <button class="btn btn-sm" onclick="verschnaufen()" title="Nach dem Kampf: die Hälfte der im Kampf verlorenen LK zurück">Verschnaufen</button>
+                    <button class="btn btn-sm" onclick="nachtruhe()" title="24 Stunden: 1W20/2 LK zurück (+1 je 4h Bettruhe)">Nachtruhe</button>
+                    <button class="btn btn-sm btn-ghost" onclick="fullHeal()">Voll</button>
+                </div>
+            </div>
+            <div class="kampfwerte" id="kampfwerte-container"></div>
+        </div>
+    </div>
+
+    <!-- Ausrüstung -->
+    <div class="panel">
+        <div class="panel-head"><h2>Ausrüstung</h2>
+            <div class="panel-actions"><span class="tag" id="tag-pa">PA 0</span></div>
+        </div>
+        <div class="panel-body">
+            <div class="grid-2">
+                <div class="field"><label>Nahkampfwaffe</label><select id="f-eq-melee" data-bind="equipment.melee"></select></div>
+                <div class="field"><label>Fernkampfwaffe</label><select id="f-eq-ranged" data-bind="equipment.ranged"></select></div>
+                <div class="field"><label>Körperrüstung</label><select id="f-eq-koerper" data-bind="equipment.koerper"></select></div>
+                <div class="field"><label>Helm</label><select id="f-eq-helm" data-bind="equipment.helm"></select></div>
+                <div class="field"><label>Schienen</label><select id="f-eq-schienen" data-bind="equipment.schienen"></select></div>
+                <div class="field"><label>Schild</label><select id="f-eq-schild" data-bind="equipment.schild"></select></div>
+            </div>
+            <div id="equipment-warnings" style="margin-top:0.7rem"></div>
+            <div id="equipment-details" class="hint" style="margin-top:0.5rem"></div>
+
+            <h3 style="margin-top:1rem;font-size:0.9rem;color:var(--accent)">Münzen</h3>
+            <div class="grid-3" style="margin-top:0.4rem">
+                <div class="field"><label>Gold (GM)</label><input type="number" id="f-gold" data-bind="gold" min="0"></div>
+                <div class="field"><label>Silber (SM)</label><input type="number" id="f-silber" data-bind="silber" min="0"></div>
+                <div class="field"><label>Kupfer (KM)</label><input type="number" id="f-kupfer" data-bind="kupfer" min="0"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Talente -->
+    <div class="panel">
+        <div class="panel-head"><h3>Talente</h3>
+            <div class="panel-actions"><button class="btn btn-sm" onclick="addTalent()">+ Talent</button></div>
+        </div>
+        <div class="panel-body">
+            <div id="talent-list"></div>
+            <div class="hint-rule" style="margin-top:0.6rem">
+                Jeder Rang kostet 1 Talentpunkt. Die Auswahl zeigt nur Talente, die deine Klasse
+                auf deiner Stufe lernen darf — Höchstränge werden erzwungen.
+            </div>
+        </div>
+    </div>
+
+    <!-- Zauber -->
+    <div class="panel" id="panel-zauber" style="display:none">
+        <div class="panel-head"><h3>Zaubersprüche</h3>
+            <div class="panel-actions"><button class="btn btn-sm" onclick="addSpell()">+ Zauber</button></div>
+        </div>
+        <div class="panel-body">
+            <div id="spell-list"></div>
+            <div class="hint-rule" style="margin-top:0.6rem">
+                Es kann immer nur <strong>ein</strong> Zauber vorbereitet sein. Wechseln kostet eine Aktion
+                und eine GEI+VE-Probe. Kein Mana — stattdessen gilt die Abklingzeit des Zaubers.
+                Der Zauberbonus des vorbereiteten Zaubers fließt automatisch in Zaubern/Zielzauber ein.
+            </div>
+        </div>
+    </div>
+
+    <!-- Inventar & Notizen -->
+    <div class="panel">
+        <div class="panel-head"><h3>Inventar</h3>
+            <div class="panel-actions"><button class="btn btn-sm" onclick="addItem()">+ Gegenstand</button></div>
+        </div>
+        <div class="panel-body"><div id="inventory-list"></div></div>
+    </div>
+
+    <div class="panel">
+        <div class="panel-head"><h3>Notizen</h3></div>
+        <div class="panel-body">
+            <textarea id="f-notes" data-bind="notes" rows="5" style="width:100%" placeholder="Hintergrund, Ziele, Questnotizen..."></textarea>
+        </div>
+    </div>
+
+</div><!-- /col-main -->
+
+<div class="col-side">
+
+    <!-- Würfel -->
+    <div class="panel">
+        <div class="panel-head"><h3>Würfel</h3>
+            <div class="panel-actions"><span class="hint">1W20 unterwürfeln</span></div>
+        </div>
+        <div class="panel-body">
+            <div class="dice-display" id="dice-display">
+                <div class="dice-result-number" id="dice-number">—</div>
+                <div class="dice-result-label" id="dice-label">Noch nicht gewürfelt</div>
+                <div class="dice-result-status" id="dice-status"></div>
+                <div class="dice-detail" id="dice-detail"></div>
+            </div>
+
+            <div class="field" style="margin-top:0.8rem">
+                <label>Schwierigkeit (Modifikator)</label>
+                <select id="f-difficulty"></select>
+            </div>
+
+            <div class="quick-probe" style="margin-top:0.6rem">
+                <div class="field"><label>Typische Probe</label>
+                    <select id="f-typische-probe"></select>
+                </div>
+                <button class="btn btn-primary" onclick="rollTypischeProbe()">Würfeln</button>
+            </div>
+
+            <div class="quick-probe" style="margin-top:0.5rem">
+                <div class="field"><label>Freier Probenwert</label>
+                    <input type="number" id="f-free-pw" value="10" min="0">
+                </div>
+                <button class="btn" onclick="rollFreeProbe()">Würfeln</button>
+            </div>
+
+            <div class="quick-probe" style="margin-top:0.5rem">
+                <div class="field"><label>Vergleichende Probe — Gegner-PW</label>
+                    <input type="number" id="f-opposed-pw" value="10" min="0">
+                </div>
+                <button class="btn" onclick="rollOpposedProbe()" title="Beide Seiten würfeln; die höhere gelungene Probe gewinnt">Vergleichen</button>
+            </div>
+
+            <details style="margin-top:0.7rem">
+                <summary style="cursor:pointer;font-size:0.85rem;color:var(--text-dim)">⚔️ Kampfmodifikatoren</summary>
+                <div style="margin-top:0.5rem;display:flex;flex-direction:column;gap:0.4rem">
+                    <div style="display:flex;gap:0.5rem;align-items:end">
+                        <div class="field" style="flex:1"><label>Distanz (m)</label>
+                            <input type="number" id="mod-distanz" value="0" min="0" step="5" title="−1 je volle 10m">
+                        </div>
+                        <div class="field" style="flex:1"><label>Runden gezielt</label>
+                            <input type="number" id="mod-zielen" value="0" min="0" max="5" title="+2 je Runde, höchstens +10">
+                        </div>
+                    </div>
+                    <div class="radio-row" id="mod-toggles">
+                        <span class="radio-pill" data-mod="imNahkampf" title="−2">Ziel im Nahkampf</span>
+                        <span class="radio-pill" data-mod="selbstLiegend" title="−2">ich liege</span>
+                        <span class="radio-pill" data-mod="zielLiegend" title="+2">Ziel liegt</span>
+                        <span class="radio-pill" data-mod="vonDerSeite" title="+1">von der Seite</span>
+                        <span class="radio-pill" data-mod="vonHinten" title="+2">von hinten</span>
+                        <span class="radio-pill" data-mod="zweiWaffen" title="−10, durch das Talent gemildert">zwei Waffen</span>
+                    </div>
+                    <div style="display:flex;gap:0.5rem;align-items:end">
+                        <div class="field" style="flex:1"><label>Größenunterschied</label>
+                            <select id="mod-groesse">
+                                <option value="0">gleich groß</option>
+                                <option value="1">Gegner 1 Kategorie größer (+2)</option>
+                                <option value="2">Gegner 2 Kategorien größer (+4)</option>
+                                <option value="-1">Gegner 1 Kategorie kleiner (−2)</option>
+                                <option value="-2">Gegner 2 Kategorien kleiner (−4)</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-sm btn-ghost" onclick="resetCombatModifiers()">Zurücksetzen</button>
+                    </div>
+                    <div class="hint" id="mod-summary">Kein Modifikator aktiv.</div>
+                </div>
+            </details>
+
+            <div style="display:flex;gap:0.4rem;margin-top:0.6rem;flex-wrap:wrap">
+                <button class="btn btn-sm btn-ghost" onclick="rollPlainD20()">Blanker 1W20</button>
+                <button class="btn btn-sm btn-ghost" onclick="clearLog()">Log leeren</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Logbuch -->
+    <div class="panel">
+        <div class="panel-head"><h3>Logbuch</h3></div>
+        <div class="panel-body"><ul class="log-list" id="log-list"></ul></div>
+    </div>
+
+</div><!-- /col-side -->
+</div><!-- /app -->
+
+<!-- Beschreibender Fußbereich: hilft Besuchern beim Einordnen und gibt
+     Suchmaschinen echten Text, da der Bogen selbst per JavaScript entsteht. -->
+<footer class="site-footer">
+    <div class="footer-inner">
+        <section>
+            <h2>Digitaler Charakterbogen für Dungeonslayers</h2>
+            <p>
+                Dieses kostenlose Online-Tool bildet den Charakterbogen des deutschen
+                Pen-&amp;-Paper-Rollenspiels <strong>Dungeonslayers 4</strong> im Browser ab. Es führt
+                durch die Charaktererschaffung, berechnet alle Kampfwerte automatisch und würfelt
+                Proben regelkonform mit 1W20 — inklusive Immersieg, Patzer und der Aufteilung in
+                Kettenwürfe bei Probenwerten über 20.
+            </p>
+            <p>
+                Enthalten sind die vollständigen Talent- und Zauberlisten sowie das Bestiarium aus
+                dem Regelwerk. Charaktere lassen sich als Datei speichern und weitergeben.
+                Es braucht keine Anmeldung, keinen Server und keine Installation.
+            </p>
+        </section>
+        <section>
+            <h2>Für Spielleiter</h2>
+            <p>
+                Spieler verbinden sich per vierstelligem Raum-Code direkt mit dem Spielleiter. Dessen
+                Dashboard zeigt Lebenskraft, Werte, Ausrüstung und Inventar aller Helden live, dazu
+                jeden Würfelwurf. Ein Initiative- und Kampf-Tracker verwaltet die Zugreihenfolge und
+                setzt Gegner per Klick aus dem Bestiarium ein. Auf Wunsch landen alle Würfe zusätzlich
+                per Webhook in einem Discord-Kanal.
+            </p>
+        </section>
+    </div>
+
+    <div class="footer-disclaimer">
+        Dies ist ein inoffizielles Fan-Projekt von <strong>German Redneck Engineering</strong>
+        und steht in keiner Verbindung zu Christian Kennig oder dem Burning Books Verlag.<br>
+        Entwickelt von
+        <a href="https://github.com/DonDavis-vibe" target="_blank" rel="noopener">DonDavis</a> |
+        <a href="https://github.com/DonDavis-vibe/Dungeonslayers-pnp-tools" target="_blank" rel="noopener">Repository auf GitHub</a><br>
+        Das Pen-&amp;-Paper-Regelsystem <em>Dungeonslayers</em> wurde geschaffen von
+        <strong>Christian Kennig</strong>; seine Texte und Regelmechaniken unterliegen der
+        <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.de" target="_blank" rel="noopener">CC BY-NC-SA 4.0</a>
+        Lizenz. Das Regelwerk gibt es kostenlos unter
+        <a href="https://www.dungeonslayers.net/" target="_blank" rel="noopener">dungeonslayers.net</a>.
+    </div>
+</footer>
+</div><!-- /player-view -->
+
+<!-- ============ GM DASHBOARD ============ -->
+<div id="gm-dashboard">
+    <div class="topbar" style="margin:-1.2rem -1.2rem 1.2rem">
+        <h1>👑 Spielleiter-Dashboard<small>Dungeonslayers 4</small></h1>
+        <div style="display:flex;align-items:center;gap:0.8rem;flex-wrap:wrap">
+            <span class="hint">Raum-Code:</span>
+            <span class="room-code" id="gm-room-code">----</span>
+            <span class="status-dot" id="gm-room-status"></span>
+        </div>
+        <div class="topbar-actions">
+            <button class="btn btn-danger" onclick="exitGmMode()">Dashboard verlassen</button>
+        </div>
+    </div>
+
+    <div class="gm-grid">
+        <div>
+            <div class="panel" style="margin-bottom:1.2rem">
+                <div class="panel-head"><h3>⚔️ Kampf &amp; Initiative</h3>
+                    <div class="panel-actions"><span class="hint">Reihenfolge: absteigende Initiative</span></div>
+                </div>
+                <div class="panel-body"><div id="combat-tracker"></div></div>
+            </div>
+
+            <div class="panel" style="margin-bottom:1.2rem">
+                <div class="panel-head"><h3>Spieler</h3>
+                    <div class="panel-actions">
+                        <button class="btn btn-sm" onclick="promptRequestProbe()">🎲 Probe von allen</button>
+                        <button class="btn btn-sm" onclick="promptGrantEp()">✨ EP vergeben</button>
+                        <span class="hint" id="gm-player-count">0 verbunden</span>
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <div class="gm-players" id="gm-players-grid"></div>
+                    <div class="empty-hint" id="gm-empty-hint">Noch keine Spieler verbunden. Gib den Raum-Code weiter.</div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-head"><h3>Kampagnen-Notizen</h3>
+                    <div class="panel-actions">
+                        <button class="btn btn-sm" onclick="promptBroadcast()">📢 Ansage an alle</button>
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <textarea id="gm-general-notes" rows="6" style="width:100%" oninput="saveGmGeneralNotes(this.value)"></textarea>
+                </div>
+            </div>
+        </div>
+
+        <div>
+            <div class="panel" style="margin-bottom:1.2rem">
+                <div class="panel-head"><h3>SL-Würfel</h3></div>
+                <div class="panel-body">
+                    <div class="dice-display" id="gm-dice-display">
+                        <div class="dice-result-number" id="gm-dice-number">—</div>
+                        <div class="dice-result-label" id="gm-dice-label">SL-Wurf</div>
+                        <div class="dice-result-status" id="gm-dice-status"></div>
+                        <div class="dice-detail" id="gm-dice-detail"></div>
+                    </div>
+                    <div class="quick-probe" style="margin-top:0.7rem">
+                        <div class="field"><label>Probenwert (NSC/Monster)</label>
+                            <input type="number" id="gm-pw" value="10" min="0">
+                        </div>
+                        <button class="btn btn-primary" onclick="rollGmProbe()">Probe</button>
+                    </div>
+                    <div style="display:flex;gap:0.4rem;margin-top:0.5rem;flex-wrap:wrap">
+                        <button class="btn btn-sm btn-ghost" onclick="rollGmPlainD20()">1W20</button>
+                        <button class="btn btn-sm btn-ghost" onclick="clearGmLog()">Log leeren</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-head"><h3>Live-Log</h3></div>
+                <div class="panel-body"><ul class="log-list" id="gm-live-log" style="max-height:460px"></ul></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============ MODALS ============ -->
+
+<!-- Multiplayer -->
+<div class="modal-overlay" id="multiplayer-modal">
+    <div class="modal">
+        <div class="panel-head"><h3>📡 Multiplayer</h3>
+            <div class="panel-actions"><button class="btn btn-sm btn-ghost" onclick="closeMultiplayerModal()">✕</button></div>
+        </div>
+        <div class="panel-body">
+            <p class="hint" style="margin-bottom:0.8rem">
+                Direkte Peer-to-Peer-Verbindung über WebRTC. Keine Accounts, kein Server, keine Kosten.
+            </p>
+            <div id="multiplayer-status" style="min-height:1.4rem;margin-bottom:0.7rem;font-size:0.88rem"></div>
+
+            <h4 style="color:var(--accent);font-size:0.9rem;margin-bottom:0.4rem">Als Spielleiter hosten</h4>
+            <button class="btn btn-primary" style="width:100%" onclick="hostMultiplayerSession()">Raum eröffnen</button>
+
+            <h4 style="color:var(--accent);font-size:0.9rem;margin:1rem 0 0.4rem">Als Spieler beitreten</h4>
+            <div style="display:flex;gap:0.5rem">
+                <input type="text" id="multiplayer-join-code" maxlength="4" placeholder="CODE"
+                       style="flex:1;text-transform:uppercase;letter-spacing:0.3em;text-align:center;font-size:1.1rem">
+                <button class="btn btn-primary" onclick="joinMultiplayerSession()">Beitreten</button>
+            </div>
+
+            <hr style="margin:1.2rem 0;border:none;border-top:1px solid var(--panel-border)">
+
+            <div style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap">
+                <h4 style="color:var(--accent);font-size:0.9rem">🤖 Discord-Anbindung</h4>
+                <span id="discord-state" style="margin-left:auto"></span>
+            </div>
+            <p class="hint" style="margin:0.4rem 0 0.6rem">
+                Optional: Würfe und Ereignisse werden zusätzlich in einen Discord-Kanal gepostet, damit
+                die ganze Gruppe mitliest — nicht nur der Spielleiter. In Discord unter
+                <em>Kanal bearbeiten → Integrationen → Webhooks</em> einen Webhook anlegen und die URL hier einfügen.
+            </p>
+            <div class="field" style="margin-bottom:0.5rem">
+                <label>Webhook-URL</label>
+                <input type="password" id="discord-url" placeholder="https://discord.com/api/webhooks/...">
+            </div>
+            <div class="radio-row" style="margin-bottom:0.6rem">
+                <label class="radio-pill" style="display:inline-flex;gap:0.4rem;align-items:center">
+                    <input type="checkbox" id="discord-wuerfe" checked style="width:auto"> Würfe posten
+                </label>
+                <label class="radio-pill" style="display:inline-flex;gap:0.4rem;align-items:center">
+                    <input type="checkbox" id="discord-ereignisse" checked style="width:auto"> Ereignisse posten
+                </label>
+            </div>
+            <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
+                <button class="btn btn-sm btn-primary" onclick="saveDiscordSettings()">Speichern</button>
+                <button class="btn btn-sm" onclick="testDiscordWebhook()">Test senden</button>
+            </div>
+            <div id="discord-status" style="font-size:0.82rem;margin-top:0.5rem;min-height:1.2rem"></div>
+            <p class="hint" style="margin-top:0.5rem">
+                Die URL ist ein Zugangsschlüssel für den Kanal. Sie bleibt nur in diesem Browser
+                gespeichert und landet <strong>nicht</strong> in der exportierten Charakterdatei.
+            </p>
+
+            <details style="margin-top:1rem">
+                <summary style="cursor:pointer;font-size:0.85rem;color:var(--text-dim)">Erweitert: TURN-Server</summary>
+                <p class="hint" style="margin:0.5rem 0">
+                    Nötig, wenn beide Seiten hinter strengem NAT sitzen (Mobilfunk, Firmennetz).
+                </p>
+                <div class="field" style="margin-bottom:0.4rem"><label>TURN-URL</label><input type="text" id="turn-url" placeholder="turn:host:3478"></div>
+                <div class="field" style="margin-bottom:0.4rem"><label>Benutzer</label><input type="text" id="turn-user"></div>
+                <div class="field" style="margin-bottom:0.5rem"><label>Passwort</label><input type="password" id="turn-pass"></div>
+                <button class="btn btn-sm" onclick="saveTurnSettings()">TURN speichern</button>
+            </details>
+        </div>
+    </div>
+</div>
+
+<!-- Charakter-Wizard -->
+<div class="modal-overlay" id="wizard-modal">
+    <div class="modal modal-lg">
+        <div class="panel-head"><h3>🧙 Charaktererschaffung</h3>
+            <div class="panel-actions"><button class="btn btn-sm btn-ghost" onclick="closeWizard()">✕</button></div>
+        </div>
+        <div class="wizard-steps" id="wizard-steps"></div>
+        <div class="panel-body" id="wizard-body"></div>
+        <div class="panel-body" style="border-top:1px solid var(--panel-border);display:flex;gap:0.5rem;justify-content:space-between">
+            <button class="btn" id="wizard-back" onclick="wizardBack()">← Zurück</button>
+            <div id="wizard-validation" class="hint" style="align-self:center;text-align:center;flex:1"></div>
+            <button class="btn btn-primary" id="wizard-next" onclick="wizardNext()">Weiter →</button>
+        </div>
+    </div>
+</div>
+
+<!-- Beispielcharaktere -->
+<div class="modal-overlay" id="beispiele-modal">
+    <div class="modal">
+        <div class="panel-head"><h3>👤 Beispielcharakter laden</h3>
+            <div class="panel-actions"><button class="btn btn-sm btn-ghost" onclick="closeModal('beispiele-modal')">✕</button></div>
+        </div>
+        <div class="panel-body" id="beispiele-body"></div>
+    </div>
+</div>
+
+<!-- Talent-Auswahl -->
+<div class="modal-overlay" id="talent-modal">
+    <div class="modal modal-lg">
+        <div class="panel-head"><h3>⭐ Talent wählen</h3>
+            <div class="panel-actions"><button class="btn btn-sm btn-ghost" onclick="closeModal('talent-modal')">✕</button></div>
+        </div>
+        <div class="panel-body" id="talent-picker-body"></div>
+    </div>
+</div>
+
+<!-- Zauber-Auswahl -->
+<div class="modal-overlay" id="spell-modal">
+    <div class="modal modal-lg">
+        <div class="panel-head"><h3>✨ Zauber lernen</h3>
+            <div class="panel-actions"><button class="btn btn-sm btn-ghost" onclick="closeModal('spell-modal')">✕</button></div>
+        </div>
+        <div class="panel-body" id="spell-picker-body"></div>
+    </div>
+</div>
+
+<!-- Bestiarium -->
+<div class="modal-overlay" id="bestiary-modal">
+    <div class="modal modal-lg">
+        <div class="panel-head"><h3>👹 Bestiarium</h3>
+            <div class="panel-actions"><button class="btn btn-sm btn-ghost" onclick="closeModal('bestiary-modal')">✕</button></div>
+        </div>
+        <div class="panel-body" id="bestiary-body"></div>
+    </div>
+</div>
+
+<!-- Stufenaufstieg -->
+<div class="modal-overlay" id="levelup-modal">
+    <div class="modal">
+        <div class="panel-head"><h3>⬆️ Stufenaufstieg</h3>
+            <div class="panel-actions"><button class="btn btn-sm btn-ghost" onclick="closeModal('levelup-modal')">✕</button></div>
+        </div>
+        <div class="panel-body" id="levelup-body"></div>
+    </div>
+</div>
+
+<!-- Regeln -->
+<div class="modal-overlay" id="rules-modal">
+    <div class="modal modal-lg">
+        <div class="panel-head"><h3>📖 Regel-Spickzettel</h3>
+            <div class="panel-actions"><button class="btn btn-sm btn-ghost" onclick="closeRulesModal()">✕</button></div>
+        </div>
+        <div class="panel-body" id="rules-body"></div>
+    </div>
+</div>
+
+<script src="data.js"></script>
+<script src="talents.js"></script>
+<script src="zauber.js"></script>
+<script src="bestiarium.js"></script>
+<script src="rules.js"></script>
+<script src="app.js"></script>
+<script src="talentPicker.js"></script>
+<script src="spellPicker.js"></script>
+<script src="wizard.js"></script>
+<script src="combat.js"></script>
+<script src="multiplayer.js"></script>
+<script src="discord.js"></script>
+</body>
+</html>

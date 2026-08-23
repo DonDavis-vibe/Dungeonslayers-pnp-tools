@@ -1,0 +1,46 @@
+{
+  "name": "Elaria Mondweberin",
+  "spieler": "Beispiel",
+  "volk": "elf",
+  "klasse": "zauberwirker",
+  "subtype": "zauberer",
+  "heldenklasse": "",
+  "ep": 300,
+  "lp": 2,
+  "tp": 0,
+  "attribute": { "koerper": 5, "agilitaet": 7, "geist": 8 },
+  "eigenschaften": { "staerke": 0, "haerte": 2, "bewegung": 1, "geschick": 1, "verstand": 2, "aura": 2 },
+  "volksbonus": "aura",
+  "klassenbonus": "verstand",
+  "menschCapChoices": [],
+  "equipment": {
+    "melee": "Kampfstab",
+    "ranged": "",
+    "koerper": "Robe (runenbestickt)",
+    "helm": "",
+    "schienen": "",
+    "schild": ""
+  },
+  "lkCurrent": 17,
+  "gold": 1,
+  "silber": 5,
+  "kupfer": 0,
+  "bonusLk": 0,
+  "talents": [
+    { "id": "t1", "name": "Wechsler", "rang": 2, "maxRang": 5, "notiz": "" },
+    { "id": "t2", "name": "Runenkunde", "rang": 1, "maxRang": 5, "notiz": "" }
+  ],
+  "spells": [
+    { "id": "s1", "name": "Feuerstrahl", "zb": 0, "abklingzeit": "1", "effekt": "Zielzauber · Distanz 10m · Wurfergebnis = Schaden", "prepared": true, "cooldownUntil": 0 },
+    { "id": "s2", "name": "Magie entdecken", "zb": 2, "abklingzeit": "", "effekt": "Normaler Zauber · spürt Magie im Umkreis auf", "prepared": false, "cooldownUntil": 0 }
+  ],
+  "inventory": [
+    { "id": "i1", "name": "Heilkraut", "menge": 2, "notiz": "Startausrüstung" },
+    { "id": "i2", "name": "Zauberbuch", "menge": 1, "notiz": "" },
+    { "id": "i3", "name": "Feuerstein & Zunder", "menge": 1, "notiz": "Startausrüstung" },
+    { "id": "i4", "name": "Decke", "menge": 1, "notiz": "Startausrüstung" },
+    { "id": "i5", "name": "Rucksack", "menge": 1, "notiz": "Startausrüstung" }
+  ],
+  "notes": "Elfische Zauberin, die den Turm ihrer Lehrmeisterin gegen deren Willen verlassen hat. Trägt eine runenbestickte Robe (+1 Aura), die ihr Zaubern verstärkt.\n\nWerte-Check: LK 17 (KÖR 5 + HÄ 2 + 10) · Zaubern GEI 8 + AU 3+1 Robe + ZB 0 = 12 · Zielzauber 8+1 = 9",
+  "log": []
+}
