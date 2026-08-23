@@ -375,15 +375,18 @@ function renderDerived() {
 
     const hint = document.getElementById('lk-hint');
     const koerper = appData.attribute.koerper || 0;
-    const standhaft = grenze < 0 ? ` (Standhaft: erst ab ${grenze} LK)` : '';
+    const todAb = todesGrenze(koerper);
 
-    if (bewusstlos) {
-        const deathAt = -koerper - 1;
-        hint.innerHTML = `<span style="color:var(--fail)"><strong>Bewusstlos.</strong> Erwacht nach 1W20 Stunden mit 1 LK. Tod ab ${deathAt} LK (unter −KÖR ${koerper}).</span>`;
+    if (cur <= todAb) {
+        hint.innerHTML = `<span style="color:var(--patzer);font-weight:bold">☠ Tot.</span>
+            <span style="color:var(--fail)">Der Schaden unter 0 übersteigt den Körperwert (${koerper}) — Tod ab ${todAb} LK.
+            Eine Wiederbelebung kostet dauerhaft 1 Punkt Körper.</span>`;
+    } else if (bewusstlos) {
+        hint.innerHTML = `<span style="color:var(--fail)"><strong>Bewusstlos.</strong> Erwacht nach 1W20 Stunden mit 1 LK. Tod ab ${todAb} LK (unter −KÖR ${koerper}).</span>`;
     } else if (cur <= 0) {
-        hint.innerHTML = `<span style="color:var(--accent-bright)"><strong>Noch bei Bewusstsein</strong> dank Standhaft — bewusstlos erst ab ${grenze} LK, Tod ab ${-koerper - 1} LK.</span>`;
+        hint.innerHTML = `<span style="color:var(--accent-bright)"><strong>Noch bei Bewusstsein</strong> dank Standhaft — bewusstlos erst ab ${grenze} LK, Tod ab ${todAb} LK.</span>`;
     } else {
-        hint.textContent = `Bewusstlos bei ${grenze} LK${standhaft ? '' : ''} · Tod unterhalb von −${koerper} LK (Körper-Wert)`;
+        hint.textContent = `Bewusstlos bei ${grenze} LK · Tod ab ${todAb} LK (unter −KÖR ${koerper})`;
     }
 
     // Kampfwert-Karten
@@ -448,13 +451,30 @@ function adjustLk(delta) {
         addLog(text, status);
         // Auch Spielleiter und Discord sollen von Lebenskraft-Änderungen erfahren
         sendMultiplayerLog(text, status);
-        if (appData.lkCurrent <= 0 && before > 0) {
-            const ohnmacht = '<strong>ist bewusstlos!</strong>';
-            addLog(ohnmacht, 'patzer');
-            sendMultiplayerLog(ohnmacht, 'patzer');
-        }
+        meldeLkSchwelle(before);
     }
     syncMultiplayerState();
+}
+
+// Meldet das Überschreiten der Bewusstlosigkeits- und der Todesgrenze.
+// Wird von allen Wegen aufgerufen, über die Lebenskraft verloren geht.
+function meldeLkSchwelle(vorher) {
+    const jetzt = appData.lkCurrent || 0;
+    const grenze = lastDerived ? (lastDerived.bewusstlosAb || 0) : 0;
+    const todAb = todesGrenze(appData.attribute.koerper || 0);
+
+    if (jetzt <= todAb && vorher > todAb) {
+        const tod = `<strong>☠ ${escapeHtml(characterName())} ist gestorben.</strong> ` +
+            `Der Schaden unter 0 übersteigt den Körperwert.`;
+        addLog(tod, 'patzer');
+        sendMultiplayerLog(tod, 'patzer');
+        return;
+    }
+    if (jetzt <= grenze && vorher > grenze) {
+        const ohnmacht = '<strong>ist bewusstlos!</strong> Erwacht nach 1W20 Stunden mit 1 LK.';
+        addLog(ohnmacht, 'patzer');
+        sendMultiplayerLog(ohnmacht, 'patzer');
+    }
 }
 
 function fullHeal() {

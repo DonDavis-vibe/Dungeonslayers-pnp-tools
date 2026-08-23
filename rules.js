@@ -155,6 +155,13 @@ function bewusstlosGrenze(talents) {
     return -3 * talentRang(talents, 'Standhaft');
 }
 
+// Tod tritt ein, sobald der Schaden unterhalb von 0 den Körperwert übersteigt
+// (Regelwerk S.42): Bei KÖR 8 ist bei −9 LK Schluss. Standhaft verschiebt nur
+// die Bewusstlosigkeit, nicht diese Grenze.
+function todesGrenze(koerper) {
+    return -(koerper || 0) - 1;
+}
+
 // --- Abgeleitete Werte (Kampfwerte) ----------------------------------------
 
 // char: { attribute: {koerper, agilitaet, geist},

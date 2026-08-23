@@ -409,7 +409,10 @@ function renderGmDashboard() {
                     <div class="lk-bar-track" style="margin-top:0.2rem">
                         <div class="lk-bar-fill" style="width:${lkPct}%;background:${lkColor}"></div>
                     </div>
-                    ${p.lkCurrent <= 0 ? '<div class="hint" style="color:var(--fail);margin-top:0.2rem"><strong>Bewusstlos!</strong></div>' : ''}
+                    ${p.tot
+                    ? '<div class="hint" style="color:var(--patzer);margin-top:0.2rem"><strong>☠ Gestorben</strong></div>'
+                    : (p.lkCurrent <= (p.bewusstlosAb || 0)
+                        ? '<div class="hint" style="color:var(--fail);margin-top:0.2rem"><strong>Bewusstlos!</strong></div>' : '')}
                 </div>
 
                 <div class="gm-stat-row">
@@ -717,6 +720,9 @@ function buildSharedState() {
         stufe: stufeFuerEp(appData.ep || 0, !!appData.heldenklasse),
         lkCurrent: appData.lkCurrent || 0,
         lkMax: derived.lebenskraft,
+        // Damit der Spielleiter Bewusstlosigkeit und Tod richtig anzeigen kann
+        bewusstlosAb: derived.bewusstlosAb || 0,
+        tot: (appData.lkCurrent || 0) <= todesGrenze(appData.attribute.koerper || 0),
         abwehr: derived.abwehr,
         initiative: derived.initiative,
         schlagen: derived.schlagen,
@@ -880,7 +886,7 @@ function handleGmCommand(payload) {
 
             const reduced = result.success ? result.total : 0;
             const finalDamage = Math.max(0, payload.damage - reduced);
-            applyIncomingDamage(finalDamage);
+            const vorher = applyIncomingDamage(finalDamage);
 
             let extra = result.success
                 ? `Schaden ${payload.damage} − ${reduced} Abwehr = <strong>${finalDamage}</strong>`
@@ -889,13 +895,17 @@ function handleGmCommand(payload) {
 
             addLog(`Angriff${payload.quelle ? ' von ' + escapeHtml(payload.quelle) : ''}: ${payload.damage} Schaden — ${DS4_STATUS_TEXT[result.status]} · ${extra}`, result.status);
             sendMultiplayerLog(`<strong>Abwehr</strong> (PW ${result.pw}) — ${DS4_STATUS_TEXT[result.status]} · Wurf ${result.rolls.map(r => r.die).join('+')} · ${extra} · LK jetzt ${appData.lkCurrent}`, result.status);
+            // Erst die Ursache melden, dann die Folge
+            meldeLkSchwelle(vorher);
             break;
         }
-        case 'damage':
-            applyIncomingDamage(payload.amount);
+        case 'damage': {
+            const vorher = applyIncomingDamage(payload.amount);
             addLog(`${payload.amount} Schaden${payload.quelle ? ' durch ' + escapeHtml(payload.quelle) : ''} (keine Abwehr möglich) — LK ${appData.lkCurrent}`, 'fehlschlag');
             sendMultiplayerLog(`erleidet ${payload.amount} Schaden — LK jetzt ${appData.lkCurrent}`, 'fehlschlag');
+            meldeLkSchwelle(vorher);
             break;
+        }
         case 'heal': {
             const max = lastDerived ? lastDerived.lebenskraft : 0;
             appData.lkCurrent = Math.min(max, (appData.lkCurrent || 0) + payload.amount);
@@ -955,12 +965,17 @@ function handleGmCommand(payload) {
     }
 }
 
+// Wendet Schaden an und liefert den vorherigen Stand zurück. Die Meldung über
+// Bewusstlosigkeit oder Tod macht der Aufrufer über meldeLkSchwelle() — und zwar
+// NACH seiner eigenen Schadensmeldung, damit die Ursache vor der Folge steht.
 function applyIncomingDamage(amount) {
-    appData.lkCurrent = (appData.lkCurrent || 0) - amount;
+    const vorher = appData.lkCurrent || 0;
+    appData.lkCurrent = vorher - amount;
     refreshBoundInputs();
     renderDerived();
     scheduleSave();
     syncMultiplayerState();
+    return vorher;
 }
 
 // Einblendung für Nachrichten des Spielleiters
