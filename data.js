@@ -157,7 +157,10 @@ const DS4_WEAPONS = [
     { name: 'Schleuder', wb: 0, type: 'ranged', besonderes: 'Distanzmalus −1 pro 2m', price: '1 SM' },
     { name: 'Wurfmesser', wb: 0, type: 'both', besonderes: 'Distanzmalus −1 pro 2m; auch für den Nahkampf geeignet', price: '2 GM' },
     { name: 'Axt', wb: 1, type: 'melee', besonderes: '—', price: '6 GM' },
-    { name: 'Brecheisen', wb: 1, type: 'melee', ausSammlung: true, besonderes: 'Werkzeug; nicht im Grundregelwerk gelistet', price: '—' },
+    // Unter "Diverses" (S.79) statt in der Waffentabelle gelistet — nur WB angegeben.
+    // Robuste, preiswerte Alternative zur Keule, die bei einem Patzer zerbricht.
+    { name: 'Brechstange', wb: 1, type: 'melee', besonderes: 'unter „Diverses" gelistet; zerbricht nicht wie hölzerne Waffen', price: '15 SM' },
+    { name: 'Fackel', wb: 1, type: 'melee', besonderes: 'unter „Diverses" gelistet; brennt 2 Stunden', price: '1 KM' },
     { name: 'Hammer', wb: 1, type: 'melee', gaMod: -1, besonderes: 'Gegnerabwehr −1', price: '7 GM' },
     { name: 'Kampfstab', wb: 1, type: 'melee', twoHanded: true, reichweite: 2, stosswaffe: true, zerbricht: 'schlagen', besonderes: 'Zielzauber +1', price: '5 SM' },
     { name: 'Keule', wb: 1, type: 'melee', zerbricht: 'schlagen', besonderes: '—', price: '2 SM' },

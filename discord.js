@@ -45,6 +45,49 @@ function istWebhookUrl(url) {
 
 // --- Versand ---------------------------------------------------------------
 
+// Discords harte Grenzen. Wird eine überschritten, lehnt der Webhook die
+// gesamte Nachricht mit HTTP 400 ab — also lieber vorher kürzen.
+const DISCORD_LIMITS = { username: 80, author: 256, title: 256, description: 4096, content: 2000 };
+
+// Discord weist Absendernamen ab, die "discord" oder "clyde" enthalten, und
+// erkennt dabei auch Umschreibungen wie "Disc0rd". Ein Charakter mit so einem
+// Namen darf deshalb nicht im username stehen.
+function discordNameGesperrt(name) {
+    return /discord|clyde/i.test(name);
+}
+
+// Bringt eine Nachricht in eine Form, die Discord sicher annimmt: Erwähnungen
+// entschärfen, gesperrte Absender ausweichen, Längen kappen.
+function discordPayloadPruefen(payload) {
+    const p = Object.assign({}, payload);
+    p.embeds = (payload.embeds || []).map(e => Object.assign({}, e));
+
+    // Charakternamen, Ausrüstungsbezeichnungen und Ansagen des Spielleiters
+    // sind freier Text. Ohne diese Zeile würde ein "@everyone" darin den
+    // ganzen Server anpingen.
+    p.allowed_mentions = { parse: [] };
+
+    if (p.username && discordNameGesperrt(p.username)) {
+        // Der Embed-Author wird von Discord nicht gefiltert — dort bleibt der
+        // Name sichtbar, statt dass die Nachricht komplett abgewiesen wird.
+        const name = p.username;
+        delete p.username;
+        if (!p.embeds.length) p.embeds.push({ color: DISCORD_FARBEN.neutral });
+        p.embeds[0].author = { name: name.slice(0, DISCORD_LIMITS.author) };
+    } else if (p.username) {
+        p.username = p.username.slice(0, DISCORD_LIMITS.username);
+    }
+
+    if (p.content) p.content = p.content.slice(0, DISCORD_LIMITS.content);
+    p.embeds.forEach(e => {
+        if (e.title) e.title = e.title.slice(0, DISCORD_LIMITS.title);
+        if (e.description) e.description = e.description.slice(0, DISCORD_LIMITS.description);
+    });
+    if (!p.embeds.length) delete p.embeds;
+
+    return p;
+}
+
 // Discord drosselt Webhooks (etwa 5 Anfragen je 2 Sekunden). Die Warteschlange
 // hält einen Mindestabstand ein, damit nichts verworfen wird.
 let discordQueue = [];
@@ -52,7 +95,7 @@ let discordSending = false;
 const DISCORD_ABSTAND_MS = 450;
 
 function discordEnqueue(payload) {
-    discordQueue.push(payload);
+    discordQueue.push(discordPayloadPruefen(payload));
     if (discordQueue.length > 40) discordQueue.shift(); // Rückstau begrenzen
     if (!discordSending) discordFlush();
 }
@@ -85,6 +128,11 @@ async function discordFlush() {
                     discordQueue = [];
                     discordMelde('Discord-Webhook ist ungültig oder wurde gelöscht.', 'fehlschlag');
                     break;
+                }
+                if (antwort.status === 400) {
+                    // Nur diese eine Nachricht war fehlerhaft. Sie ist bereits
+                    // aus der Queue, der Rest darf weiterlaufen.
+                    discordMelde('Discord hat eine Nachricht abgelehnt — sie fehlt im Kanal.', 'fehlschlag');
                 }
             }
         } catch (e) {

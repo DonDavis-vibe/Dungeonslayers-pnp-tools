@@ -287,14 +287,19 @@ function renderAttributes() {
             const base = appData.eigenschaften[eigKey] || 0;
             const eff = effectiveEigenschaft(eigKey);
             const max = eigenschaftMax(eigKey, appData.volk, appData.klasse, appData.menschCapChoices);
-            const bonusMark = eff > base ? ` <span style="color:var(--accent-bright)">+${eff - base}</span>` : '';
+            // Der große Wert ist der, mit dem gerechnet wird. Die Herkunft steht
+            // klein darunter als "4+1" — ein "5 +1" daneben liest sich sonst
+            // fälschlich als 5+1=6.
+            const herkunft = eff > base
+                ? `<span class="eig-herkunft" title="Basiswert ${base} plus ${eff - base} aus Volks-/Klassenbonus">${base}+${eff - base}</span>`
+                : '';
             html += `
                 <div class="eig-row">
                     <span class="eig-name">${DS4_EIGENSCHAFT_NAMES[eigKey]}<span class="eig-abbr">${DS4_EIGENSCHAFT_ABBR[eigKey]}</span></span>
                     <span class="stepper">
                         <button data-step="eig" data-key="${eigKey}" data-delta="-1" ${base <= 0 ? 'disabled' : ''}>−</button>
                     </span>
-                    <span class="eig-value">${eff}${bonusMark}</span>
+                    <span class="eig-value">${eff}${herkunft}</span>
                     <span class="stepper">
                         <button data-step="eig" data-key="${eigKey}" data-delta="1" ${eff >= max ? 'disabled' : ''}>+</button>
                     </span>
