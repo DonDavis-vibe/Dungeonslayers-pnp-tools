@@ -142,36 +142,43 @@ const DS4_DIFFICULTY_MODIFIERS = [
     { label: 'Äußerst schwer', mod: -8 }
 ];
 
-// type: 'melee' | 'ranged' | 'both' | twoHanded: bool | dwarfBanned: bool
-// initMod/gaMod are explicit numeric modifiers (Initiative / Gegnerabwehr) parsed from "Besonderes" for live calc.
+// Waffentabelle, abgeglichen mit dem Regelwerk S.80 (PDF S.90).
+//   type          'melee' | 'ranged' | 'both'
+//   twoHanded     im Regelwerk mit "(2h)" gekennzeichnet — schließt einen Schild aus
+//   dwarfBanned   Fußnote *: für Zwerge zu unhandlich
+//   reichweite    Anhang B (S.153): erreicht Ziele bis zu 2 Felder entfernt
+//   stosswaffe    Anhang B: trifft auch Ziele, vor denen jemand steht
+//   zerbricht     Fußnoten **/****: zerbricht bei einem Schlagen- bzw. Schießen-Patzer
+//   initMod/gaMod dieselben Angaben als Zahl, damit sie in die Werte einfließen
 const DS4_WEAPONS = [
     { name: 'Waffenlos', wb: 0, type: 'melee', gaMod: 5, besonderes: 'Gegnerabwehr +5', price: '—' },
     { name: 'Dolch', wb: 0, type: 'melee', initMod: 1, besonderes: 'Initiative +1', price: '2 GM' },
     { name: 'Schlagring', wb: 0, type: 'melee', besonderes: 'wie waffenlos, aber ohne Abwehr-Bonus für Gegner', price: '1 GM' },
-    { name: 'Schleuder', wb: 0, type: 'ranged', besonderes: '−1 pro 2m Distanz', price: '1 SM' },
-    { name: 'Wurfmesser', wb: 0, type: 'both', besonderes: '−1 pro 2m Distanz; auch im Nahkampf nutzbar', price: '2 GM' },
+    { name: 'Schleuder', wb: 0, type: 'ranged', besonderes: 'Distanzmalus −1 pro 2m', price: '1 SM' },
+    { name: 'Wurfmesser', wb: 0, type: 'both', besonderes: 'Distanzmalus −1 pro 2m; auch für den Nahkampf geeignet', price: '2 GM' },
     { name: 'Axt', wb: 1, type: 'melee', besonderes: '—', price: '6 GM' },
+    { name: 'Brecheisen', wb: 1, type: 'melee', ausSammlung: true, besonderes: 'Werkzeug; nicht im Grundregelwerk gelistet', price: '—' },
     { name: 'Hammer', wb: 1, type: 'melee', gaMod: -1, besonderes: 'Gegnerabwehr −1', price: '7 GM' },
-    { name: 'Kampfstab', wb: 1, type: 'melee', twoHanded: true, reichweite: 2, stosswaffe: true, besonderes: 'Zielzauber +1', price: '5 SM' },
-    { name: 'Keule', wb: 1, type: 'melee', twoHanded: true, besonderes: '—', price: '2 SM' },
-    { name: 'Speer', wb: 1, type: 'both', reichweite: 2, stosswaffe: true, besonderes: 'im Nahkampf oder als Wurfwaffe nutzbar', price: '1 GM' },
+    { name: 'Kampfstab', wb: 1, type: 'melee', twoHanded: true, reichweite: 2, stosswaffe: true, zerbricht: 'schlagen', besonderes: 'Zielzauber +1', price: '5 SM' },
+    { name: 'Keule', wb: 1, type: 'melee', zerbricht: 'schlagen', besonderes: '—', price: '2 SM' },
+    { name: 'Speer', wb: 1, type: 'both', reichweite: 2, stosswaffe: true, zerbricht: 'schiessen', besonderes: 'sowohl für Nah- als auch Fernkampf', price: '1 GM' },
     { name: 'Schwert, Breit-', wb: 1, type: 'melee', gaMod: -2, besonderes: 'Gegnerabwehr −2', price: '8 GM' },
-    { name: 'Schwert, Kurz-', wb: 1, type: 'melee', besonderes: 'gilt auch für Krummsäbel', price: '6 GM' },
+    { name: 'Schwert, Kurz-', wb: 1, type: 'melee', besonderes: 'Werte gelten auch für Krummsäbel', price: '6 GM' },
     { name: 'Bogen, Kurz-', wb: 1, type: 'ranged', twoHanded: true, initMod: 1, besonderes: 'Initiative +1', price: '6 GM' },
     { name: 'Streitkolben/Morgenstern', wb: 1, type: 'melee', gaMod: -1, besonderes: 'Gegnerabwehr −1', price: '7 GM' },
-    { name: 'Lanze', wb: '1 (Trab) / 4 (Galopp)', type: 'melee', besonderes: 'nur beritten', price: '2 GM' },
-    { name: 'Schwert, Lang-', wb: 2, type: 'melee', gaMod: -2, besonderes: 'Gegnerabwehr −2', price: '7 GM' },
+    { name: 'Lanze', wb: '1 (Trab) / 4 (Galopp)', type: 'melee', zerbricht: 'schlagen', besonderes: 'nur beritten: im Trab WB+1, im Galopp WB+4', price: '2 GM' },
+    { name: 'Schwert, Lang-', wb: 2, type: 'melee', besonderes: 'Werte gelten auch für Krummschwerter', price: '7 GM' },
     { name: 'Bogen, Lang-', wb: 2, type: 'ranged', twoHanded: true, dwarfBanned: true, initMod: 1, besonderes: 'Initiative +1', price: '10 GM' },
     { name: 'Armbrust, leicht', wb: 2, type: 'ranged', twoHanded: true, initMod: -2, besonderes: 'Initiative −2', price: '8 GM' },
-    { name: 'Flegel', wb: 2, type: 'melee', twoHanded: true, initMod: -2, besonderes: 'Initiative −2', price: '8 GM' },
-    { name: 'Hellebarde', wb: 2, type: 'melee', twoHanded: true, initMod: -2, reichweite: 2, stosswaffe: true, besonderes: 'Initiative −2', price: '4 GM' },
+    { name: 'Flegel', wb: 2, type: 'melee', initMod: -2, besonderes: 'Initiative −2', price: '8 GM' },
+    { name: 'Hellebarde', wb: 2, type: 'melee', twoHanded: true, initMod: -2, reichweite: 2, stosswaffe: true, zerbricht: 'schlagen', besonderes: 'Initiative −2; typische Stadtwachenwaffe', price: '4 GM' },
     { name: 'Streitaxt', wb: 3, type: 'melee', twoHanded: true, initMod: -2, besonderes: 'Initiative −2', price: '7 GM' },
     { name: 'Streithammer', wb: 3, type: 'melee', twoHanded: true, initMod: -4, besonderes: 'Initiative −4', price: '6 GM' },
     { name: 'Bihänder', wb: 3, type: 'melee', twoHanded: true, dwarfBanned: true, initMod: -2, gaMod: -4, reichweite: 2, besonderes: 'Initiative −2, Gegnerabwehr −4', price: '10 GM' },
     { name: 'Armbrust, schwer', wb: 3, type: 'ranged', twoHanded: true, initMod: -4, gaMod: -2, besonderes: 'Initiative −4, Gegnerabwehr −2', price: '15 GM' },
     { name: 'Bogen, Elfen-', wb: 3, type: 'ranged', twoHanded: true, dwarfBanned: true, initMod: 1, besonderes: 'Initiative +1', price: '75 GM' },
     { name: 'Zwergenaxt', wb: 3, type: 'melee', twoHanded: true, initMod: -1, gaMod: -2, besonderes: 'Initiative −1, Gegnerabwehr −2', price: '60 GM' },
-    { name: 'Schlachtgeißel', wb: 3, type: 'melee', initMod: -4, gaMod: -4, besonderes: 'Initiative −4, Gegnerabwehr −4; Patzer beim Schlagen trifft einen selbst', price: '16 GM' },
+    { name: 'Schlachtgeißel', wb: 3, type: 'melee', initMod: -4, gaMod: -4, besonderes: 'Initiative −4, Gegnerabwehr −4; bei einem Schlagen-Patzer trifft der Angreifer sich selbst', price: '16 GM' },
     { name: 'Schlachtbeil', wb: 4, type: 'melee', twoHanded: true, dwarfBanned: true, initMod: -6, gaMod: -4, reichweite: 2, besonderes: 'Initiative −6, Gegnerabwehr −4', price: '20 GM' }
 ];
 

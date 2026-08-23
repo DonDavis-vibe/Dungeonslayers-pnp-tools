@@ -187,6 +187,32 @@ das Tool nie.
 > `localStorage` dieses Browsers und wird bewusst **nicht** in die exportierte Charakterdatei
 > geschrieben — geteilte Charaktere verraten den Webhook also nicht.
 
+### 🗺️ Karte mit Raster, Figuren und Nebel des Krieges
+Direkt in Bogen und Dashboard eingebettet, ein- und ausklappbar, dazu ein Vollbildmodus.
+Nach Anhang B des Regelwerks gilt: **ein Feld = 1 Meter**.
+
+- **Karte laden** — ein beliebiges Bild; es wird verkleinert und in Stücken an alle Spieler
+  übertragen. Raster, Feldgröße und Versatz sind frei einstellbar.
+- **Figuren** kommen per Klick aus dem Kampf-Tracker oder werden einzeln gesetzt. Spieler
+  erscheinen mit ihrem **Charakterbild**, umrandet in ihrer Farbe.
+- **Bewegung mit Bestätigung:** Zieht ein Spieler seine Figur, bleibt sie stehen und meldet den
+  Zug als Vorschlag an — mit Entfernung in Feldern und Metern. Der Spielleiter sieht ihn neben
+  dem *Laufen*-Wert des Helden, bekommt eine Warnung bei zu weiten Zügen und entscheidet.
+  Der Spielleiter selbst versetzt Figuren jederzeit direkt.
+- **Messen** per Werkzeug oder Umschalt+Ziehen, in Feldern und Metern.
+- **Markierungen** als Freihand, Linie, Kreis oder Rechteck in fünf Farben. Der Kreis beschriftet
+  sich mit seinem Radius in Metern — praktisch für Zauberwirkungen.
+- **Nebel des Krieges** mit rechteckigen oder runden Bereichen. Aufgedeckte Bereiche werden erst
+  **vorgemerkt** (grün gestrichelt, für Spieler unsichtbar) und auf Knopfdruck freigegeben, damit
+  man Fehlgriffe korrigieren kann. Der Spielleiter sieht den Nebel halbdurchsichtig, die Spieler
+  deckend; Gegner in ungedecktem Nebel werden gar nicht erst übertragen.
+
+### 💾 Sitzung speichern und laden (Spielleiter)
+Notizen, Gegner samt Lebenskraft und Position, Figurenplätze auf der Karte, Nebel, Markierungen
+und der Rundenzähler wandern in eine JSON-Datei — wahlweise mit oder ohne Kartenbild. Zusätzlich
+sichert das Tool laufend automatisch: Nach einem versehentlichen Neuladen bietet es an, die
+frühere Sitzung wiederherzustellen.
+
 ### ⚔️ Kampf-Tracker (Spielleiter)
 - **Initiative-Reihenfolge** absteigend sortiert, mit einmaligem W20-„Stechen" bei Gleichstand
 - **Rundenzähler**, der automatisch an alle Spieler synchronisiert wird
@@ -232,6 +258,9 @@ Im Ordner [`beispiele/`](beispiele/) liegen zwei fertige Helden zum Ausprobieren
 | `spellPicker.js` | Zauber-Auswahl mit Zugangsprüfung |
 | `wizard.js` | Charaktererschaffung |
 | `combat.js` | Kampf- und Initiative-Tracker samt Bestiarium |
+| `battlemap.js` | **Eigenständiges Karten-Modul** — kennt kein Regelsystem, frei wiederverwendbar |
+| `mapui.js` | Anbindung der Karte an Bogen, Dashboard und Verbindung |
+| `session.js` | Sitzung des Spielleiters sichern, laden und nach einem Reload retten |
 | `multiplayer.js` | WebRTC-Verbindung und SL-Dashboard |
 | `discord.js` | Optionale Discord-Webhook-Anbindung |
 | `regeln/` | Die offiziellen PDFs plus aufbereitete Regel-Referenzen |
@@ -276,6 +305,30 @@ Wer keinen Code beisteuern möchte: Issues und Rückmeldungen sind genauso viel 
 Die Regeldaten (`talents.js`, `zauber.js`, `bestiarium.js`, `data.js`) sind reine Datendateien ohne
 Logik — dort lassen sich Werte korrigieren, ohne den Rest anzufassen. Die eigentliche Regelmechanik
 steckt kompakt in `rules.js`, alles Sichtbare in `app.js` und den Picker-Dateien.
+
+**Das Karten-Modul ist bewusst systemunabhängig.** `battlemap.js` kennt weder Dungeonslayers noch
+die Netzwerkverbindung — es zeichnet Karte, Raster, Figuren, Markierungen und Nebel, verwaltet Zoom
+und Verschiebung und meldet jede Änderung über einen Rückruf. Für ein anderes Projekt reichen ein
+paar Zeilen:
+
+```js
+const map = BattleMap.create(canvasElement, {
+    onChange: zustand => verbindung.send(zustand),
+    einheit: 1.5, einheitName: 'm'          // z.B. 1 Feld = 1,5 Meter
+});
+map.setBild(dataUrl);
+map.addFigur({ id: 'p1', name: 'Thorin', farbe: '#d4a24c', x: 3, y: 4 });
+map.applyState(vomNetzwerkEmpfangenerZustand);
+```
+
+Koordinaten sind immer Rasterfelder, nie Pixel — dadurch bleibt der Zustand unabhängig von
+Bildschirmgröße und Zoomstufe und ist klein genug, um ihn bei jeder Bewegung zu übertragen.
+
+### Nach einer Änderung: Versionsnummer hochzählen
+
+Alle eigenen Dateien werden mit einem Versionsparameter eingebunden (`app.js?v=20260823c`). Wer
+etwas ändert, zählt die Version in `index.html` hoch — sonst behalten Besucher die alte Fassung
+aus dem Browser-Cache.
 
 ## Lizenz
 

@@ -334,6 +334,8 @@ function renderCombat() {
     if (!box) return;
 
     if (combatActive) syncPlayersIntoCombat();
+    // Kampfstand über einen versehentlichen Reload retten
+    if (typeof sitzungSichern === 'function') sitzungSichern();
 
     const header = `
         <div style="display:flex;align-items:center;gap:0.6rem;flex-wrap:wrap;margin-bottom:0.8rem">

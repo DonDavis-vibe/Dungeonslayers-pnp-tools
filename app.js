@@ -13,6 +13,7 @@ function blankCharacter() {
         equipment: { melee: '', ranged: '', koerper: '', helm: '', schienen: '', schild: '' },
         lkCurrent: 0,
         gold: 10, silber: 0, kupfer: 0, bonusLk: 0, extraTp: 0,
+        portrait: '',
         talents: [], spells: [], inventory: [],
         notes: '', log: []
     };
@@ -587,6 +588,10 @@ function renderEquipmentInfo(derived) {
             teile.push(`Reichweite ${w.reichweite} Felder (${w.reichweite}m)` +
                 (w.stosswaffe ? ', Stoßwaffe — trifft auch Ziele hinter einem Gegner' : ''));
         }
+        // Fußnoten der Waffentabelle: zerbricht bei einem Patzer
+        if (w.zerbricht) {
+            teile.push(`zerbricht bei einem ${w.zerbricht === 'schiessen' ? 'Schießen' : 'Schlagen'}-Patzer`);
+        }
         if (teile.length) details.push(`<strong>${escapeHtml(w.name)}:</strong> ${teile.join(' · ')}`);
     });
     ['koerper', 'helm', 'schienen', 'schild'].forEach(slot => {
@@ -594,6 +599,47 @@ function renderEquipmentInfo(derived) {
         if (a && a.besonderes && a.besonderes !== '—') details.push(`<strong>${escapeHtml(a.name)}:</strong> ${escapeHtml(a.besonderes)}`);
     });
     document.getElementById('equipment-details').innerHTML = details.join(' · ');
+}
+
+// --- Porträt ----------------------------------------------------------------
+
+// Das Bild wandert über die Leitung zum Spielleiter und auf die Karte — deshalb
+// wird es klein gerechnet, statt die Originaldatei zu verschicken.
+function portraitLaden(ereignis) {
+    const datei = ereignis.target.files[0];
+    ereignis.target.value = '';
+    if (!datei) return;
+
+    if (typeof BattleMap === 'undefined') return;
+    BattleMap.bildVerkleinern(datei, 256, 0.75).then(ergebnis => {
+        appData.portrait = ergebnis.dataUrl;
+        renderPortrait();
+        scheduleSave();
+        syncMultiplayerState();
+        addLog('Charakterbild gesetzt.', 'neutral');
+    }).catch(() => alert('Das Bild konnte nicht gelesen werden.'));
+}
+
+function portraitEntfernen() {
+    appData.portrait = '';
+    renderPortrait();
+    scheduleSave();
+    syncMultiplayerState();
+}
+
+function renderPortrait() {
+    const bild = document.getElementById('portrait-img');
+    const platzhalter = document.getElementById('portrait-placeholder');
+    if (!bild) return;
+    if (appData.portrait) {
+        bild.src = appData.portrait;
+        bild.style.display = '';
+        platzhalter.style.display = 'none';
+    } else {
+        bild.removeAttribute('src');
+        bild.style.display = 'none';
+        platzhalter.style.display = '';
+    }
 }
 
 // --- Rendering: Meta (Stufe, EP, Volk) --------------------------------------
@@ -1184,6 +1230,7 @@ function closeModal(id) {
 
 function renderAll() {
     refreshBoundInputs();
+    renderPortrait();
     renderAttributes();
     renderBudgets();
     renderMeta();

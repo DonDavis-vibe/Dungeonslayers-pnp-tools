@@ -301,6 +301,10 @@ function enterGmMode(roomCode) {
     document.getElementById('gm-general-notes').value = localStorage.getItem('ds4_gm_notes') || '';
     renderGmDashboard();
     renderCombat();
+    // Die Karte wandert mit ins Dashboard
+    if (typeof karteEinhaengen === 'function') karteEinhaengen();
+    // Liegt eine frühere Sitzung vor, zur Wiederherstellung anbieten
+    if (typeof sitzungAnbieten === 'function') sitzungAnbieten();
     addGmLog('System', `Sitzung gestartet — Raum-Code ${roomCode}`, 'erfolg');
 }
 
@@ -313,6 +317,8 @@ function exitGmMode() {
     clearSession();
     document.getElementById('gm-dashboard').style.display = 'none';
     document.getElementById('player-view').style.display = '';
+    // Karte zurück in die Spieleransicht holen
+    if (typeof karteEinhaengen === 'function') karteEinhaengen();
 }
 
 function saveGmGeneralNotes(value) {
@@ -323,6 +329,9 @@ function saveGmGeneralNotes(value) {
 
 function handleIncomingData(peerId, payload) {
     if (!payload || typeof payload !== 'object') return;
+
+    // Karten-Nachrichten behandelt mapui.js selbst
+    if (typeof handleKartenNachricht === 'function' && handleKartenNachricht(payload, peerId)) return;
 
     if (payload.type === 'state') {
         const isNew = !connectedPlayers[peerId];
@@ -373,8 +382,13 @@ function renderGmDashboard() {
 
         const statBox = (label, value) => `<div class="gm-stat"><span>${label}</span><strong>${value}</strong></div>`;
 
+        const portrait = p.portrait
+            ? `<img class="gm-portrait" src="${p.portrait}" alt="" style="border-color:${color}">`
+            : `<span class="gm-portrait gm-portrait-leer" style="border-color:${color};color:${color}">${escapeHtml((p.name || '?').trim().slice(0, 2).toUpperCase())}</span>`;
+
         return `<div class="panel gm-player-card" style="border-top-color:${color}">
             <div class="panel-head" style="background:linear-gradient(180deg, ${color}22, transparent)">
+                ${portrait}
                 <h3 style="color:${color}">${escapeHtml(p.name || 'Namenlos')}</h3>
                 <div class="panel-actions"><span class="tag">Stufe ${p.stufe}</span></div>
             </div>
@@ -541,6 +555,7 @@ function joinMultiplayerSession(codeArg) {
     }
 
     letzterRaumCode = code;
+    spielerAbsichtlichGetrennt = false;
 
     ensurePeerJs(() => {
         setMultiplayerStatus('Verbinde...', 'var(--accent)');
@@ -563,9 +578,12 @@ function joinMultiplayerSession(codeArg) {
                 clearTimeout(joinTimeout);
                 setMultiplayerStatus('✓ Verbunden mit dem Spielleiter.', 'var(--success)');
                 setConnectionBadge('connected', code);
+                spielerReconnectVersuche = 0;   // geglückt, Zähler zurücksetzen
                 saveSession('player', code);
                 setTimeout(closeMultiplayerModal, 1000);
                 syncMultiplayerState();
+                // Falls der Spielleiter bereits eine Karte teilt, nachfordern
+                hostConnection.send({ type: 'mapAnfordern' });
                 addLog('Mit Spielleiter verbunden (Raum ' + code + ')', 'erfolg');
             });
 
@@ -573,10 +591,10 @@ function joinMultiplayerSession(codeArg) {
 
             hostConnection.on('close', () => {
                 hostConnection = null;
-                clearSession();
                 setConnectionBadge('lost', code);
-                showGmMessage('Die Verbindung zum Spielleiter wurde getrennt.');
                 addLog('Verbindung zum Spielleiter getrennt.', 'fehlschlag');
+                // Kurze Aussetzer (WLAN, Standby) sollen die Runde nicht sprengen
+                spielerReconnect(code);
             });
 
             hostConnection.on('error', () => {
@@ -600,6 +618,36 @@ function joinMultiplayerSession(codeArg) {
             }
         });
     });
+}
+
+// --- Spieler: automatisch wieder verbinden ---------------------------------
+
+let spielerReconnectVersuche = 0;
+let spielerReconnectLaeuft = false;
+let spielerAbsichtlichGetrennt = false;
+
+function spielerReconnect(code) {
+    if (spielerAbsichtlichGetrennt || spielerReconnectLaeuft) return;
+    if (spielerReconnectVersuche >= 6) {
+        setMultiplayerStatus('Wiederverbinden fehlgeschlagen. Bitte manuell beitreten.', 'var(--fail)');
+        addLog('Automatisches Wiederverbinden aufgegeben — bitte manuell beitreten.', 'fehlschlag');
+        clearSession();
+        return;
+    }
+
+    // Wartezeit verdoppelt sich: 2s, 4s, 8s ... höchstens 30s
+    const wartezeit = Math.min(2000 * Math.pow(2, spielerReconnectVersuche), 30000);
+    spielerReconnectVersuche++;
+    spielerReconnectLaeuft = true;
+    setConnectionBadge('connecting', code);
+    setMultiplayerStatus(`Verbindung verloren — Versuch ${spielerReconnectVersuche} in ${Math.round(wartezeit / 1000)}s...`, 'var(--accent)');
+
+    setTimeout(() => {
+        spielerReconnectLaeuft = false;
+        if (hostConnection && hostConnection.open) return;   // ist schon wieder da
+        if (spielerAbsichtlichGetrennt) return;
+        joinMultiplayerSession(code);
+    }, wartezeit);
 }
 
 // Nach dem Timeout die ICE-Kandidaten auswerten — sie verraten, woran es lag.
@@ -655,6 +703,8 @@ function buildSharedState() {
     return {
         name: characterName(),
         spieler: appData.spieler,
+        // Kleingerechnetes Charakterbild: erscheint auf der SL-Übersicht und als Figur auf der Karte
+        portrait: appData.portrait || '',
         volk: appData.volk ? DS4_RACES[appData.volk].name : '',
         klasse: cls ? (cls.isCaster && appData.subtype ? cls.subtypes[appData.subtype].name : cls.name) : '',
         isCaster: !!(cls && cls.isCaster),
@@ -665,6 +715,8 @@ function buildSharedState() {
         initiative: derived.initiative,
         schlagen: derived.schlagen,
         schiessen: derived.schiessen,
+        // Der Spielleiter braucht Laufen, um Zugvorschläge auf der Karte zu prüfen
+        laufen: derived.laufen,
         zaubern: derived.zaubern,
         zielzauber: derived.zielzauber,
         panzerung: derived.panzerung,
@@ -808,6 +860,9 @@ function gmRequestProbe(peerId, probeName) {
 
 function handleGmCommand(payload) {
     if (!payload || typeof payload !== 'object') return;
+
+    // Karten-Nachrichten behandelt mapui.js selbst
+    if (typeof handleKartenNachricht === 'function' && handleKartenNachricht(payload)) return;
 
     switch (payload.type) {
         case 'attack': {

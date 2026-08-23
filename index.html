@@ -52,7 +52,7 @@
 <!-- W20 als Favicon, direkt eingebettet (kein zusätzlicher Netzwerkabruf) -->
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%2314100c'/%3E%3Cpath d='M16 3 29 10.5v11L16 29 3 21.5v-11z' fill='none' stroke='%23d4a24c' stroke-width='2' stroke-linejoin='round'/%3E%3Cpath d='M16 3 16 29M3 10.5 29 21.5M29 10.5 3 21.5' stroke='%23d4a24c' stroke-width='1' opacity='.45'/%3E%3Ctext x='16' y='20' font-family='Georgia,serif' font-size='11' font-weight='bold' fill='%23f0c069' text-anchor='middle'%3E20%3C/text%3E%3C/svg%3E">
 
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css?v=20260823c">
 </head>
 <body>
 
@@ -74,6 +74,7 @@
         <button class="btn" onclick="exportCharacter()">💾 Speichern</button>
         <button class="btn" onclick="document.getElementById('import-file').click()">📂 Laden</button>
         <input type="file" id="import-file" accept=".json" style="display:none" onchange="importCharacter(event)">
+        <button class="btn" onclick="openKarte()">🗺️ Karte</button>
         <button class="btn btn-ghost" onclick="openBeispiele()">👤 Beispiel</button>
         <button class="btn btn-ghost" onclick="openRulesModal()">📖 Regeln</button>
     </div>
@@ -88,6 +89,22 @@
             <div class="panel-actions"><span class="tag" id="tag-stufe">Stufe 1</span></div>
         </div>
         <div class="panel-body">
+            <div class="portrait-row">
+                <div class="portrait-frame" id="portrait-frame" onclick="document.getElementById('portrait-file').click()"
+                     title="Bild wählen — erscheint beim Spielleiter und als Figur auf der Karte">
+                    <img id="portrait-img" alt="" style="display:none">
+                    <span id="portrait-placeholder">＋<br><small>Bild</small></span>
+                </div>
+                <div class="hint" style="flex:1">
+                    Ein Bild deines Helden. Der Spielleiter sieht es auf seiner Übersicht, und auf der
+                    Karte wird deine Figur damit dargestellt.
+                    <div style="margin-top:0.4rem;display:flex;gap:0.4rem;flex-wrap:wrap">
+                        <button class="btn btn-sm" onclick="document.getElementById('portrait-file').click()">Bild wählen</button>
+                        <button class="btn btn-sm btn-ghost" onclick="portraitEntfernen()">Entfernen</button>
+                    </div>
+                </div>
+                <input type="file" id="portrait-file" accept="image/*" style="display:none" onchange="portraitLaden(event)">
+            </div>
             <div class="grid-2">
                 <div class="field"><label>Name</label><input type="text" id="f-name" data-bind="name"></div>
                 <div class="field"><label>Spieler</label><input type="text" id="f-spieler" data-bind="spieler"></div>
@@ -145,6 +162,18 @@
                 (max. 4 je Eigenschaft) — Volks- und Klassenbonus kommen danach obendrauf.
             </div>
         </div>
+    </div>
+
+    <!-- Karte -->
+    <div class="panel" id="map-panel-player">
+        <div class="panel-head">
+            <h2>🗺️ Karte</h2>
+            <div class="panel-actions">
+                <button class="btn btn-sm btn-ghost" onclick="karteVollbild(true)">⛶ Vollbild</button>
+                <button class="btn btn-sm btn-ghost" id="map-toggle-player" onclick="karteEinklappen('player')">Einklappen</button>
+            </div>
+        </div>
+        <div class="panel-body map-host" id="map-host-player"></div>
     </div>
 
     <!-- Kampfwerte -->
@@ -401,12 +430,29 @@
             <span class="status-dot" id="gm-room-status"></span>
         </div>
         <div class="topbar-actions">
+            <button class="btn" onclick="openKarte()">🗺️ Karte</button>
+            <button class="btn" onclick="sitzungExportieren()" title="Notizen, Kampf und Karte als Datei sichern">💾 Sitzung speichern</button>
+            <button class="btn" onclick="document.getElementById('gm-sitzung-datei').click()">📂 Sitzung laden</button>
+            <input type="file" id="gm-sitzung-datei" accept=".json" style="display:none" onchange="sitzungImportieren(event)">
             <button class="btn btn-danger" onclick="exitGmMode()">Dashboard verlassen</button>
         </div>
     </div>
 
+    <div id="gm-sitzung"></div>
+
     <div class="gm-grid">
         <div>
+            <div class="panel" id="map-panel-gm" style="margin-bottom:1.2rem">
+                <div class="panel-head">
+                    <h3>🗺️ Karte</h3>
+                    <div class="panel-actions">
+                        <button class="btn btn-sm btn-ghost" onclick="karteVollbild(true)">⛶ Vollbild</button>
+                        <button class="btn btn-sm btn-ghost" id="map-toggle-gm" onclick="karteEinklappen('gm')">Einklappen</button>
+                    </div>
+                </div>
+                <div class="panel-body map-host" id="map-host-gm"></div>
+            </div>
+
             <div class="panel" style="margin-bottom:1.2rem">
                 <div class="panel-head"><h3>⚔️ Kampf &amp; Initiative</h3>
                     <div class="panel-actions"><span class="hint">Reihenfolge: absteigende Initiative</span></div>
@@ -470,6 +516,27 @@
         </div>
     </div>
 </div>
+
+<!-- ============ KARTE ============ -->
+<!-- Das Karten-Element wird zwischen den Einhängepunkten verschoben:
+     Spieleransicht, SL-Dashboard und Vollbild teilen sich EINE Leinwand. -->
+<div id="map-widget">
+    <div id="map-tools" class="map-tools"></div>
+    <div id="map-nebel"></div>
+    <div id="map-zuege" class="map-zuege"></div>
+    <canvas id="map-canvas"></canvas>
+    <div id="map-status" class="map-status"></div>
+</div>
+<div id="map-overlay">
+    <div class="map-head">
+        <h3>🗺️ Karte</h3>
+        <span class="hint" style="margin-left:auto"></span>
+        <button class="btn btn-sm" onclick="karteVollbild(false)">Verkleinern</button>
+        <button class="btn btn-sm btn-ghost" onclick="karteVollbild(false)" title="Schließen">✕</button>
+    </div>
+    <div class="map-host" id="map-host-overlay"></div>
+</div>
+<input type="file" id="map-file" accept="image/*" style="display:none">
 
 <!-- ============ MODALS ============ -->
 
@@ -618,17 +685,20 @@
     </div>
 </div>
 
-<script src="data.js"></script>
-<script src="talents.js"></script>
-<script src="zauber.js"></script>
-<script src="bestiarium.js"></script>
-<script src="rules.js"></script>
-<script src="app.js"></script>
-<script src="talentPicker.js"></script>
-<script src="spellPicker.js"></script>
-<script src="wizard.js"></script>
-<script src="combat.js"></script>
-<script src="multiplayer.js"></script>
-<script src="discord.js"></script>
+<script src="data.js?v=20260823c"></script>
+<script src="talents.js?v=20260823c"></script>
+<script src="zauber.js?v=20260823c"></script>
+<script src="bestiarium.js?v=20260823c"></script>
+<script src="rules.js?v=20260823c"></script>
+<script src="app.js?v=20260823c"></script>
+<script src="talentPicker.js?v=20260823c"></script>
+<script src="spellPicker.js?v=20260823c"></script>
+<script src="wizard.js?v=20260823c"></script>
+<script src="combat.js?v=20260823c"></script>
+<script src="battlemap.js?v=20260823c"></script>
+<script src="multiplayer.js?v=20260823c"></script>
+<script src="mapui.js?v=20260823c"></script>
+<script src="session.js?v=20260823c"></script>
+<script src="discord.js?v=20260823c"></script>
 </body>
 </html>

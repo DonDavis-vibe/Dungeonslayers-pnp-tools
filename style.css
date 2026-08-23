@@ -468,6 +468,149 @@ select option { background: #1c1712; }
 }
 .round-indicator.visible { opacity: 1; transform: translateY(0); }
 
+/* ---------- Charakterbild ---------- */
+
+.portrait-row { display: flex; gap: 1rem; align-items: flex-start; margin-bottom: 1rem; flex-wrap: wrap; }
+.portrait-frame {
+    width: 84px; height: 84px; flex: none;
+    border-radius: 50%;
+    border: 2px solid var(--panel-border-strong);
+    background: rgba(0, 0, 0, 0.35);
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden; cursor: pointer;
+    color: var(--text-dim); text-align: center; font-size: 1.3rem; line-height: 1.1;
+    transition: border-color 0.15s;
+}
+.portrait-frame:hover { border-color: var(--accent); color: var(--accent); }
+.portrait-frame img { width: 100%; height: 100%; object-fit: cover; }
+.portrait-frame small { font-size: 0.6rem; letter-spacing: 0.08em; text-transform: uppercase; }
+
+/* Bild auf der Spielerkarte im Dashboard */
+.gm-portrait {
+    width: 34px; height: 34px; flex: none;
+    border-radius: 50%; border: 2px solid var(--accent);
+    object-fit: cover;
+}
+.gm-portrait-leer {
+    display: inline-flex; align-items: center; justify-content: center;
+    background: rgba(0, 0, 0, 0.4);
+    font-size: 0.75rem; font-weight: bold;
+}
+
+/* ---------- Karte ---------- */
+
+#map-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 250;
+    background: var(--bg);
+    flex-direction: column;
+}
+
+/* Einhängepunkte: eingebettet feste Höhe, im Vollbild der ganze Rest */
+.map-host { padding: 0; height: 420px; overflow: hidden; transition: height 0.2s ease; }
+.map-host.zugeklappt { height: 0; }
+#map-host-overlay { flex: 1; height: auto; padding: 0; }
+
+#map-widget { display: flex; flex-direction: column; height: 100%; }
+
+@media (max-width: 700px) { .map-host { height: 300px; } }
+
+.map-head {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    padding: 0.6rem 0.9rem;
+    background: linear-gradient(180deg, rgba(70, 52, 26, 0.6), rgba(40, 30, 18, 0.4));
+    border-bottom: 1px solid var(--panel-border-strong);
+    flex: none;
+}
+.map-head h3 { font-size: 1rem; color: var(--accent-bright); white-space: nowrap; }
+.map-tools {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+    flex: none;
+    min-width: 0;
+    padding: 0.5rem 0.7rem;
+    border-bottom: 1px solid var(--panel-border);
+    background: rgba(0, 0, 0, 0.25);
+}
+.map-tools .radio-pill { padding: 0.22rem 0.6rem; font-size: 0.78rem; }
+.map-tools input[type=number] { padding: 0.2rem 0.35rem; font-size: 0.8rem; }
+.map-tools .hint { white-space: nowrap; }
+
+#map-canvas {
+    flex: 1;
+    width: 100%;
+    min-height: 0;
+    display: block;
+    cursor: grab;
+    touch-action: none;
+}
+#map-canvas:active { cursor: grabbing; }
+
+.werkzeug-gruppe {
+    display: inline-flex; align-items: center; gap: 0.25rem;
+    padding: 0.15rem 0.35rem;
+    border: 1px solid var(--panel-border);
+    border-radius: 16px;
+    background: rgba(0, 0, 0, 0.25);
+}
+.mal-farbe {
+    width: 17px; height: 17px; border-radius: 50%;
+    cursor: pointer; border: 2px solid transparent;
+    transition: transform 0.12s;
+}
+.mal-farbe:hover { transform: scale(1.15); }
+.mal-farbe.aktiv { border-color: var(--text); }
+
+/* Angebot, eine frühere Sitzung wiederherzustellen */
+#gm-sitzung:empty { display: none; }
+.sitzung-hinweis {
+    display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;
+    max-width: 1700px; margin: 0 auto 1.2rem;
+    padding: 0.6rem 0.9rem;
+    font-size: 0.87rem;
+    background: rgba(168, 118, 44, 0.18);
+    border: 1px solid var(--panel-border-strong);
+    border-radius: var(--radius);
+}
+
+/* Vorgemerkte Nebelbereiche, die noch freigegeben werden müssen */
+#map-nebel:empty { display: none; }
+.nebel-freigabe {
+    display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;
+    padding: 0.45rem 0.7rem;
+    font-size: 0.85rem;
+    background: rgba(111, 168, 74, 0.16);
+    border-bottom: 1px solid var(--panel-border);
+}
+
+/* Offene Zugvorschläge beim Spielleiter */
+.map-zuege { flex: none; }
+.map-zuege:empty { display: none; }
+.zug-vorschlag {
+    display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;
+    padding: 0.45rem 0.7rem;
+    font-size: 0.85rem;
+    background: rgba(168, 118, 44, 0.18);
+    border-bottom: 1px solid var(--panel-border);
+}
+.zug-vorschlag.zu-weit { background: rgba(168, 52, 44, 0.22); }
+
+.map-status {
+    flex: none;
+    padding: 0.4rem 0.9rem;
+    font-size: 0.8rem;
+    color: var(--text-dim);
+    border-top: 1px solid var(--panel-border);
+    background: rgba(0, 0, 0, 0.3);
+    min-height: 1.9rem;
+}
+
 /* ---------- Fußbereich ---------- */
 
 .site-footer {
