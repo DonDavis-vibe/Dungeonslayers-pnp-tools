@@ -184,6 +184,7 @@ select option { background: #1c1712; }
 .kw-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-dim); }
 .kw-value { font-size: 1.7rem; font-weight: bold; color: var(--accent-bright); font-family: Georgia, serif; line-height: 1.2; }
 .kw-formula { font-size: 0.65rem; color: var(--text-dim); opacity: 0.75; }
+.kw-talent { color: var(--accent); opacity: 1; font-weight: 600; }
 
 /* Lebenskraft */
 .lk-panel { display: flex; align-items: center; gap: 0.8rem; flex-wrap: wrap; }

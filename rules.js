@@ -16,7 +16,8 @@ function findArmor(name) {
 }
 
 // Summiert die Modifikatoren aller angelegten Rüstungsteile.
-function armorTotals(equipment) {
+// ruesttraegerRang mindert den Laufen-Malus der Rüstung um 0,5m je Rang (S.40).
+function armorTotals(equipment, ruesttraegerRang = 0) {
     const totals = { pa: 0, laufenMod: 0, initMod: 0, auraMod: 0, nonClothPa: 0 };
     ['koerper', 'helm', 'schienen', 'schild'].forEach(slot => {
         const armor = findArmor(equipment[slot]);
@@ -28,6 +29,11 @@ function armorTotals(equipment) {
         // Nur Stoff (Robe) behindert das Zaubern nicht — Regelwerk S.41
         if (!armor.name.startsWith('Robe')) totals.nonClothPa += armor.pa;
     });
+
+    // Der Malus wird gemindert, kann aber nicht zum Bonus werden
+    if (ruesttraegerRang && totals.laufenMod < 0) {
+        totals.laufenMod = Math.min(0, totals.laufenMod + 0.5 * ruesttraegerRang);
+    }
     return totals;
 }
 
@@ -45,6 +51,76 @@ function gegnerabwehr(char, slot) {
     return weapon && weapon.gaMod ? weapon.gaMod : 0;
 }
 
+// --- Talentboni -------------------------------------------------------------
+
+// Talente, die einen Kampfwert DAUERHAFT und bedingungslos verändern.
+// Der Wert gilt jeweils pro Talentrang (Regelwerk S.17-37).
+const DS4_TALENT_BONI = {
+    // "Er erhält pro Talentrang auf Schlagen einen Bonus von +1." (S.36)
+    'Kämpfer': { schlagen: 1 },
+    // "Er erhält auf Schießen und Zielzauber einen Bonus von +1 pro Talentrang." (S.41)
+    'Schütze': { schiessen: 1, zielzauber: 1 },
+    // "Der Charakter versteht es, ordentlich Schaden einzustecken." (S.32)
+    'Einstecker': { lebenskraft: 3 },
+    // "Der Wert für Laufen wird pro Erwerb des Talents um 1m erhöht." (S.33)
+    'Flink': { laufen: 1 },
+    // "Der Charakter kann schnell reagieren." (S.41)
+    'Schnelle Reflexe': { initiative: 2 },
+    // Heldenklasse Blutmagier: dauerhafter Abwehrbonus gegen Lebenskraft
+    'Ritual der Narben': { abwehr: 2, lebenskraft: -1 }
+};
+
+// Talente, die nur unter bestimmten Umständen greifen. Sie werden NICHT
+// automatisch eingerechnet, sondern dem Spieler als Hinweis angezeigt.
+const DS4_TALENT_SITUATIV = {
+    'Parade': { wert: 'Abwehr', proRang: 1, bedingung: 'mit gezogener Nahkampfwaffe, gegen bewusste Nahkampfangriffe nicht von hinten' },
+    'Blocker': { wert: 'Abwehr', proRang: 2, bedingung: 'mit Schild, ohne Bewegung und ohne offensive Handlung' },
+    'Diener des Lichts': { wert: 'Abwehr', proRang: 1, bedingung: 'gegen Wesen der Dunkelheit und Schattenzauber' },
+    'Diener der Dunkelheit': { wert: 'Angriffe', proRang: 1, bedingung: 'gegen Wesen des Lichts; Abwehr gegen Lichtzauber' },
+    'Brutaler Hieb': { wert: 'Schlagen', proRang: 'KÖR', bedingung: 'einmal pro Kampf je Rang, für einen einzelnen Angriff' },
+    'Fieser Schuß': { wert: 'Schießen', proRang: 'AGI', bedingung: 'einmal pro Kampf je Rang, für einen einzelnen Schuss' },
+    'Raserei': { wert: 'Schlagen', proRang: 2, bedingung: 'je Rang −1 Abwehr für +2 Schlagen, rundenweise umschichtbar' }
+};
+
+function talentRang(talents, name) {
+    const t = (talents || []).find(x => x.name === name);
+    return t ? (t.rang || 0) : 0;
+}
+
+// Summiert alle dauerhaften Talentboni und listet auf, woher sie stammen.
+function talentBoni(talents) {
+    const boni = { schlagen: 0, schiessen: 0, zielzauber: 0, lebenskraft: 0, laufen: 0, initiative: 0, abwehr: 0, zaubern: 0 };
+    const herkunft = {};
+
+    Object.keys(DS4_TALENT_BONI).forEach(name => {
+        const rang = talentRang(talents, name);
+        if (!rang) return;
+        Object.entries(DS4_TALENT_BONI[name]).forEach(([wert, proRang]) => {
+            const summe = proRang * rang;
+            boni[wert] += summe;
+            (herkunft[wert] = herkunft[wert] || []).push(`${name} ${rang}: ${summe > 0 ? '+' : ''}${summe}`);
+        });
+    });
+
+    return { boni, herkunft };
+}
+
+// Situative Talente, die der Charakter besitzt — für die Anzeige am Bogen.
+function situativeTalente(talents) {
+    return (talents || [])
+        .filter(t => DS4_TALENT_SITUATIV[t.name] && (t.rang || 0) > 0)
+        .map(t => {
+            const d = DS4_TALENT_SITUATIV[t.name];
+            const bonus = typeof d.proRang === 'number' ? `+${d.proRang * (t.rang || 1)}` : `+${d.proRang}`;
+            return { name: t.name, rang: t.rang || 1, wert: d.wert, bonus, bedingung: d.bedingung };
+        });
+}
+
+// Standhaft senkt die Grenze, ab der ein Charakter bewusstlos wird, um 3 je Rang.
+function bewusstlosGrenze(talents) {
+    return -3 * talentRang(talents, 'Standhaft');
+}
+
 // --- Abgeleitete Werte (Kampfwerte) ----------------------------------------
 
 // char: { attribute: {koerper, agilitaet, geist},
@@ -53,7 +129,10 @@ function gegnerabwehr(char, slot) {
 function computeDerived(char) {
     const attr = char.attribute;
     const eig = char.eigenschaften;
-    const armor = armorTotals(char.equipment || {});
+    const talents = char.talents || [];
+    const { boni, herkunft } = talentBoni(talents);
+
+    const armor = armorTotals(char.equipment || {}, talentRang(talents, 'Rüstträger'));
     const melee = findWeapon(char.equipment && char.equipment.melee);
     const ranged = findWeapon(char.equipment && char.equipment.ranged);
 
@@ -65,15 +144,18 @@ function computeDerived(char) {
 
     return {
         // bonusLk: über Lernpunkte dauerhaft gesteigerte Lebenskraft
-        lebenskraft: attr.koerper + eig.haerte + 10 + (char.bonusLk || 0),
-        abwehr: attr.koerper + eig.haerte + armor.pa + zaehBonus,
-        initiative: attr.agilitaet + eig.bewegung + armor.initMod + weaponInit,
-        laufen: attr.agilitaet / 2 + 1 + armor.laufenMod,
-        schlagen: attr.koerper + eig.staerke + weaponBonus(melee),
-        schiessen: attr.agilitaet + eig.geschick + weaponBonus(ranged),
-        zaubern: attr.geist + aura + zb - armor.nonClothPa,
-        zielzauber: attr.geist + eig.geschick + zb - armor.nonClothPa,
-        panzerung: armor.pa
+        lebenskraft: attr.koerper + eig.haerte + 10 + (char.bonusLk || 0) + boni.lebenskraft,
+        abwehr: attr.koerper + eig.haerte + armor.pa + zaehBonus + boni.abwehr,
+        initiative: attr.agilitaet + eig.bewegung + armor.initMod + weaponInit + boni.initiative,
+        laufen: attr.agilitaet / 2 + 1 + armor.laufenMod + boni.laufen,
+        schlagen: attr.koerper + eig.staerke + weaponBonus(melee) + boni.schlagen,
+        schiessen: attr.agilitaet + eig.geschick + weaponBonus(ranged) + boni.schiessen,
+        zaubern: attr.geist + aura + zb - armor.nonClothPa + boni.zaubern,
+        zielzauber: attr.geist + eig.geschick + zb - armor.nonClothPa + boni.zielzauber,
+        panzerung: armor.pa,
+        // Für die Anzeige: welcher Talentbonus steckt in welchem Wert?
+        talentHerkunft: herkunft,
+        bewusstlosAb: bewusstlosGrenze(talents)
     };
 }
 

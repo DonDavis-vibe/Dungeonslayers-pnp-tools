@@ -21,7 +21,7 @@
     "schienen": "Lederschienen",
     "schild": ""
   },
-  "lkCurrent": 23,
+  "lkCurrent": 26,
   "gold": 2,
   "silber": 6,
   "kupfer": 0,
@@ -39,6 +39,6 @@
     { "id": "i4", "name": "Wasserschlauch", "menge": 1, "notiz": "Startausrüstung" },
     { "id": "i5", "name": "Rucksack", "menge": 1, "notiz": "Startausrüstung" }
   ],
-  "notes": "Ein wortkarger Zwergenkrieger aus den Tiefen des Eisenberges. Sucht die Axt seines Großvaters, die vor Jahrzehnten bei einem Überfall verloren ging.\n\nWerte-Check: LK 23 (KÖR 8 + HÄ 5 + 10) · Abwehr 18 (8 + 5 + 4 PA + 1 Zäh) · Schlagen 16 (8 + 5 + 3 Streitaxt) · Initiative 3 (AGI 6 − 1 Helm − 2 Streitaxt)",
+  "notes": "Ein wortkarger Zwergenkrieger aus den Tiefen des Eisenberges. Sucht die Axt seines Großvaters, die vor Jahrzehnten bei einem Überfall verloren ging.\n\nWerte-Check: LK 26 (KÖR 8 + HÄ 5 + 10 + 3 Einstecker) · Abwehr 18 (8 + 5 + 4 PA + 1 Zäh) · Schlagen 17 (8 + 5 + 3 Streitaxt + 1 Kämpfer) · Initiative 3 (AGI 6 − 1 Helm − 2 Streitaxt)\nParade 1 gibt zusätzlich +1 Abwehr, aber nur mit gezogener Nahkampfwaffe gegen Angriffe von vorn.",
   "log": []
 }

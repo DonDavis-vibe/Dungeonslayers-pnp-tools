@@ -101,6 +101,12 @@ Kein Freitextfeld, sondern eine echte Auswahl mit Regelprüfung:
 - **Talentpunkte werden verrechnet**: 1 TP je Rang, beim Entfernen gibt es sie zurück, und ein
   Budget-Zähler warnt, wenn mehr Punkte verteilt sind als die Stufe hergibt.
 - Wirkung und Steigerung pro Rang stehen direkt am Talent.
+- **Dauerhafte Talentboni fließen automatisch in die Kampfwerte** — etwa *Kämpfer* (Schlagen +1
+  je Rang), *Schütze* (Schießen und Zielzauber +1), *Einstecker* (LK +3), *Schnelle Reflexe*
+  (Initiative +2), *Flink* (Laufen +1m) oder *Standhaft* (Bewusstlosigkeitsgrenze −3 LK).
+  Die betroffene Karte weist den Bonus aus und nennt im Tooltip die Quelle.
+- **Situative Talente** wie *Parade* oder *Blocker* werden bewusst **nicht** automatisch
+  eingerechnet — sie stehen mit ihrer Bedingung als Erinnerung unter den Kampfwerten.
 - **Heldenklassen** (ab Stufe 10, alle 15 mit ihren exklusiven Talentlisten) schalten zusätzliche
   Talente frei und heben teils den Höchstrang bereits bekannter Talente an.
 - **Volksfähigkeiten** mit exakter Spielwirkung (z.B. Zwergen-*Zäh*: Abwehr +1, wird automatisch
@@ -200,7 +206,7 @@ Im Ordner [`beispiele/`](beispiele/) liegen zwei fertige Helden zum Ausprobieren
 
 | Charakter | Volk / Klasse | Profil |
 |---|---|---|
-| **Thorin Steinfaust** | Zwerg Krieger | Nahkampf-Brocken: LK 23, Abwehr 18, Schlagen 16 — dafür träge (Initiative 3) |
+| **Thorin Steinfaust** | Zwerg Krieger | Nahkampf-Brocken: LK 26, Abwehr 18, Schlagen 17 — dafür träge (Initiative 3) |
 | **Elaria Mondweberin** | Elfin Zauberin | Zerbrechlich (LK 17, Abwehr 7), aber Zaubern 12 dank runenbestickter Robe |
 
 <div align="center">

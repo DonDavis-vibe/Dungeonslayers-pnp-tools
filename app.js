@@ -54,7 +54,9 @@ function charForRules() {
         eigenschaften: effectiveEigenschaften(),
         equipment: appData.equipment,
         zauberZb: preparedSpellZb(),
-        bonusLk: appData.bonusLk || 0
+        bonusLk: appData.bonusLk || 0,
+        // Talente wirken auf die Kampfwerte (z.B. Kämpfer: Schlagen +1 je Rang)
+        talents: appData.talents || []
     };
 }
 
@@ -364,15 +366,22 @@ function renderDerived() {
         : (pct > 25 ? 'linear-gradient(90deg,#a8842c,#d4a24c)' : 'linear-gradient(90deg,#8e2b22,#c0392b)');
 
     const lkPanel = document.getElementById('lk-panel');
-    lkPanel.classList.toggle('lk-danger', cur <= 0 || (lkMax > 0 && cur / lkMax <= 0.25));
+    // Standhaft senkt die Grenze, ab der man bewusstlos wird (Regelwerk S.43)
+    const grenze = derived.bewusstlosAb || 0;
+    const bewusstlos = cur <= grenze;
+    lkPanel.classList.toggle('lk-danger', bewusstlos || (lkMax > 0 && cur / lkMax <= 0.25));
 
     const hint = document.getElementById('lk-hint');
     const koerper = appData.attribute.koerper || 0;
-    if (cur <= 0) {
+    const standhaft = grenze < 0 ? ` (Standhaft: erst ab ${grenze} LK)` : '';
+
+    if (bewusstlos) {
         const deathAt = -koerper - 1;
         hint.innerHTML = `<span style="color:var(--fail)"><strong>Bewusstlos.</strong> Erwacht nach 1W20 Stunden mit 1 LK. Tod ab ${deathAt} LK (unter −KÖR ${koerper}).</span>`;
+    } else if (cur <= 0) {
+        hint.innerHTML = `<span style="color:var(--accent-bright)"><strong>Noch bei Bewusstsein</strong> dank Standhaft — bewusstlos erst ab ${grenze} LK, Tod ab ${-koerper - 1} LK.</span>`;
     } else {
-        hint.textContent = `Bewusstlos bei 0 LK · Tod unterhalb von −${koerper} LK (Körper-Wert)`;
+        hint.textContent = `Bewusstlos bei ${grenze} LK${standhaft ? '' : ''} · Tod unterhalb von −${koerper} LK (Körper-Wert)`;
     }
 
     // Kampfwert-Karten
@@ -384,21 +393,43 @@ function renderDerived() {
         if (def.casterOnly && !isCaster) return;
         const raw = derived[def.key];
         const value = def.unit === 'm' ? raw.toFixed(1).replace('.', ',').replace(',0', '') : raw;
+        const talentQuellen = (derived.talentHerkunft || {})[def.key] || [];
+
         const card = document.createElement('div');
         card.className = 'kw-card' + (def.rollable ? ' rollable' : '');
         card.innerHTML = `
             <div class="kw-label">${def.label}</div>
             <div class="kw-value">${value}${def.unit || ''}</div>
-            <div class="kw-formula">${def.formula}</div>`;
+            <div class="kw-formula">${def.formula}${talentQuellen.length ? ' <span class="kw-talent">+ Talent</span>' : ''}</div>`;
+
+        const talentText = talentQuellen.length ? `\nTalente: ${talentQuellen.join(', ')}` : '';
         if (def.rollable) {
-            card.title = `${def.label}-Probe würfeln (PW ${raw})`;
+            card.title = `${def.label}-Probe würfeln (PW ${raw})${talentText}`;
             card.addEventListener('click', () => rollKampfwert(def.key, def.label, raw));
+        } else if (talentText) {
+            card.title = talentText.trim();
         }
         container.appendChild(card);
     });
 
+    renderSituativeTalente();
+
     document.getElementById('tag-pa').textContent = 'PA ' + derived.panzerung;
     renderEquipmentInfo(derived);
+}
+
+// Talente, die nur unter bestimmten Umständen wirken, werden nicht automatisch
+// eingerechnet — der Spieler bekommt sie als Erinnerung unter den Kampfwerten.
+function renderSituativeTalente() {
+    const box = document.getElementById('situative-talente');
+    if (!box) return;
+    const liste = situativeTalente(appData.talents);
+    if (!liste.length) { box.innerHTML = ''; return; }
+
+    box.innerHTML = '<strong>Situative Talente</strong> (nicht automatisch eingerechnet):<br>' +
+        liste.map(t =>
+            `• <strong>${escapeHtml(t.name)} ${t.rang}</strong>: ${escapeHtml(t.bonus)} auf ${escapeHtml(t.wert)} — ${escapeHtml(t.bedingung)}`
+        ).join('<br>');
 }
 
 function adjustLk(delta) {
