@@ -340,7 +340,7 @@ function handleIncomingData(peerId, payload) {
         // Laufender Kampf: aktualisierte LK/Initiative sofort in die Reihenfolge übernehmen
         if (combatActive) renderCombat();
         if (isNew) {
-            addGmLog('System', `${payload.data.name || 'Ein Held'} ist beigetreten.`, 'erfolg');
+            addGmLog('System', `${escapeHtml(payload.data.name || 'Ein Held')} ist beigetreten.`, 'erfolg');
             // Neu Beigetretene bekommen die Hausregeln der Runde gleich mit
             if (typeof hausregeln !== 'undefined' && typeof hausregelnAktiv === 'function' && hausregelnAktiv()) {
                 sendToPlayer(peerId, { type: 'hausregeln', regeln: hausregeln });
@@ -348,7 +348,7 @@ function handleIncomingData(peerId, payload) {
         }
     } else if (payload.type === 'roll') {
         const player = connectedPlayers[peerId];
-        addGmLog(player ? player.name : 'Unbekannt', payload.message, payload.status);
+        addGmLog(player ? player.name : 'Unbekannt', sichererHtml(payload.message), sichererStatus(payload.status));
     }
 }
 
@@ -505,6 +505,22 @@ function renderGmDashboard() {
 }
 
 // --- GM Log & Würfel --------------------------------------------------------
+
+// Nachrichten der Gegenseite landen als HTML im Log bzw. in der Einblendung.
+// Der Bogen selbst verschickt dabei <strong>/<em>; alles andere wird entschärft,
+// damit ein fremder Teilnehmer im Raum kein beliebiges Markup einschleusen kann.
+const ERLAUBTE_TAGS = /&lt;(\/?)(strong|em|b|i|br)\s*\/?&gt;/gi;
+
+function sichererHtml(text) {
+    return String(text == null ? '' : text)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(ERLAUBTE_TAGS, (_, schraeg, tag) => `<${schraeg}${tag.toLowerCase()}>`);
+}
+
+// Der Status steuert eine CSS-Klasse — nur bekannte Werte durchlassen
+function sichererStatus(status) {
+    return ['immersieg', 'erfolg', 'fehlschlag', 'patzer', 'neutral'].includes(status) ? status : 'neutral';
+}
 
 let gmLog = [];
 
@@ -881,7 +897,9 @@ function handleGmCommand(payload) {
             // Abwehr ist eine automatische Probe, keine Aktion (Regelwerk S.41).
             // Die Gegnerabwehr der angreifenden Waffe senkt den Probenwert.
             const derived = computeDerived(charForRules());
-            const result = rollProbe(derived.abwehr, { label: 'Abwehr', modifier: payload.gaMod || 0 });
+            // Slayende Würfel gelten auch für die Abwehr (Regelwerk S.45)
+            const slayend = typeof slayendeWuerfelAktiv === 'function' && slayendeWuerfelAktiv();
+            const result = rollProbe(derived.abwehr, { label: 'Abwehr', modifier: payload.gaMod || 0, slayend });
             showProbeResult(result);
 
             const reduced = result.success ? result.total : 0;
@@ -891,7 +909,8 @@ function handleGmCommand(payload) {
             let extra = result.success
                 ? `Schaden ${payload.damage} − ${reduced} Abwehr = <strong>${finalDamage}</strong>`
                 : `Abwehr misslungen — voller Schaden <strong>${finalDamage}</strong>`;
-            if (result.patzer) extra += ` · ${DS4_KAMPFPATZER.abwehr}`;
+            if (result.slayendZusatz) extra += ` · ⚡ ${slayendText(result)}`;
+            if (result.patzer) extra += ` · ${kampfpatzerText('abwehr')}`;
 
             addLog(`Angriff${payload.quelle ? ' von ' + escapeHtml(payload.quelle) : ''}: ${payload.damage} Schaden — ${DS4_STATUS_TEXT[result.status]} · ${extra}`, result.status);
             sendMultiplayerLog(`<strong>Abwehr</strong> (PW ${result.pw}) — ${DS4_STATUS_TEXT[result.status]} · Wurf ${result.rolls.map(r => r.die).join('+')} · ${extra} · LK jetzt ${appData.lkCurrent}`, result.status);
@@ -917,7 +936,7 @@ function handleGmCommand(payload) {
             break;
         }
         case 'message':
-            showGmMessage(payload.text);
+            showGmMessage(sichererHtml(payload.text));
             addLog(`<strong>Spielleiter:</strong> ${escapeHtml(payload.text)}`, 'neutral');
             break;
         case 'requestProbe': {
@@ -940,15 +959,13 @@ function handleGmCommand(payload) {
             scheduleSave();
             addLog(`<strong>+${payload.amount} EP</strong> vom Spielleiter — jetzt ${appData.ep} EP`, 'erfolg');
             if (nachher > vorher) {
-                // Aufstieg bringt je Stufe +2 Lernpunkte und +1 Talentpunkt
-                const stufen = nachher - vorher;
-                appData.lp = (appData.lp || 0) + 2 * stufen;
-                appData.tp = (appData.tp || 0) + 1 * stufen;
+                // Gutschrift zentral, damit auch hier die Hausregeln der Runde gelten
+                const gutschrift = gutschriftFuerStufen(nachher - vorher);
                 refreshBoundInputs();
                 renderAll();
                 scheduleSave();
-                showGmMessage(`<strong>Stufenaufstieg!</strong> Stufe ${nachher} erreicht — ${2 * stufen} Lernpunkte und ${stufen} Talentpunkt${stufen > 1 ? 'e' : ''} gutgeschrieben.`);
-                addLog(`<strong>Stufe ${nachher} erreicht!</strong> +${2 * stufen} LP, +${stufen} TP`, 'erfolg');
+                showGmMessage(`<strong>Stufenaufstieg!</strong> Stufe ${nachher} erreicht — ${gutschrift} gutgeschrieben.`);
+                addLog(`<strong>Stufe ${nachher} erreicht!</strong> ${gutschrift}`, 'erfolg');
                 sendMultiplayerLog(`steigt auf <strong>Stufe ${nachher}</strong> auf!`, 'immersieg');
             }
             syncMultiplayerState();

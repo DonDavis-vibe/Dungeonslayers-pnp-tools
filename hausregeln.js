@@ -25,6 +25,12 @@ const HAUSREGELN_STANDARD = {
     ntpName: 'NTP',
     ntpHinweis: 'Nicht-Kampf-Talentpunkt — nur für Talente außerhalb des Kampfes',
 
+    // Optionale Kampfregeln aus dem Regelwerk (S.45). Beide sind ab Werk aus.
+    // Slayende Würfel machen Kämpfe deutlich tödlicher — das Regelwerk empfiehlt
+    // ausdrücklich, sie nur zusammen mit den Slayerpunkten zu verwenden.
+    slayendeWuerfel: false,
+    slayerpunkte: false,
+
     // Eigene Ergänzungen, die in den Auswahllisten mit auftauchen
     eigeneTalente: [],
     eigeneZauber: [],
@@ -50,6 +56,7 @@ function hausregelnSichern() {
 function hausregelnAktiv() {
     const h = hausregeln;
     return h.lpModell !== 'klasse' || h.tpProStufe !== 1 || h.ntpAktiv ||
+        h.slayendeWuerfel || h.slayerpunkte ||
         h.eigeneTalente.length || h.eigeneZauber.length || h.eigeneHeldenklassen.length;
 }
 
@@ -69,6 +76,16 @@ function aktuelleLpKosten() {
         return Object.assign({}, hausregeln.lpEigen);
     }
     return nachRegelwerk;
+}
+
+// Sind die Slayenden Würfel eingeschaltet? Sie gelten nur für Angriffs- und
+// Abwehrproben, nicht für gewöhnliche Fertigkeitsproben (Regelwerk S.45).
+function slayendeWuerfelAktiv() {
+    return typeof hausregeln !== 'undefined' && !!hausregeln.slayendeWuerfel;
+}
+
+function slayerpunkteAktiv() {
+    return typeof hausregeln !== 'undefined' && !!hausregeln.slayerpunkte;
 }
 
 // Talent- und Zauberlisten inklusive eigener Ergänzungen
@@ -163,6 +180,27 @@ function renderHausregeln() {
                 du bezahlst — welche Talente aus welchem Topf erlaubt sind, entscheidet eure Runde.
             </p>` : ''}
 
+        <h4 style="color:var(--accent-bright);margin-top:1.2rem">Optionale Kampfregeln (Regelwerk S.45)</h4>
+        <div class="list-row">
+            <label style="flex:1;display:flex;align-items:center;gap:0.5rem;cursor:pointer">
+                <input type="checkbox" id="hr-slayend" ${h.slayendeWuerfel ? 'checked' : ''} style="width:auto">
+                <span><strong>Slayende Würfel</strong> — Immersieg löst sofort einen weiteren Angriff aus</span>
+            </label>
+        </div>
+        <div class="list-row">
+            <label style="flex:1;display:flex;align-items:center;gap:0.5rem;cursor:pointer">
+                <input type="checkbox" id="hr-slayerpunkte" ${h.slayerpunkte ? 'checked' : ''} style="width:auto">
+                <span><strong>Slayerpunkte</strong> — 1 SP je Runde mit Schaden, höchstens 3, für freie Aktionen und Boni</span>
+            </label>
+        </div>
+        ${h.slayendeWuerfel && !h.slayerpunkte ? `<p class="hint" style="color:var(--accent-bright);margin-top:0.4rem">
+            Das Regelwerk empfiehlt, Slayende Würfel <strong>nicht ohne Slayerpunkte</strong> zu
+            verwenden — Kämpfe werden damit deutlich unberechenbarer und tödlicher.
+        </p>` : `<p class="hint" style="margin-top:0.4rem">
+            Slayende Würfel gelten auch für Abwehrproben und stehen ausdrücklich auch NSC zu.
+            Bei Probenwerten über 20 zählt dafür nur ein Immersieg des ersten Würfels.
+        </p>`}
+
         <h4 style="color:var(--accent-bright);margin-top:1.2rem">Eigene Ergänzungen</h4>
         <div class="grid-3" style="margin-top:0.4rem">
             <div class="budget"><span>Talente</span> <strong>${h.eigeneTalente.length}</strong></div>
@@ -205,6 +243,14 @@ function renderHausregeln() {
     koppeln('hr-ntp-zahl', 'ntpProStufe', true);
     koppeln('hr-ntp-name', 'ntpName', false);
     koppeln('hr-ntp-hinweis', 'ntpHinweis', false);
+    ['hr-slayend', 'hr-slayerpunkte'].forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.addEventListener('change', () => {
+            hausregeln[id === 'hr-slayend' ? 'slayendeWuerfel' : 'slayerpunkte'] = el.checked;
+            renderHausregeln();
+        });
+    });
     const ntpSchalter = document.getElementById('hr-ntp-aktiv');
     if (ntpSchalter) ntpSchalter.addEventListener('change', () => {
         hausregeln.ntpAktiv = ntpSchalter.checked;

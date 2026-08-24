@@ -149,13 +149,15 @@ const DS4_DIFFICULTY_MODIFIERS = [
 //   reichweite    Anhang B (S.153): erreicht Ziele bis zu 2 Felder entfernt
 //   stosswaffe    Anhang B: trifft auch Ziele, vor denen jemand steht
 //   zerbricht     Fußnoten **/****: zerbricht bei einem Schlagen- bzw. Schießen-Patzer
+//   distanzJe     Meter je Punkt Distanzmalus (Standard 10; Schleuder/Wurfmesser 2)
+//   patzerSelbst  Fußnote ***: bei einem Schlagen-Patzer trifft der Angreifer sich selbst
 //   initMod/gaMod dieselben Angaben als Zahl, damit sie in die Werte einfließen
 const DS4_WEAPONS = [
     { name: 'Waffenlos', wb: 0, type: 'melee', gaMod: 5, besonderes: 'Gegnerabwehr +5', price: '—' },
     { name: 'Dolch', wb: 0, type: 'melee', initMod: 1, besonderes: 'Initiative +1', price: '2 GM' },
     { name: 'Schlagring', wb: 0, type: 'melee', besonderes: 'wie waffenlos, aber ohne Abwehr-Bonus für Gegner', price: '1 GM' },
-    { name: 'Schleuder', wb: 0, type: 'ranged', besonderes: 'Distanzmalus −1 pro 2m', price: '1 SM' },
-    { name: 'Wurfmesser', wb: 0, type: 'both', besonderes: 'Distanzmalus −1 pro 2m; auch für den Nahkampf geeignet', price: '2 GM' },
+    { name: 'Schleuder', wb: 0, type: 'ranged', distanzJe: 2, besonderes: 'Distanzmalus −1 pro 2m', price: '1 SM' },
+    { name: 'Wurfmesser', wb: 0, type: 'both', distanzJe: 2, besonderes: 'Distanzmalus −1 pro 2m; auch für den Nahkampf geeignet', price: '2 GM' },
     { name: 'Axt', wb: 1, type: 'melee', besonderes: '—', price: '6 GM' },
     // Unter "Diverses" (S.79) statt in der Waffentabelle gelistet — nur WB angegeben.
     // Robuste, preiswerte Alternative zur Keule, die bei einem Patzer zerbricht.
@@ -181,25 +183,60 @@ const DS4_WEAPONS = [
     { name: 'Armbrust, schwer', wb: 3, type: 'ranged', twoHanded: true, initMod: -4, gaMod: -2, besonderes: 'Initiative −4, Gegnerabwehr −2', price: '15 GM' },
     { name: 'Bogen, Elfen-', wb: 3, type: 'ranged', twoHanded: true, dwarfBanned: true, initMod: 1, besonderes: 'Initiative +1', price: '75 GM' },
     { name: 'Zwergenaxt', wb: 3, type: 'melee', twoHanded: true, initMod: -1, gaMod: -2, besonderes: 'Initiative −1, Gegnerabwehr −2', price: '60 GM' },
-    { name: 'Schlachtgeißel', wb: 3, type: 'melee', initMod: -4, gaMod: -4, besonderes: 'Initiative −4, Gegnerabwehr −4; bei einem Schlagen-Patzer trifft der Angreifer sich selbst', price: '16 GM' },
+    { name: 'Schlachtgeißel', wb: 3, type: 'melee', initMod: -4, gaMod: -4, patzerSelbst: true, besonderes: 'Initiative −4, Gegnerabwehr −4; bei einem Schlagen-Patzer trifft der Angreifer sich selbst', price: '16 GM' },
     { name: 'Schlachtbeil', wb: 4, type: 'melee', twoHanded: true, dwarfBanned: true, initMod: -6, gaMod: -4, reichweite: 2, besonderes: 'Initiative −6, Gegnerabwehr −4', price: '20 GM' }
 ];
 
 // slot: 'koerper' | 'helm' | 'schienen' | 'schild'
+// typ  : Rüstungsart der Klassentabelle (Regelwerk S.41) —
+//        'stoff' | 'leder' | 'kette' | 'platte' | 'helm' | 'schiene' | 'schild'
+// material: nur für Schienen nötig, weil Heiler ausschließlich Lederschienen tragen dürfen
 // laufenMod in Metern (negativ), initMod für Initiative, auraMod für Aura (Runenrobe).
 const DS4_ARMOR = [
-    { name: 'Robe', pa: 0, slot: 'koerper', besonderes: '—', price: '1 GM' },
-    { name: 'Robe (runenbestickt)', pa: 0, slot: 'koerper', auraMod: 1, besonderes: 'Aura +1', price: '8 GM' },
-    { name: 'Lederpanzer', pa: 1, slot: 'koerper', besonderes: '—', price: '4 GM' },
-    { name: 'Lederschienen', pa: 1, slot: 'schienen', besonderes: '—', price: '4 GM' },
-    { name: 'Kettenpanzer', pa: 2, slot: 'koerper', laufenMod: -0.5, besonderes: 'Laufen −0,5m', price: '10 GM' },
-    { name: 'Plattenarmschienen', pa: 1, slot: 'schienen', laufenMod: -0.5, besonderes: 'Laufen −0,5m', price: '7 GM' },
-    { name: 'Plattenbeinschienen', pa: 1, slot: 'schienen', laufenMod: -0.5, besonderes: 'Laufen −0,5m', price: '8 GM' },
-    { name: 'Plattenpanzer', pa: 3, slot: 'koerper', laufenMod: -1, besonderes: 'Laufen −1m', price: '50 GM' },
-    { name: 'Metallhelm', pa: 1, slot: 'helm', initMod: -1, besonderes: 'Initiative −1', price: '6 GM' },
-    { name: 'Schild, Holz-', pa: 1, slot: 'schild', besonderes: 'zerbricht bei Abwehr-Patzer', price: '1 GM' },
-    { name: 'Schild, Metall-', pa: 1, slot: 'schild', laufenMod: -0.5, besonderes: 'Laufen −0,5m', price: '8 GM' },
-    { name: 'Schild, Turm-', pa: 2, slot: 'schild', laufenMod: -1, besonderes: 'Laufen −1m', price: '15 GM' }
+    { name: 'Robe', pa: 0, slot: 'koerper', typ: 'stoff', besonderes: '—', price: '1 GM' },
+    { name: 'Robe (runenbestickt)', pa: 0, slot: 'koerper', typ: 'stoff', auraMod: 1, besonderes: 'Aura +1', price: '8 GM' },
+    { name: 'Lederpanzer', pa: 1, slot: 'koerper', typ: 'leder', besonderes: '—', price: '4 GM' },
+    { name: 'Lederschienen', pa: 1, slot: 'schienen', typ: 'schiene', material: 'leder', besonderes: '—', price: '4 GM' },
+    { name: 'Kettenpanzer', pa: 2, slot: 'koerper', typ: 'kette', laufenMod: -0.5, besonderes: 'Laufen −0,5m', price: '10 GM' },
+    { name: 'Plattenarmschienen', pa: 1, slot: 'schienen', typ: 'schiene', material: 'metall', laufenMod: -0.5, besonderes: 'Laufen −0,5m', price: '7 GM' },
+    { name: 'Plattenbeinschienen', pa: 1, slot: 'schienen', typ: 'schiene', material: 'metall', laufenMod: -0.5, besonderes: 'Laufen −0,5m', price: '8 GM' },
+    { name: 'Plattenpanzer', pa: 3, slot: 'koerper', typ: 'platte', laufenMod: -1, besonderes: 'Laufen −1m', price: '50 GM' },
+    { name: 'Metallhelm', pa: 1, slot: 'helm', typ: 'helm', initMod: -1, besonderes: 'Initiative −1', price: '6 GM' },
+    { name: 'Schild, Holz-', pa: 1, slot: 'schild', typ: 'schild', besonderes: 'zerbricht bei Abwehr-Patzer', price: '1 GM' },
+    { name: 'Schild, Metall-', pa: 1, slot: 'schild', typ: 'schild', laufenMod: -0.5, besonderes: 'Laufen −0,5m', price: '8 GM' },
+    { name: 'Schild, Turm-', pa: 2, slot: 'schild', typ: 'schild', laufenMod: -1, besonderes: 'Laufen −1m', price: '15 GM' }
+];
+
+// Slayerpunkte (optionale Regel, Regelwerk S.45).
+// Je Kampfrunde, in der man Schaden verursacht (oder als Heiler einen im Kampf
+// verletzten Kameraden heilt), gibt es 1 SP. Mehr als 3 gleichzeitig gehen nicht,
+// und sie verfallen am Kampfende oder bei Bewusstlosigkeit.
+const DS4_SLAYERPUNKTE_MAX = 3;
+
+const DS4_SLAYERPUNKTE = [
+    { kosten: 1, name: '2 Schadenspunkte ignorieren' },
+    { kosten: 1, name: 'Abklingzeit −1 Runde' },
+    { kosten: 1, name: 'Abwehr +3' },
+    { kosten: 1, name: 'Gegnerabwehr −1' },
+    { kosten: 1, name: 'Im Nahkampf aufstehen' },
+    { kosten: 1, name: 'Laufen +1m' },
+    { kosten: 1, name: 'Waffe aufheben/wechseln/ziehen' },
+    { kosten: 2, name: '1× Ausweichen', hinweis: 'wie mit dem gleichnamigen Talent' },
+    { kosten: 2, name: '6 Schadenspunkte ignorieren' },
+    { kosten: 2, name: 'Abklingzeit −3 Runden' },
+    { kosten: 2, name: 'Abwehr +8' },
+    { kosten: 2, name: 'Angriffsprobe +2' },
+    { kosten: 2, name: 'Gegnerabwehr −2' },
+    { kosten: 2, name: 'Laufen +2m' },
+    { kosten: 2, name: 'Misslungenen Angriff wiederholen', hinweis: 'gilt nicht bei Patzern' },
+    { kosten: 2, name: 'Zauber wechseln (Probe)' },
+    { kosten: 3, name: '2. Angriff in einer Runde' },
+    { kosten: 3, name: '9 Schadenspunkte ignorieren' },
+    { kosten: 3, name: 'Abklingzeit −10 Runden' },
+    { kosten: 3, name: 'Abwehr +12' },
+    { kosten: 3, name: 'Gegner bei Schaden zu Fall bringen', hinweis: 'nicht bei Gegnern, die 2+ Größenkategorien größer sind' },
+    { kosten: 3, name: 'Gegnerabwehr −4' },
+    { kosten: 3, name: 'Laufen +3m' }
 ];
 
 const DS4_TYPISCHE_PROBEN = [

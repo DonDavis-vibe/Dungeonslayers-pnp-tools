@@ -646,6 +646,49 @@ select option { background: #1c1712; }
 .site-footer a { color: var(--accent); }
 .site-footer a:hover { color: var(--accent-bright); }
 
+/* Slayerpunkte (optionale Regel) */
+.slayer-pips { display: inline-flex; gap: 0.2rem; }
+.slayer-pip {
+    font-size: 0.95rem;
+    line-height: 1;
+    opacity: 0.28;
+    filter: grayscale(1);
+    transition: opacity 0.15s, filter 0.15s, transform 0.15s;
+}
+.slayer-pip.full {
+    opacity: 1;
+    filter: none;
+    transform: scale(1.15);
+}
+
+/* Abwartehandlung im Kampf-Tracker */
+.combat-abwarten {
+    font-size: 0.62rem;
+    margin-left: 0.15rem;
+    vertical-align: super;
+}
+
+/* Einladung auf den Discord-Server, auf dem die Tools entstehen */
+.footer-discord {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.45rem 0.9rem;
+    border: 1px solid #5865f2;
+    border-radius: 6px;
+    background: rgba(88, 101, 242, 0.12);
+    color: #aab4ff !important;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background 0.15s, border-color 0.15s;
+}
+.footer-discord:hover {
+    background: rgba(88, 101, 242, 0.26);
+    border-color: #7983f5;
+    color: #ffffff !important;
+}
+
 .footer-disclaimer {
     max-width: 1500px;
     margin: 1.8rem auto 0;

@@ -13,6 +13,7 @@ function blankCharacter() {
         equipment: { melee: '', ranged: '', koerper: '', helm: '', schienen: '', schild: '' },
         lkCurrent: 0,
         gold: 10, silber: 0, kupfer: 0, bonusLk: 0, extraTp: 0,
+        slayerpunkte: 0,   // optionale Regel, verfällt am Kampfende
         ntp: 0,          // zweiter Talentpunkt-Topf, falls die Runde ihn führt
         portrait: '',
         talents: [], spells: [], inventory: [],
@@ -49,22 +50,50 @@ function effectiveEigenschaften() {
 
 // Charakter-Objekt in der Form, die die Regel-Engine erwartet
 function charForRules() {
+    const zauber = preparedSpellInfo();
     return {
         volk: appData.volk,
         klasse: appData.klasse,
         attribute: appData.attribute,
         eigenschaften: effectiveEigenschaften(),
         equipment: appData.equipment,
-        zauberZb: preparedSpellZb(),
+        zauberZb: zauber.zb,
+        zauberTyp: zauber.typ,
+        // Damit die Engine klassenfremde Rüstung erkennt (Regelwerk S.41)
+        armorRules: armorRules(),
         bonusLk: appData.bonusLk || 0,
         // Talente wirken auf die Kampfwerte (z.B. Kämpfer: Schlagen +1 je Rang)
         talents: appData.talents || []
     };
 }
 
+function preparedSpell() {
+    return (appData.spells || []).find(s => s.prepared) || null;
+}
+
+// Zauberbonus und Art des vorbereiteten Zaubers.
+// Viele Zauber haben einen formelhaften ZB ("-(KÖR+VE)/2 des Ziels"); der lässt
+// sich nicht vorausberechnen und wird als `unklar` gemeldet, statt still 0 zu sein.
+function preparedSpellInfo() {
+    const spell = preparedSpell();
+    if (!spell) return { zb: 0, typ: null, unklar: false, name: '' };
+
+    const data = (typeof zauberListe === 'function' ? zauberListe() : (typeof DS4_ZAUBER !== 'undefined' ? DS4_ZAUBER : []))
+        .find(z => z.name === spell.name);
+    const rohZb = spell.zb != null && spell.zb !== '' ? spell.zb : (data ? data.zb : 0);
+    const typ = spell.typ || (data ? data.typ : null);
+
+    const text = String(rohZb).trim();
+    // Nur reine Zahlenangaben wie "+3", "-2" oder "0" sind verlässlich
+    const rein = /^[+−-]?\d+$/.test(text.replace('−', '-'));
+    const zb = rein ? parseInt(text.replace('−', '-'), 10) : 0;
+
+    return { zb, typ, unklar: !rein, name: spell.name, rohZb: text };
+}
+
+// Alte Aufrufer erwarten weiterhin nur die Zahl
 function preparedSpellZb() {
-    const spell = (appData.spells || []).find(s => s.prepared);
-    return spell ? (parseInt(spell.zb, 10) || 0) : 0;
+    return preparedSpellInfo().zb;
 }
 
 function activeClass() {
@@ -423,23 +452,38 @@ function renderDerived() {
     });
 
     renderSituativeTalente();
+    renderSlayerpunkte();
 
     document.getElementById('tag-pa').textContent = 'PA ' + derived.panzerung;
     renderEquipmentInfo(derived);
 }
 
-// Talente, die nur unter bestimmten Umständen wirken, werden nicht automatisch
-// eingerechnet — der Spieler bekommt sie als Erinnerung unter den Kampfwerten.
+// Alles, was der Bogen NICHT automatisch einrechnen kann, sammelt sich unter den
+// Kampfwerten: situativ wirkende Talente und formelhafte Zauberboni.
 function renderSituativeTalente() {
     const box = document.getElementById('situative-talente');
     if (!box) return;
-    const liste = situativeTalente(appData.talents);
-    if (!liste.length) { box.innerHTML = ''; return; }
 
-    box.innerHTML = '<strong>Situative Talente</strong> (nicht automatisch eingerechnet):<br>' +
-        liste.map(t =>
-            `• <strong>${escapeHtml(t.name)} ${t.rang}</strong>: ${escapeHtml(t.bonus)} auf ${escapeHtml(t.wert)} — ${escapeHtml(t.bedingung)}`
-        ).join('<br>');
+    const bloecke = [];
+
+    const liste = situativeTalente(appData.talents);
+    if (liste.length) {
+        bloecke.push('<strong>Situative Talente</strong> (nicht automatisch eingerechnet):<br>' +
+            liste.map(t =>
+                `• <strong>${escapeHtml(t.name)} ${t.rang}</strong>: ${escapeHtml(t.bonus)} auf ${escapeHtml(t.wert)} — ${escapeHtml(t.bedingung)}`
+            ).join('<br>'));
+    }
+
+    // Formelhafte Zauberboni (z.B. "−(KÖR+VE)/2 des Ziels") hängen vom Ziel ab
+    // und können nicht vorausberechnet werden — der Bogen rechnet hier mit 0.
+    const zauber = preparedSpellInfo();
+    if (zauber.unklar) {
+        bloecke.push(`<strong>Zauberbonus formelhaft:</strong> <em>${escapeHtml(zauber.name)}</em> hat ZB ` +
+            `<strong>${escapeHtml(zauber.rohZb)}</strong>. Der Bogen rechnet mit <strong>0</strong> — ` +
+            `den tatsächlichen Wert am Ziel ausrechnen und als Modifikator eintragen.`);
+    }
+
+    box.innerHTML = bloecke.join('<hr style="border:0;border-top:1px solid var(--border);margin:0.5rem 0">');
 }
 
 function adjustLk(delta) {
@@ -476,6 +520,7 @@ function meldeLkSchwelle(vorher) {
         return;
     }
     if (jetzt <= grenze && vorher > grenze) {
+        slayerpunkteVerfallen('bewusstlos');
         const ohnmacht = '<strong>ist bewusstlos!</strong> Erwacht nach 1W20 Stunden mit 1 LK.';
         addLog(ohnmacht, 'patzer');
         sendMultiplayerLog(ohnmacht, 'patzer');
@@ -493,6 +538,21 @@ function fullHeal() {
     syncMultiplayerState();
 }
 
+// Lebenskraft bei Kampfbeginn. Verschnaufen heilt die Hälfte der "soeben"
+// verlorenen LK (Regelwerk S.42) — also nur der in diesem Kampf verlorenen,
+// nicht auch alter Wunden von vorher.
+let kampfStartLk = null;
+let letzteKampfrunde = 0;
+
+function merkeKampfstand(round) {
+    if (round > 0 && letzteKampfrunde === 0) kampfStartLk = appData.lkCurrent || 0;
+    // Slayerpunkte verfallen, sobald der Kampf endet (Regelwerk S.45).
+    // slayerpunkteVerfallen() meldet nur, wenn tatsächlich Punkte da waren —
+    // wiederholte Runde-0-Meldungen fluten das Log also nicht.
+    if (round === 0) slayerpunkteVerfallen('Kampf beendet');
+    letzteKampfrunde = round;
+}
+
 // Verschnaufen nach dem Kampf: die Hälfte der verlorenen LK zurück (Regelwerk S.42).
 // Funktioniert nur bei mindestens 1 LK — wer bewusstlos ist, muss erst geweckt werden.
 function verschnaufen() {
@@ -502,14 +562,22 @@ function verschnaufen() {
         addLog('Verschnaufen nicht möglich — der Charakter ist bewusstlos.', 'fehlschlag');
         return;
     }
-    const verloren = max - cur;
-    if (verloren <= 0) { addLog('Bereits bei voller Lebenskraft.', 'neutral'); return; }
-    const geheilt = Math.floor(verloren / 2);
+    // Ohne begleiteten Kampf ist der Höchstwert die einzige Bezugsgröße
+    const imKampfVerloren = kampfStartLk !== null;
+    const basis = imKampfVerloren ? Math.max(cur, kampfStartLk) : max;
+    const verloren = basis - cur;
+    if (verloren <= 0) {
+        addLog(imKampfVerloren ? 'Verschnaufen bringt nichts — in diesem Kampf ging keine Lebenskraft verloren.' : 'Bereits bei voller Lebenskraft.', 'neutral');
+        return;
+    }
+    const geheilt = Math.min(max - cur, Math.floor(verloren / 2));
     appData.lkCurrent = cur + geheilt;
+    kampfStartLk = null; // pro Kampf nur einmal
     refreshBoundInputs();
     renderDerived();
     scheduleSave();
-    addLog(`Verschnaufen: +${geheilt} LK (Hälfte der ${verloren} verlorenen) — jetzt ${appData.lkCurrent}/${max}`, 'erfolg');
+    const woher = imKampfVerloren ? 'im Kampf verlorenen' : 'verlorenen';
+    addLog(`Verschnaufen: +${geheilt} LK (Hälfte der ${verloren} ${woher}) — jetzt ${appData.lkCurrent}/${max}`, 'erfolg');
     sendMultiplayerLog(`verschnauft: +${geheilt} LK — jetzt ${appData.lkCurrent}/${max}`, 'erfolg');
     syncMultiplayerState();
 }
@@ -560,27 +628,17 @@ function renderEquipmentInfo(derived) {
     const rules = armorRules();
     const race = DS4_RACES[appData.volk];
 
-    // Rüstungsbeschränkungen der Klasse
-    const slotToType = {
-        'Robe': 'stoff', 'Robe (runenbestickt)': 'stoff',
-        'Lederpanzer': 'leder', 'Lederschienen': 'schienen',
-        'Kettenpanzer': 'kette', 'Plattenpanzer': 'platte',
-        'Plattenarmschienen': 'schienen', 'Plattenbeinschienen': 'schienen',
-        'Metallhelm': 'helme',
-        'Schild, Holz-': 'schilde', 'Schild, Metall-': 'schilde', 'Schild, Turm-': 'schilde'
-    };
-
+    // Rüstungsbeschränkungen der Klasse (Regelwerk S.41), gemildert durch "Gerüstet"
     if (rules) {
+        const geruestet = talentRang(appData.talents, 'Gerüstet');
+        const klasseName = activeClass().isCaster
+            ? DS4_CLASSES.zauberwirker.subtypes[appData.subtype].name
+            : activeClass().name;
+
         ['koerper', 'helm', 'schienen', 'schild'].forEach(slot => {
-            const name = appData.equipment[slot];
-            if (!name) return;
-            const type = slotToType[name];
-            if (!type) return;
-            let allowed = rules[type];
-            if (type === 'schienen' && allowed === 'nur Leder') allowed = (name === 'Lederschienen');
-            if (allowed === false) {
-                warnings.push(`<span class="tag tag-warn">${escapeHtml(name)}: für ${escapeHtml(activeClass().isCaster ? DS4_CLASSES.zauberwirker.subtypes[appData.subtype].name : activeClass().name)} nicht erlaubt (Zauber-Malus ×4, Agilität −PA)</span>`);
-            }
+            const armor = findArmor(appData.equipment[slot]);
+            if (!armor || ruestungErlaubt(armor, rules, geruestet)) return;
+            warnings.push(`<span class="tag tag-warn">${escapeHtml(armor.name)}: für ${escapeHtml(klasseName)} nicht erlaubt — Zauber-Malus ×4, Agilität −${armor.pa} (bereits eingerechnet)</span>`);
         });
     }
 
@@ -624,6 +682,18 @@ function renderEquipmentInfo(derived) {
         const a = findArmor(appData.equipment[slot]);
         if (a && a.besonderes && a.besonderes !== '—') details.push(`<strong>${escapeHtml(a.name)}:</strong> ${escapeHtml(a.besonderes)}`);
     });
+
+    // Rüstung an- und ablegen (Regelwerk S.44)
+    const anlegen = ruestungAnlegenAktionen(appData.equipment);
+    if (anlegen.aktionen || anlegen.helmFrei) {
+        details.push(`<strong>Rüstung anlegen:</strong> ${anlegen.aktionen} Aktion${anlegen.aktionen === 1 ? '' : 'en'}` +
+            (anlegen.helmFrei ? ' (Helm aufsetzen ist frei)' : ''));
+    }
+    if (schlaeftInMetall(appData.equipment)) {
+        details.push('<strong>Schlafen in Metallrüstung:</strong> am Morgen KÖR+HÄ — misslingt sie, ' +
+            '−1 auf alle Proben für 24 Stunden (kumulativ, geht nur ungerüstet schlafend wieder weg)');
+    }
+
     document.getElementById('equipment-details').innerHTML = details.join(' · ');
 }
 
@@ -758,15 +828,21 @@ function currentModifier() {
 
 const aktiveKampfMods = {};
 
-// Sammelt die eingestellten Situationsmodifikatoren. Sie gelten nur für
-// Angriffs- und Abwehrproben, nicht für gewöhnliche Fertigkeitsproben.
-function currentCombatModifier() {
+// Sammelt die eingestellten Situationsmodifikatoren. Welche davon greifen, hängt
+// von der Probenart ab (Regelwerk S.43-44) — Position, Größe, Distanz und Zielen
+// sind Angriffsmodifikatoren, die Abwehr trifft nur "liegend" und "zwei Waffen".
+function currentCombatModifier(art = 'schlagen') {
     const num = id => parseInt(document.getElementById(id).value, 10) || 0;
     const zweiWaffenTalent = (appData.talents || []).find(t => t.name === 'Zwei Waffen');
+    // Schleuder und Wurfmesser haben −1 je 2m statt je 10m
+    const fernwaffe = findWeapon(appData.equipment && appData.equipment.ranged);
 
     return combatModifiers({
         distanz: num('mod-distanz'),
+        distanzJe: (art === 'schiessen' && fernwaffe && fernwaffe.distanzJe) || 10,
         zielen: num('mod-zielen'),
+        getuemmel: num('mod-getuemmel'),
+        hindernisse: num('mod-hindernisse'),
         groessenDiff: num('mod-groesse'),
         imNahkampf: !!aktiveKampfMods.imNahkampf,
         selbstLiegend: !!aktiveKampfMods.selbstLiegend,
@@ -775,21 +851,36 @@ function currentCombatModifier() {
         vonHinten: !!aktiveKampfMods.vonHinten,
         zweiWaffen: !!aktiveKampfMods.zweiWaffen,
         zweiWaffenTalent: zweiWaffenTalent ? (zweiWaffenTalent.rang || 0) : 0
-    });
+    }, art);
 }
 
 function renderCombatModifiers() {
-    const mod = currentCombatModifier();
     const box = document.getElementById('mod-summary');
     if (!box) return;
-    box.innerHTML = mod.summe === 0 && !mod.teile.length
-        ? 'Kein Modifikator aktiv.'
-        : `Gesamt: <strong style="color:${mod.summe >= 0 ? 'var(--success)' : 'var(--fail)'}">${mod.summe > 0 ? '+' : ''}${mod.summe}</strong> — ${escapeHtml(mod.text)}`;
+
+    const nah = currentCombatModifier('schlagen');
+    const fern = currentCombatModifier('schiessen');
+    const abwehr = currentCombatModifier('abwehr');
+
+    if (!nah.teile.length && !fern.teile.length && !abwehr.teile.length) {
+        box.innerHTML = 'Kein Modifikator aktiv.';
+        return;
+    }
+
+    const zeile = (titel, mod) => {
+        if (!mod.teile.length) return `<div><span class="eig-abbr">${titel}</span> ±0</div>`;
+        const farbe = mod.summe >= 0 ? 'var(--success)' : 'var(--fail)';
+        return `<div><span class="eig-abbr">${titel}</span>
+            <strong style="color:${farbe}">${mod.summe > 0 ? '+' : ''}${mod.summe}</strong>
+            — ${escapeHtml(mod.text)}</div>`;
+    };
+
+    box.innerHTML = zeile('Nahkampf', nah) + zeile('Fernkampf/Zielzauber', fern) + zeile('Abwehr', abwehr);
 }
 
 function resetCombatModifiers() {
     Object.keys(aktiveKampfMods).forEach(k => delete aktiveKampfMods[k]);
-    ['mod-distanz', 'mod-zielen'].forEach(id => { document.getElementById(id).value = 0; });
+    ['mod-distanz', 'mod-zielen', 'mod-getuemmel', 'mod-hindernisse'].forEach(id => { document.getElementById(id).value = 0; });
     document.getElementById('mod-groesse').value = '0';
     document.querySelectorAll('#mod-toggles .radio-pill').forEach(p => p.classList.remove('selected'));
     renderCombatModifiers();
@@ -804,7 +895,7 @@ function wireCombatModifiers() {
             renderCombatModifiers();
         });
     });
-    ['mod-distanz', 'mod-zielen', 'mod-groesse'].forEach(id => {
+    ['mod-distanz', 'mod-zielen', 'mod-groesse', 'mod-getuemmel', 'mod-hindernisse'].forEach(id => {
         document.getElementById(id).addEventListener('input', renderCombatModifiers);
     });
 }
@@ -826,6 +917,7 @@ function showProbeResult(result, targetPrefix = '', modDetail = '') {
         detail.push('Würfe: ' + result.rolls.map(r => `${r.die}/${r.chunkPw}`).join(' + '));
     }
     if (result.success) detail.push(`Ergebnis: <strong>${result.total}</strong>`);
+    if (result.slayendZusatz) detail.push(`⚡ ${escapeHtml(slayendText(result))}`);
     if (modDetail) detail.push(escapeHtml(modDetail));
     document.getElementById(targetPrefix + 'dice-detail').innerHTML = detail.join(' · ');
 
@@ -844,31 +936,289 @@ function logProbe(result, extra = '') {
     if (typeof discordPostProbe === 'function') discordPostProbe(result, extra);
 }
 
+// --- Slayerpunkte (optionale Regel, Regelwerk S.45) -------------------------
+
+// Je Kampfrunde, in der man Schaden verursacht (oder als Heiler einen im Kampf
+// verletzten Kameraden heilt), gibt es 1 SP — höchstens 3 gleichzeitig. Sie
+// verfallen am Kampfende und bei Bewusstlosigkeit.
+let slayerRundeVergeben = 0;
+
+function slayerpunkteAn() {
+    return typeof slayerpunkteAktiv === 'function' && slayerpunkteAktiv();
+}
+
+function slayerpunktVerdienen(grund = 'Schaden verursacht') {
+    if (!slayerpunkteAn()) return;
+    // Pro Kampfrunde nur einmal. Ohne laufenden Kampf zählt jede Aktion als Runde.
+    const runde = (typeof currentRound === 'number' && currentRound > 0) ? currentRound : -1;
+    if (runde > 0 && slayerRundeVergeben === runde) return;
+    slayerRundeVergeben = runde;
+
+    const vorher = appData.slayerpunkte || 0;
+    if (vorher >= DS4_SLAYERPUNKTE_MAX) return;
+    appData.slayerpunkte = vorher + 1;
+    renderSlayerpunkte();
+    scheduleSave();
+    addLog(`⚡ <strong>+1 Slayerpunkt</strong> (${escapeHtml(grund)}) — jetzt ${appData.slayerpunkte}/${DS4_SLAYERPUNKTE_MAX}`, 'erfolg');
+}
+
+function slayerpunkteAusgeben(kosten, was) {
+    if ((appData.slayerpunkte || 0) < kosten) return;
+    appData.slayerpunkte -= kosten;
+    renderSlayerpunkte();
+    scheduleSave();
+    const text = `⚡ <strong>${kosten} SP</strong> ausgegeben: ${escapeHtml(was)} — noch ${appData.slayerpunkte} SP`;
+    addLog(text, 'neutral');
+    sendMultiplayerLog(text, 'neutral');
+}
+
+// Am Kampfende und bei Bewusstlosigkeit verfallen alle Slayerpunkte
+function slayerpunkteVerfallen(grund) {
+    slayerRundeVergeben = 0;
+    if (!(appData.slayerpunkte > 0)) return;
+    appData.slayerpunkte = 0;
+    renderSlayerpunkte();
+    scheduleSave();
+    addLog(`⚡ Slayerpunkte verfallen (${escapeHtml(grund)}).`, 'neutral');
+}
+
+function renderSlayerpunkte() {
+    const box = document.getElementById('slayerpunkte-box');
+    if (!box) return;
+    if (!slayerpunkteAn()) { box.innerHTML = ''; return; }
+
+    const sp = appData.slayerpunkte || 0;
+    const pips = Array.from({ length: DS4_SLAYERPUNKTE_MAX }, (_, i) =>
+        `<span class="slayer-pip ${i < sp ? 'full' : ''}">⚡</span>`).join('');
+
+    const optionen = DS4_SLAYERPUNKTE.filter(o => o.kosten <= sp);
+    const liste = optionen.length
+        ? optionen.map((o, i) => `<option value="${DS4_SLAYERPUNKTE.indexOf(o)}">${o.kosten} SP — ${escapeHtml(o.name)}</option>`).join('')
+        : '<option value="">— nicht genug Punkte —</option>';
+
+    box.innerHTML = `
+        <div class="hint-rule">
+            <div style="display:flex;align-items:center;gap:0.6rem;flex-wrap:wrap">
+                <strong>Slayerpunkte</strong>
+                <span class="slayer-pips">${pips}</span>
+                <span class="hint">${sp}/${DS4_SLAYERPUNKTE_MAX}</span>
+                <span style="margin-left:auto;display:flex;gap:0.3rem">
+                    <button class="btn btn-sm btn-ghost" id="slayer-plus" ${sp >= DS4_SLAYERPUNKTE_MAX ? 'disabled style="opacity:0.35"' : ''} title="Punkt von Hand gutschreiben">+</button>
+                    <button class="btn btn-sm btn-ghost" id="slayer-clear" ${sp ? '' : 'disabled style="opacity:0.35"'} title="Alle Punkte verfallen lassen">✕</button>
+                </span>
+            </div>
+            <div style="display:flex;gap:0.4rem;margin-top:0.5rem;align-items:center">
+                <select id="slayer-option" style="flex:1;font-size:0.8rem" ${optionen.length ? '' : 'disabled'}>${liste}</select>
+                <button class="btn btn-sm btn-primary" id="slayer-spend" ${optionen.length ? '' : 'disabled style="opacity:0.35"'}>Einsetzen</button>
+            </div>
+            <div class="hint" style="margin-top:0.35rem">
+                1 SP je Kampfrunde mit verursachtem Schaden. Boni wirken, bis du in der nächsten
+                Runde wieder an der Reihe bist, und ändern nie den PW einer bereits gewürfelten Probe.
+            </div>
+        </div>`;
+
+    document.getElementById('slayer-plus').addEventListener('click', () => {
+        appData.slayerpunkte = Math.min(DS4_SLAYERPUNKTE_MAX, (appData.slayerpunkte || 0) + 1);
+        renderSlayerpunkte(); scheduleSave();
+    });
+    document.getElementById('slayer-clear').addEventListener('click', () => slayerpunkteVerfallen('von Hand geleert'));
+    document.getElementById('slayer-spend').addEventListener('click', () => {
+        const idx = parseInt(document.getElementById('slayer-option').value, 10);
+        const opt = DS4_SLAYERPUNKTE[idx];
+        if (opt) slayerpunkteAusgeben(opt.kosten, opt.name + (opt.hinweis ? ` (${opt.hinweis})` : ''));
+    });
+}
+
+// --- Schlagen auf mehrere Gegner aufteilen (Regelwerk S.43) -----------------
+
+let mehrereGegnerAnzahl = 2;
+
+function openMehrereGegner() {
+    mehrereGegnerAnzahl = 2;
+    renderMehrereGegner();
+    openModal('mehrere-modal');
+}
+
+function renderMehrereGegner() {
+    const body = document.getElementById('mehrere-body');
+    const gesamt = lastDerived ? lastDerived.schlagen : 0;
+    const n = mehrereGegnerAnzahl;
+
+    // Vorschlag: möglichst gleichmäßig aufteilen, Rest auf die vorderen Gegner
+    const basis = Math.floor(gesamt / n);
+    const rest = gesamt - basis * n;
+    const vorschlag = Array.from({ length: n }, (_, i) => basis + (i < rest ? 1 : 0));
+
+    body.innerHTML = `
+        <p class="hint-rule" style="margin-bottom:0.9rem">
+            Der Schlagen-Wert lässt sich auf bis zu <strong>vier angrenzende Gegner</strong> aufteilen.
+            Mit den Teilwerten wird je ein eigener Angriff gewürfelt, und die eigene Abwehr sinkt
+            um <strong>2 je Gegner</strong>, bis du in der nächsten Runde wieder an der Reihe bist.
+        </p>
+        <div class="budget" style="margin-bottom:0.8rem">
+            Schlagen gesamt: <strong>${gesamt}</strong>
+            <span style="margin-left:auto">Abwehr in dieser Runde: <strong style="color:var(--fail)">−${2 * n}</strong></span>
+        </div>
+        <div class="radio-row" style="margin-bottom:0.8rem">
+            ${[2, 3, 4].map(z => `<span class="radio-pill ${n === z ? 'selected' : ''}" data-mgegner="${z}">${z} Gegner</span>`).join('')}
+        </div>
+        ${vorschlag.map((wert, i) => `
+            <div class="list-row">
+                <span style="flex:1">Gegner ${i + 1}</span>
+                <input type="number" class="mg-wert" value="${wert}" min="0" max="${gesamt}" style="width:4rem">
+                <span class="row-sub">Schlagen</span>
+            </div>`).join('')}
+        <div class="hint" id="mg-summe" style="margin-top:0.5rem"></div>
+        <div style="display:flex;gap:0.5rem;margin-top:1rem">
+            <button class="btn btn-primary" id="mg-roll">Alle Angriffe würfeln</button>
+            <button class="btn btn-ghost" onclick="closeModal('mehrere-modal')">Abbrechen</button>
+        </div>`;
+
+    const werte = () => [...body.querySelectorAll('.mg-wert')].map(el => parseInt(el.value, 10) || 0);
+    const pruefen = () => {
+        const summe = werte().reduce((a, b) => a + b, 0);
+        const box = document.getElementById('mg-summe');
+        const zuviel = summe > gesamt;
+        box.innerHTML = `Verteilt: <strong style="color:${zuviel ? 'var(--fail)' : 'var(--success)'}">${summe}</strong> / ${gesamt}` +
+            (zuviel ? ' — mehr als der Schlagen-Wert hergibt' : '');
+        document.getElementById('mg-roll').disabled = zuviel;
+        document.getElementById('mg-roll').style.opacity = zuviel ? '0.4' : '1';
+    };
+
+    body.querySelectorAll('[data-mgegner]').forEach(pill => pill.addEventListener('click', () => {
+        mehrereGegnerAnzahl = parseInt(pill.dataset.mgegner, 10);
+        renderMehrereGegner();
+    }));
+    body.querySelectorAll('.mg-wert').forEach(el => el.addEventListener('input', pruefen));
+    document.getElementById('mg-roll').addEventListener('click', () => rollMehrereGegner(werte()));
+    pruefen();
+}
+
+function rollMehrereGegner(teilwerte) {
+    const mod = currentCombatModifier('schlagen');
+    const slayend = typeof slayendeWuerfelAktiv === 'function' && slayendeWuerfelAktiv();
+    const zeilen = [];
+    let trefferSchaden = 0;
+
+    teilwerte.forEach((pw, i) => {
+        const result = rollProbe(pw, {
+            label: `Schlagen — Gegner ${i + 1}`,
+            modifier: currentModifier() + mod.summe,
+            slayend
+        });
+        if (i === 0) showProbeResult(result, '', mod.text);
+
+        let zeile = `Gegner ${i + 1} (PW ${result.pw}): ${DS4_STATUS_TEXT[result.status]} · Wurf ${result.rolls.map(r => r.die).join('+')}`;
+        if (result.success) {
+            zeile += ` · Schaden <strong>${result.total}</strong>`;
+            trefferSchaden += result.total;
+        }
+        if (result.slayendZusatz) zeile += ` · ⚡ ${slayendText(result)}`;
+        if (result.patzer) zeile += ` · ${kampfpatzerText('schlagen')}`;
+        zeilen.push(zeile);
+    });
+
+    const abwehrMalus = 2 * teilwerte.length;
+    const msg = `<strong>Angriff auf ${teilwerte.length} Gegner</strong> (Schlagen aufgeteilt)<br>` +
+        zeilen.join('<br>') +
+        `<br>Eigene Abwehr bis zum nächsten Zug: <strong style="color:var(--fail)">−${abwehrMalus}</strong>`;
+
+    // Erst der Punkt, dann der Angriff — so steht die Angriffszeile im Log oben,
+    // genau wie bei einem einzelnen Angriff über rollKampfwert()
+    if (trefferSchaden > 0) slayerpunktVerdienen('mehrere Gegner getroffen');
+    addLog(msg, trefferSchaden > 0 ? 'erfolg' : 'fehlschlag');
+    sendMultiplayerLog(msg, trefferSchaden > 0 ? 'erfolg' : 'fehlschlag');
+    closeModal('mehrere-modal');
+}
+
+// Kampfpatzer-Folge, bezogen auf die tatsächlich geführte Ausrüstung.
+// Grundlage ist die Tabelle S.43, ergänzt um die Fußnoten der Waffentabelle
+// (hölzerne Waffen zerbrechen, die Schlachtgeißel trifft den Angreifer selbst).
+function kampfpatzerText(key) {
+    const basis = DS4_KAMPFPATZER[key];
+    if (!basis) return '';
+
+    if (key === 'abwehr') {
+        const schild = findArmor(appData.equipment.schild);
+        const holz = schild && /Holz/.test(schild.name);
+        return 'Kampfpatzer: Charakter stürzt zu Boden' +
+            (holz ? `, der <strong>${escapeHtml(schild.name)}</strong> zerbricht dabei (nicht-magisch).` : '.');
+    }
+
+    const slot = key === 'schlagen' ? 'melee' : (key === 'schiessen' ? 'ranged' : null);
+    if (!slot) return 'Kampfpatzer: ' + basis;
+
+    const waffe = findWeapon(appData.equipment[slot]);
+    if (!waffe) return 'Kampfpatzer: ' + basis;
+
+    if (waffe.patzerSelbst) {
+        return `Kampfpatzer: <strong>${escapeHtml(waffe.name)}</strong> — der Angreifer trifft sich selbst. ` +
+            'Angriff neu würfeln, Patzer dabei ausgeschlossen.';
+    }
+    let text = `Kampfpatzer: <strong>${escapeHtml(waffe.name)}</strong> fällt zu Boden`;
+    if (waffe.zerbricht === key) text += ' und zerbricht dabei (nicht-magisch)';
+    return text + '.';
+}
+
 function rollKampfwert(key, label, pw) {
-    // Situationsmodifikatoren gelten nur für Angriffe und die Abwehr
-    const kampf = ['schlagen', 'schiessen', 'zaubern', 'zielzauber', 'abwehr'].includes(key)
-        ? currentCombatModifier() : { summe: 0, text: '' };
-    const result = rollProbe(pw, { label, modifier: currentModifier() + kampf.summe });
+    // Situationsmodifikatoren gelten nur für Angriffe und die Abwehr — und je
+    // nach Probenart auch nur teilweise (Regelwerk S.43-44)
+    const istKampfprobe = ['schlagen', 'schiessen', 'zaubern', 'zielzauber', 'abwehr'].includes(key);
+    const kampf = istKampfprobe ? currentCombatModifier(key) : { summe: 0, text: '' };
+    // Slayende Würfel gelten für Angriffs- und Abwehrproben (Regelwerk S.45)
+    const slayend = istKampfprobe && typeof slayendeWuerfelAktiv === 'function' && slayendeWuerfelAktiv();
+
+    const result = rollProbe(pw, { label, modifier: currentModifier() + kampf.summe, slayend });
+
+    const istAngriff = ['schlagen', 'schiessen', 'zielzauber'].includes(key);
+    const hinweise = [];
+
+    // Schaden aus dem Wurfergebnis ableiten — mit den Sonderfällen aus S.44
+    let schaden = result.total;
+    if (istAngriff && result.success) {
+        // Schüsse ins Getümmel: nie mehr als der normale Höchstschaden (= PW ohne den Bonus)
+        const getuemmel = parseInt(document.getElementById('mod-getuemmel').value, 10) || 0;
+        if (key === 'schiessen' && getuemmel && schaden > pw) {
+            hinweise.push(`Getümmel: Schaden von ${schaden} auf den Höchstschaden ${pw} gedeckelt`);
+            schaden = pw;
+        }
+        // Wehrlose Gegner: doppelter Schaden im Nahkampf, Abwehr ohne Rüstung
+        if (key === 'schlagen' && aktiveKampfMods.wehrlos) {
+            schaden *= 2;
+            hinweise.push('Ziel wehrlos: doppelter Schaden, Abwehr ohne Rüstung');
+        }
+    }
+
     showProbeResult(result, '', kampf.text);
 
     let extra = '';
     if (result.patzer && DS4_KAMPFPATZER[key]) {
-        extra = 'Kampfpatzer: ' + DS4_KAMPFPATZER[key];
-    } else if (result.success && ['schlagen', 'schiessen', 'zielzauber'].includes(key)) {
-        extra = `Schaden: <strong>${result.total}</strong> (Gegner würfelt Abwehr`;
+        extra = kampfpatzerText(key);
+    } else if (result.success && istAngriff) {
+        extra = `Schaden: <strong>${schaden}</strong> (Gegner würfelt Abwehr`;
         // Gegnerabwehr der geführten Waffe fließt in die Abwehr des Ziels ein
         const ga = key === 'schlagen' ? gegnerabwehr(charForRules(), 'melee')
                  : (key === 'schiessen' ? gegnerabwehr(charForRules(), 'ranged') : 0);
         extra += ga ? ` mit ${ga > 0 ? '+' : ''}${ga} Gegnerabwehr)` : ')';
+        // Zurückdrängen ist bei jedem gelungenen Nahkampftreffer möglich (S.44)
+        if (key === 'schlagen') hinweise.push('kann den Gegner 1m zurückdrängen (gleiche oder kleinere Größe)');
     } else if (result.success && key === 'abwehr') {
         extra = `Schaden um <strong>${result.total}</strong> reduziert`;
     }
 
+    if (result.slayendZusatz) hinweise.unshift('⚡ ' + slayendText(result));
+    if (hinweise.length) extra += (extra ? ' · ' : '') + hinweise.join(' · ');
+
     // Ein erfolgreich gewirkter Zauber geht in die Abklingzeit
     if (['zaubern', 'zielzauber'].includes(key)) {
         const cooldownNote = startSpellCooldown(result);
-        if (cooldownNote) extra += (extra ? ' · ' : '') + cooldownNote;
+        // Beim Patzer ersetzt der Hinweis mit Zaubernamen den allgemeinen
+        // Kampfpatzer-Text, statt dasselbe zweimal in die Zeile zu schreiben.
+        if (cooldownNote) extra = result.patzer ? cooldownNote : extra + (extra ? ' · ' : '') + cooldownNote;
     }
+
+    // Slayerpunkt für eine Runde, in der Schaden verursacht wurde (S.45)
+    if (istAngriff && result.success && schaden > 0) slayerpunktVerdienen();
 
     logProbe(result, extra);
 }
@@ -883,7 +1233,7 @@ function startSpellCooldown(result) {
         spell.prepared = false;
         renderSpells();
         scheduleSave();
-        return 'Der Zauber ist herausgesprungen und nicht mehr aktiv';
+        return `Kampfpatzer: <strong>${escapeHtml(spell.name)}</strong> ist herausgesprungen und nicht mehr aktiv`;
     }
     if (!result.success) return '';
 
@@ -931,11 +1281,14 @@ function probeWertFor(probe) {
     const attrMap = { 'KÖR': 'koerper', 'AGI': 'agilitaet', 'GEI': 'geist' };
     const eigMap = { ST: 'staerke', 'HÄ': 'haerte', BE: 'bewegung', GE: 'geschick', VE: 'verstand', AU: 'aura' };
 
-    const attrCode = probe.formula.slice(0, 3);
-    const attrValue = appData.attribute[attrMap[attrCode]] || 0;
+    // Alle Großbuchstaben-Kürzel der Formel einsammeln. Über \b ginge das nicht:
+    // Ä ist kein Wortzeichen, "HÄ" in "KÖR+HÄ" würde damit nie gefunden.
+    const codes = probe.formula.match(/[A-ZÄÖÜ]+/g) || [];
+    const attrValue = appData.attribute[attrMap[codes[0]]] || 0;
 
-    const eigCodes = probe.formula.match(/\b(ST|HÄ|BE|GE|VE|AU)\b/g) || [];
-    const eigValues = eigCodes.map(code => effectiveEigenschaft(eigMap[code]));
+    const eigValues = codes.slice(1)
+        .filter(code => eigMap[code])
+        .map(code => effectiveEigenschaft(eigMap[code]));
     const best = eigValues.length ? Math.max(...eigValues) : 0;
 
     let pw = attrValue + best;
@@ -1040,6 +1393,57 @@ function lpCosts() {
     return cls ? cls.lpCosts : null;
 }
 
+// Menschen dürfen ihren Eigenschaftshöchstwert um insgesamt 2 Punkte anheben:
+// "2 beliebige Eigenschaften +1 oder 1 beliebige Eigenschaft +2" (Regelwerk S.9).
+// Die Wahl gehört zum Charakter, nicht zur Steigerung — deshalb steht sie hier
+// oben im Stufenaufstiegs-Dialog, wo die Höchstwerte ohnehin sichtbar sind.
+const MENSCH_CAP_PUNKTE = 2;
+
+function menschCapHtml() {
+    if (appData.volk !== 'mensch') return '';
+    const gewaehlt = appData.menschCapChoices || [];
+    const offen = MENSCH_CAP_PUNKTE - gewaehlt.length;
+
+    const pills = Object.keys(DS4_EIGENSCHAFT_NAMES).map(key => {
+        const anzahl = gewaehlt.filter(c => c === key).length;
+        return `<span class="radio-pill ${anzahl ? 'selected' : ''}" data-mcap="${key}"
+                title="Klicken schaltet durch: kein Bonus → +1 → +2 → kein Bonus">
+            ${DS4_EIGENSCHAFT_NAMES[key]}${anzahl ? ` +${anzahl}` : ''}
+        </span>`;
+    }).join('');
+
+    return `<div class="budget ${offen === 0 ? 'done' : ''}" style="display:block;margin-bottom:0.9rem">
+            <div style="margin-bottom:0.4rem">
+                <strong>Höchstwert-Bonus (Mensch)</strong> —
+                ${offen > 0 ? `noch <strong>${offen}</strong> Punkt${offen === 1 ? '' : 'e'} zu vergeben`
+                            : 'vollständig vergeben'}
+            </div>
+            <div class="radio-row">${pills}</div>
+            <div class="hint" style="margin-top:0.35rem">
+                2 beliebige Eigenschaften +1 oder 1 Eigenschaft +2 auf den Grundwert 12.
+            </div>
+        </div>`;
+}
+
+function wireMenschCap(body) {
+    body.querySelectorAll('[data-mcap]').forEach(pill => {
+        pill.addEventListener('click', () => {
+            const key = pill.dataset.mcap;
+            const gewaehlt = appData.menschCapChoices || [];
+            const andere = gewaehlt.filter(c => c !== key);
+
+            // 0 → +1 → +2 → 0 durchschalten; passt es nicht ins Budget, auf 0 zurück
+            let anzahl = (gewaehlt.length - andere.length + 1) % (MENSCH_CAP_PUNKTE + 1);
+            if (andere.length + anzahl > MENSCH_CAP_PUNKTE) anzahl = 0;
+
+            appData.menschCapChoices = andere.concat(new Array(anzahl).fill(key));
+            renderAttributes();
+            renderLevelUp();
+            onDataChanged();
+        });
+    });
+}
+
 function renderLevelUp() {
     const body = document.getElementById('levelup-body');
     const cls = activeClass();
@@ -1073,7 +1477,7 @@ function renderLevelUp() {
     const lkAffordable = lp >= costs.lk;
     const tpAffordable = lp >= costs.tp;
 
-    body.innerHTML = `
+    body.innerHTML = menschCapHtml() + `
         <div class="grid-2" style="margin-bottom:0.9rem">
             <div class="budget"><span>Stufe</span> <strong>${stufe}</strong></div>
             <div class="budget ${lp > 0 ? 'done' : ''}"><span>Lernpunkte</span> <strong>${lp}</strong></div>
@@ -1109,6 +1513,8 @@ function renderLevelUp() {
             Neue Zaubersprüche kosten weder LP noch TP.
         </p>`;
 
+    wireMenschCap(body);
+
     body.querySelectorAll('[data-buy]').forEach(btn => {
         btn.addEventListener('click', () => {
             const cost = parseInt(btn.dataset.cost, 10);
@@ -1139,17 +1545,35 @@ function renderLevelUp() {
     });
 }
 
-function grantLevelUp() {
+// Punkte für einen oder mehrere Stufenaufstiege gutschreiben. Zentral, damit der
+// Aufstieg über EP vom Spielleiter dieselben (Haus-)Regeln nutzt wie der Knopf
+// im Stufenaufstiegs-Dialog. Liefert einen lesbaren Text der Gutschrift.
+function gutschriftFuerStufen(stufen) {
+    if (stufen <= 0) return '';
     const hr = typeof hausregeln !== 'undefined' ? hausregeln : null;
-    const tpZuwachs = hr ? hr.tpProStufe : 1;
-    const ntpZuwachs = (hr && hr.ntpAktiv) ? hr.ntpProStufe : 0;
+    const tpZuwachs = (hr ? hr.tpProStufe : 1) * stufen;
+    const ntpZuwachs = ((hr && hr.ntpAktiv) ? hr.ntpProStufe : 0) * stufen;
+    const lpZuwachs = 2 * stufen;
 
-    appData.lp = (appData.lp || 0) + 2;
+    appData.lp = (appData.lp || 0) + lpZuwachs;
     appData.tp = (appData.tp || 0) + tpZuwachs;
     if (ntpZuwachs) appData.ntp = (appData.ntp || 0) + ntpZuwachs;
 
-    addLog(`Stufenaufstieg: +2 Lernpunkte, +${tpZuwachs} Talentpunkt${tpZuwachs === 1 ? '' : 'e'}` +
-        (ntpZuwachs ? `, +${ntpZuwachs} ${escapeHtml(hr.ntpName)}` : ''), 'erfolg');
+    return `+${lpZuwachs} Lernpunkt${lpZuwachs === 1 ? '' : 'e'}, +${tpZuwachs} Talentpunkt${tpZuwachs === 1 ? '' : 'e'}` +
+        (ntpZuwachs ? `, +${ntpZuwachs} ${escapeHtml(hr.ntpName)}` : '');
+}
+
+function grantLevelUp() {
+    // Die Stufe ergibt sich aus den EP — ohne EP-Anpassung bliebe der Charakter
+    // sonst formal auf seiner alten Stufe stehen und Talente blieben gesperrt.
+    const hatHeld = !!appData.heldenklasse;
+    const naechste = epBisNaechsteStufe(appData.ep || 0, hatHeld);
+    if (!naechste) { addLog('Höchststufe 20 bereits erreicht.', 'neutral'); return; }
+    appData.ep = naechste.needed;
+
+    const text = gutschriftFuerStufen(1);
+    addLog(`Stufenaufstieg auf <strong>Stufe ${naechste.stufe}</strong> (${naechste.needed} EP): ${text}`, 'erfolg');
+    refreshBoundInputs();
     renderAll();
     renderLevelUp();
     scheduleSave();
@@ -1160,6 +1584,7 @@ function grantLevelUp() {
 
 // Der Spielleiter sendet die aktuelle Kampfrunde; daran hängt die Abklingzeit.
 function tickSpellCooldowns(round) {
+    merkeKampfstand(round);
     let changed = false;
     (appData.spells || []).forEach(spell => {
         if (spell.cooldownUntil && round > 0 && round >= spell.cooldownUntil) {
@@ -1229,6 +1654,26 @@ function openRulesModal() {
             <li>Abwehr ist eine automatische Probe (keine Aktion): Erfolg reduziert den Schaden um das Wurfergebnis.</li>
             <li>Fernkampf: −1 je 10m Distanz, −2 auf Ziele im Nahkampf.</li>
             <li>Bewusstlos bei 0 LK, Tod wenn der Schaden unter 0 den KÖR-Wert übersteigt.</li>
+        </ul>
+
+        <h4 style="color:var(--accent-bright);margin-top:1rem">Kampfdetails (S.43–44)</h4>
+        <ul class="hint" style="margin:0.3rem 0 0 1.2rem">
+            <li><strong>Abwartehandlung:</strong> statt zu handeln später dran sein — +2 Initiative je Runde ohne Aktion, höchstens +10. Sobald man handelt, verfällt der Bonus.</li>
+            <li><strong>Mehrere Gegner:</strong> Schlagen auf bis zu 4 angrenzende Gegner aufteilen, je ein eigener Angriff. Kostet 2 Abwehr pro Gegner bis zum nächsten Zug.</li>
+            <li><strong>Zwei Waffen:</strong> −10 auf Schlagen und Abwehr, je Rang im Talent <em>Zwei Waffen</em> um 2 gemildert.</li>
+            <li><strong>Zielen:</strong> höchstens Laufen/2 bewegen, dann +2 je gezielter Runde (max. +10) auf Schießen/Zielzauber.</li>
+            <li><strong>Getümmel:</strong> blindlings in eine Menge schießen gibt +1 je Individuum (max. +20), das Ziel bestimmt der Zufall und der Schaden wird auf den normalen Höchstschaden gedeckelt.</li>
+            <li><strong>Hindernisse:</strong> −1 je Baum, Gegner oder Kamerad, an dem vorbeigeschossen wird. Nur bei einem Patzer trifft man eines davon.</li>
+            <li><strong>Wehrlose Gegner</strong> (gefesselt, schlafend): doppelter Schaden im Nahkampf, Abwehr ohne Rüstung.</li>
+            <li><strong>Zurückdrängen:</strong> ein gelungener Nahkampftreffer schiebt gleich große oder kleinere Gegner 1m zurück (<em>Blocker</em> darf mit KÖR+HÄ dagegenhalten).</li>
+            <li><strong>Rüstung anlegen:</strong> 2 Aktionen je Punkt Panzerung, Helme sind frei. Wer in Metallrüstung schläft, würfelt morgens KÖR+HÄ oder kassiert −1 auf alle Proben für 24 Stunden.</li>
+        </ul>
+
+        <h4 style="color:var(--accent-bright);margin-top:1rem">Optionale Regeln (S.45)</h4>
+        <ul class="hint" style="margin:0.3rem 0 0 1.2rem">
+            <li><strong>Slayende Würfel:</strong> Ein Immersieg bei Angriff oder Abwehr löst sofort einen weiteren Wurf aus (ohne Patzer-Risiko); gelingt er, kommt sein Ergebnis dazu, und ein erneuter Immersieg wiederholt das Ganze. Bei PW über 20 zählt nur ein Immersieg des ersten Würfels.</li>
+            <li><strong>Slayerpunkte:</strong> 1 SP je Kampfrunde, in der man Schaden verursacht (Heiler auch fürs Heilen verletzter Kameraden), höchstens 3 gleichzeitig. Sie verfallen am Kampfende und bei Bewusstlosigkeit.</li>
+            <li>Beide sind unter <strong>⚙️ Hausregeln</strong> einschaltbar. Das Regelwerk empfiehlt, Slayende Würfel nicht ohne Slayerpunkte zu verwenden.</li>
         </ul>
 
         <h4 style="color:var(--accent-bright);margin-top:1rem">Kampfpatzer</h4>

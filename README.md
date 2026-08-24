@@ -8,9 +8,12 @@
 
   <p>
     <a href="https://dondavis-vibe.github.io/Dungeonslayers-pnp-tools/"><strong>🎲 Tool direkt öffnen</strong></a>
+    &nbsp;·&nbsp;
+    <a href="https://discord.gg/DPk8QRSZ5W"><strong>💬 Discord: Fragen &amp; Bug-Reports</strong></a>
   </p>
 
   <p>
+    <a href="https://discord.gg/DPk8QRSZ5W"><img alt="Discord" src="https://img.shields.io/badge/Discord-beitreten-5865F2.svg?logo=discord&logoColor=white"></a>
     <a href="LICENSE"><img alt="Code: MIT" src="https://img.shields.io/badge/Code-MIT-yellow.svg"></a>
     <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.de"><img alt="Regeldaten: CC BY-NC-SA 4.0" src="https://img.shields.io/badge/Regeldaten-CC%20BY--NC--SA%204.0-blue.svg"></a>
     <img alt="Keine Abhängigkeiten" src="https://img.shields.io/badge/Abh%C3%A4ngigkeiten-keine-brightgreen.svg">
@@ -76,19 +79,34 @@ verteilt ist, und die Plus-Knöpfe sperren an den Obergrenzen.
   schwerer Rüstung, Laufen-Abzüge, Aura-Bonus der Runenrobe).
 - **Regelprüfungen** — warnt, wenn ein Zwerg zum Bihänder greift, ein Zauberer Kettenrüstung anlegt
   oder ein Schild neben einer Zweihandwaffe hängt.
+- **Klassenfremde Rüstung wird nicht nur gemeldet, sondern gerechnet** (S.41): Der PA-Malus auf
+  Zaubern und Zielzauber vervierfacht sich und die Agilität sinkt um den PA-Wert — das schlägt
+  direkt auf Initiative, Laufen und Schießen durch. Das Talent *Gerüstet* hebt die erlaubte
+  Rüstungsklasse je Rang an und nimmt den Malus wieder heraus.
 - **Höchstwerte** — die Eigenschafts-Obergrenze (12, +1 je durch Volk/Klasse begünstigter
-  Eigenschaft) wird pro Eigenschaft berechnet und angezeigt.
+  Eigenschaft) wird pro Eigenschaft berechnet und angezeigt. Menschen wählen ihre beiden freien
+  Höchstwert-Punkte („2 Eigenschaften +1 oder 1 Eigenschaft +2") im Stufenaufstiegs-Dialog.
 - **Stufenaufstieg** — eigener Dialog mit den klassenabhängigen Lernpunkt-Kosten
-  (günstige Eigenschaften 2 LP, übrige 3 LP, Lebenskraft 1 LP, Talentpunkt 3 LP).
+  (günstige Eigenschaften 2 LP, übrige 3 LP, Lebenskraft 1 LP, Talentpunkt 3 LP). Der Knopf
+  „+1 Stufe gutschreiben" hebt auch die Erfahrungspunkte auf die nächste Schwelle, damit Stufe,
+  Talentzugang und Punktebudget zusammenpassen.
 - **Rasten** — *Verschnaufen* (halbe im Kampf verlorene LK zurück) und *Nachtruhe*
-  (1W20/2 LK, +1 je 4 Stunden Bettruhe) als Ein-Klick-Aktionen.
+  (1W20/2 LK, +1 je 4 Stunden Bettruhe) als Ein-Klick-Aktionen. Läuft ein Kampf über den
+  Rundenzähler mit, merkt sich der Bogen den Stand bei Kampfbeginn und verschnauft nur über die
+  *in diesem Kampf* verlorene Lebenskraft — alte Wunden heilt es nicht mit.
+- **Rüstzeiten** — wie viele Aktionen das Anlegen der getragenen Rüstung kostet (2 je Punkt
+  Panzerung, Helme frei) und der Hinweis auf die KÖR+HÄ-Probe, wenn jemand in Metallrüstung schläft.
 - Inventar, Münzen und Notizen.
 
 ### ✨ Zaubersprüche (129 Stück, vollständig aus dem Regelwerk)
 - Die Auswahl zeigt **nur Zauber, die dein Zauberwirker-Typ auf deiner Stufe lernen darf** —
   Heiler, Zauberer und Schwarzmagier haben unterschiedliche Zugangsstufen für denselben Spruch.
 - Jeder Eintrag bringt Zauberbonus, Dauer, Distanz, Abklingzeit, Preis und Wirkung mit.
-- Der **Zauberbonus des vorbereiteten Zaubers fließt automatisch** in Zaubern/Zielzauber ein.
+- Der **Zauberbonus des vorbereiteten Zaubers fließt automatisch** in den Kampfwert ein, mit dem
+  er auch gewirkt wird — ein Zielzauber-ZB landet nicht mehr versehentlich auch auf *Zaubern*.
+- Rund ein Fünftel der Sprüche hat einen **formelhaften Zauberbonus** (z.B. `−(KÖR+VE)/2 des
+  Ziels`), der vom Ziel abhängt. Der Bogen rechnet dort mit 0 und markiert den Spruch mit
+  *ZB formelhaft*, statt still einen falschen Wert einzusetzen.
 - **Abklingzeiten** laufen am synchronisierten Rundenzähler mit; ein Patzer lässt den Zauber
   regelkonform „herausspringen".
 
@@ -113,24 +131,39 @@ Kein Freitextfeld, sondern eine echte Auswahl mit Regelprüfung:
   in die Kampfwerte eingerechnet).
 
 ### 🎲 Die Probenmechanik
-Vollständig nach Regelwerk S.38–39 umgesetzt:
+Vollständig nach Regelwerk S.38–40 umgesetzt:
 
 - **1W20 unterwürfeln** gegen den Probenwert. Wurf ≤ PW = Erfolg.
 - **Immersieg** bei natürlicher 1 — immer Erfolg, zählt als bestmögliches Ergebnis (voller PW).
 - **Patzer** bei natürlicher 20 — immer Fehlschlag, im Kampf mit der jeweiligen Zusatzfolge
   (Waffe fällt, Zauber springt heraus, Charakter stürzt).
-- **Probenwerte über 20** werden korrekt in Kettenwürfe zerlegt (20, dann Rest). Nur der erste
-  Würfel kann patzen, erfolgreiche Teilergebnisse werden summiert.
+- **Probenwerte über 20** werden in Kettenwürfe zerlegt (20, dann Rest). Nur der erste Würfel kann
+  patzen, erfolgreiche Teilergebnisse werden summiert. Wie in „Ergebnisse über 20 ermitteln"
+  (S.40) fallen dabei **erst alle Würfel, dann wird zugeordnet** — der Bogen sucht automatisch die
+  beste Verteilung, ein Immersieg zählt nur für seinen eigenen Teilwurf. Das Beispiel aus dem Buch
+  (PW 44, Würfe 2/1/17) ergibt damit die dort genannten **39** Punkte.
 - **Angriffe:** das Wurfergebnis *ist* der Schaden — wird direkt so ausgewiesen.
 - Schwierigkeitsmodifikatoren von Routine (+8) bis Äußerst schwer (−8).
 - **Vergleichende Proben** — beide Seiten würfeln, die höhere gelungene Probe gewinnt;
   misslingen beide, gibt es kein Ergebnis.
-- **Kampfmodifikatoren** als aufklappbares Feld: Entfernung (−1 je 10m), Zielen (+2 je Runde,
-  max. +10), liegend, von hinten/der Seite, Größenunterschied und der Zwei-Waffen-Malus
-  (automatisch um deine Ränge im Talent *Zwei Waffen* gemildert). Gilt nur für Kampfproben,
-  nicht für gewöhnliche Fertigkeitsproben.
-- **Gegnerabwehr** der geführten Waffe (Langschwert −2, Bihänder −4, waffenlos +5) fließt in die
+- **Kampfmodifikatoren** als aufklappbares Feld: Entfernung (−1 je 10m, bei Schleuder und
+  Wurfmesser −1 je 2m), Zielen (+2 je Runde, max. +10), liegend, von hinten/der Seite,
+  Größenunterschied und der Zwei-Waffen-Malus (automatisch um deine Ränge im Talent
+  *Zwei Waffen* gemildert). Sie greifen **je nach Probenart unterschiedlich** (S.43–44):
+  Distanz und Zielen nur bei Schießen/Zielzauber, Position und Größe des Ziels nur bei Angriffen,
+  die Abwehr trifft ausschließlich „selbst am Boden liegend" und der Zwei-Waffen-Malus. Das Feld
+  zeigt die drei Summen für Nahkampf, Fernkampf und Abwehr getrennt an. Für gewöhnliche
+  Fertigkeitsproben gelten sie gar nicht.
+- **Gegnerabwehr** der geführten Waffe (Breitschwert −2, Bihänder −4, waffenlos +5) fließt in die
   Abwehr des Ziels ein — beim Spieler automatisch, beim Spielleiter über die Schadenseingabe.
+- **Kampfdetails aus S.43–44** sind abgedeckt: *Mehrere Gegner* (Schlagen auf bis zu vier
+  angrenzende Gegner aufteilen, je ein eigener Angriff, −2 Abwehr pro Gegner) als eigener Dialog,
+  dazu *Schüsse ins Getümmel* (+1 je Individuum, Schaden auf den Höchstschaden gedeckelt),
+  *vorbei an Hindernissen* (−1 je Hindernis), *wehrlose Gegner* (doppelter Nahkampfschaden) und
+  ein Hinweis aufs *Zurückdrängen* bei jedem gelungenen Nahkampftreffer.
+- **Kampfpatzer nennen die geführte Ausrüstung**: Die Keule zerbricht, die Schlachtgeißel trifft
+  den Angreifer selbst, der Holzschild zerspringt beim Abwehr-Patzer — statt eines allgemeinen
+  Standardsatzes.
 - 24 typische Proben (Klettern, Schleichen, Schlösser öffnen …) mit automatisch passender
   Attribut+Eigenschaft-Formel, inklusive Sonderfällen wie dem Mindestwert 8 bei *Bemerken*
   und dem elfischen *Leichtfüßig*-Bonus auf Schleichen.
@@ -157,7 +190,7 @@ SL-Notizen (lokal gespeichert).
   direkt vorgewählt
 - **Erfahrungspunkte** einzeln oder an alle. Die EP der besiegten Gegner werden aus dem
   Bestiarium vorgeschlagen, und ein dadurch ausgelöster Stufenaufstieg schreibt Lern- und
-  Talentpunkte automatisch gut
+  Talentpunkte automatisch gut — nach den **Hausregeln der Runde**, falls welche gesetzt sind
 - **Flüstern** an einzelne Spieler und **Ansagen an alle**
 - die **aktuelle Kampfrunde**, an der die Abklingzeiten der Zauber hängen
 
@@ -166,12 +199,19 @@ dauerhafte Statusanzeige — grün bei bestehender Verbindung (mit Raum-Code), p
 Verbinden, rot bei Abbruch. Ohne Multiplayer bleibt sie unsichtbar. Ein Klick öffnet das Menü mit
 bereits vorausgefülltem Raum-Code.
 
+Nachrichten der Gegenseite werden vor der Anzeige entschärft: Erlaubt bleibt nur die Formatierung,
+die das Tool selbst verschickt (`<strong>`, `<em>`, `<br>`) — alles andere landet als Text im Log.
+So kann ein fremder Teilnehmer im Raum kein beliebiges Markup in den Bogen der anderen schreiben.
+
 Robustheit ist eingebaut: Reconnect mit Backoff, wenn der Signalling-Server die Verbindung kappt,
 Wiederherstellung nach einem Reload, und eine Fehlerdiagnose, die bei gescheiterten Verbindungen
 die ICE-Kandidaten auswertet und konkret sagt, woran es lag (blockiertes WebRTC, striktes NAT …).
 Für harte NAT-Fälle lässt sich ein eigener TURN-Server hinterlegen.
 
 ### 🤖 Discord-Anbindung (optional)
+> Fragen, Wünsche oder ein Bug? Auf dem **[Discord-Server](https://discord.gg/DPk8QRSZ5W)** werden
+> diese Pen-&-Paper-Tools entwickelt und getestet — dort ist der richtige Ort dafür.
+
 Damit die ganze Gruppe die Würfe mitliest und nicht nur der Spielleiter: Im Discord-Kanal unter
 *Kanal bearbeiten → Integrationen → Webhooks* einen Webhook anlegen und die URL im Multiplayer-Menü
 eintragen. Danach landen Würfe (mit Probenwert, Wurf, Ergebnis und farbcodiert nach Immersieg /
@@ -216,6 +256,17 @@ einstellbar, ohne die Regeldateien anzufassen:
 - **Talentpunkte je Stufe** frei wählbar, dazu optional ein **zweiter, getrennt geführter Topf**
   (z.B. für Talente außerhalb des Kampfes). Name und Anzahl bestimmt ihr; beim Lernen wählt man,
   aus welchem Topf bezahlt wird, und beim Entfernen fließt der Punkt dorthin zurück.
+- **Die beiden optionalen Kampfregeln aus S.45** einzeln zuschaltbar:
+  - **Slayende Würfel** — ein Immersieg bei Angriff oder Abwehr löst sofort einen weiteren Wurf aus
+    (Patzer dabei ausgeschlossen); gelingt er, kommt sein Ergebnis dazu, ein erneuter Immersieg
+    wiederholt das Ganze. Bei Probenwerten über 20 zählt nur ein Immersieg des ersten Würfels.
+    Gilt auch für NSC im Kampf-Tracker. Das Buchbeispiel (Schlagen 14, Würfe 1/1/8) ergibt die
+    dort genannten **36** Punkte.
+  - **Slayerpunkte** — ein eigenes Feld unter den Kampfwerten. Der Bogen schreibt automatisch
+    1 SP je Kampfrunde gut, in der du Schaden verursachst (höchstens 3), lässt sie am Kampfende
+    und bei Bewusstlosigkeit verfallen und bietet die komplette Ausgabetabelle des Regelwerks
+    zum Einsetzen an — gefiltert nach dem, was du dir gerade leisten kannst.
+  - Sind Slayende Würfel ohne Slayerpunkte aktiv, weist das Tool auf die Empfehlung des Regelwerks hin.
 - **Eigene Talente, Zauber und Heldenklassen** anlegen — sie erscheinen in den Auswahllisten neben
   den offiziellen, sind als *Hausregel* gekennzeichnet und unterliegen derselben Zugangsprüfung.
 
@@ -231,11 +282,17 @@ frühere Sitzung wiederherzustellen.
 ### ⚔️ Kampf-Tracker (Spielleiter)
 - **Initiative-Reihenfolge** absteigend sortiert, mit einmaligem W20-„Stechen" bei Gleichstand
 - **Rundenzähler**, der automatisch an alle Spieler synchronisiert wird
+- **Abwartehandlung** per Klick: +2 Initiative je Runde ohne Aktion (höchstens +10), die
+  Reihenfolge sortiert sich live um; sobald der Charakter handelt, verfällt der Bonus
 - **Bestiarium mit 78 Kreaturen** aus dem Regelwerk — durchsuchbar, nach Gegnerhärte sortiert,
   per Klick direkt in die Initiative-Reihenfolge. Mehrfach eingesetzte Gegner werden automatisch
   durchnummeriert. Eigene Gegner lassen sich daneben frei anlegen.
 - **NSC-Angriffe** per Klick: gegen Spieler würfelt der Spieler selbst die Abwehr, gegen andere
   NSC wird sie direkt mit ausgewürfelt
+- **Gegnerabwehr der Monsterwaffen** wird aus dem Statblock gelesen (z.B. „Massive Keule
+  (WB+2; GA−2)") und beim Angriff mitgeschickt; in der Zeile ist sie nachträglich änderbar
+- Werte, die ein Statblock gar nicht nennt oder als Ausdruck führt (Schwarmwert, „5+1"), setzt der
+  Tracker als Platzhalter ein und **sagt ausdrücklich dazu**, dass sie nachgetragen gehören
 - Verbundene Spieler werden mit Live-Werten in die Reihenfolge übernommen
 
 ---
@@ -311,10 +368,12 @@ Besonders hilfreich wäre:
 - **Regelkorrekturen.** Das Tool ist aus dem PDF heraus entstanden, nicht aus Spielpraxis. Wenn eine
   Mechanik falsch umgesetzt ist, ist das die wertvollste Rückmeldung überhaupt — gerne als Issue.
 - **Berichte aus dem Spiel.** Was fehlt am Tisch, was nervt, was wird nie benutzt?
-- **Die optionalen Regeln** (Slayerpunkte, Slayende Würfel) als abschaltbare Erweiterung.
 - **Fehlermeldungen**, gerne mit Browser und Schritten zum Nachstellen.
 
 Wer keinen Code beisteuern möchte: Issues und Rückmeldungen sind genauso viel wert.
+
+**Anlaufstelle:** GitHub-Issues oder der **[Discord-Server](https://discord.gg/DPk8QRSZ5W)** — dort
+werden diese Pen-&-Paper-Tools entwickelt und getestet, und dort landen Bug-Reports am schnellsten.
 
 ### Wo was steckt
 
@@ -342,7 +401,7 @@ Bildschirmgröße und Zoomstufe und ist klein genug, um ihn bei jeder Bewegung z
 
 ### Nach einer Änderung: Versionsnummer hochzählen
 
-Alle eigenen Dateien werden mit einem Versionsparameter eingebunden (`app.js?v=20260823c`). Wer
+Alle eigenen Dateien werden mit einem Versionsparameter eingebunden (`app.js?v=20260823l`). Wer
 etwas ändert, zählt die Version in `index.html` hoch — sonst behalten Besucher die alte Fassung
 aus dem Browser-Cache.
 

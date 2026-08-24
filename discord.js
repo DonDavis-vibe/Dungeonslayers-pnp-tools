@@ -191,7 +191,9 @@ function discordPostProbe(result, extra) {
     discordEnqueue({
         username: discordAbsender(),
         embeds: [{
-            title: `${DISCORD_ICONS[result.status]} ${result.label} — ${DS4_STATUS_TEXT[result.status].replace(/[⭐✅❌💀]\s*/, '')}`,
+            // u-Flag: ohne das zerschneidet die Zeichenklasse das Surrogatpaar
+            // von 💀 und ein halbes Zeichen bleibt im Titel stehen.
+            title: `${DISCORD_ICONS[result.status]} ${result.label} — ${DS4_STATUS_TEXT[result.status].replace(/[⭐✅❌💀]\s*/u, '')}`,
             description: zeilen.join('\n'),
             color: DISCORD_FARBEN[result.status] || DISCORD_FARBEN.neutral
         }]

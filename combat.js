@@ -20,9 +20,57 @@ function makeNpc(preset = {}) {
         lkCurrent: preset.lkCurrent != null ? preset.lkCurrent : (preset.lkMax != null ? preset.lkMax : 15),
         abwehr: preset.abwehr != null ? preset.abwehr : 10,
         schlagen: preset.schlagen != null ? preset.schlagen : 12,
+        // Gegnerabwehr der Bewaffnung — senkt die Abwehr des Ziels
+        gaMod: preset.gaMod != null ? preset.gaMod : 0,
         notiz: preset.notiz || '',
-        stechen: 0
+        // Abwartehandlung: +2 Initiative je abgewartete Runde, höchstens +10 (S.43)
+        abwarten: 0,
+        // Wird beim Kampfstart einmalig für Gleichstände ausgewürfelt (S.40).
+        // Später hinzugestoßene Gegner bekommen ihn sofort.
+        stechen: combatActive ? d20() : 0
     };
+}
+
+// --- Abwartehandlung (Regelwerk S.43) ---------------------------------------
+
+// Ein abwartender Charakter steigt je Runde ohne Aktion um +2 Initiative,
+// höchstens bis +10. Sobald er handelt, verfällt der Bonus.
+const ABWARTEN_MAX = 10;
+
+function effektiveInitiative(c) {
+    return (c.initiative || 0) + Math.min(ABWARTEN_MAX, (c.abwarten || 0) * 2);
+}
+
+function abwartenUmschalten(id) {
+    const c = combatants.find(x => x.id === id);
+    if (!c) return;
+    if (c.abwarten) {
+        // Handelt jetzt doch — der angesammelte Bonus verfällt
+        addGmLog('Spielleiter', `<strong>${escapeHtml(c.name)}</strong> handelt — der Abwarte-Bonus von +${Math.min(ABWARTEN_MAX, c.abwarten * 2)} Initiative verfällt.`, 'neutral');
+        c.abwarten = 0;
+    } else {
+        c.abwarten = 1;
+        addGmLog('Spielleiter', `<strong>${escapeHtml(c.name)}</strong> wartet ab (+2 Initiative je Runde, höchstens +${ABWARTEN_MAX}).`, 'neutral');
+    }
+    sortCombatants();
+    renderCombat();
+}
+
+// Am Rundenwechsel steigt der Bonus aller Abwartenden weiter an
+function abwartenHochzaehlen() {
+    let geaendert = false;
+    combatants.forEach(c => {
+        if (c.abwarten && c.abwarten * 2 < ABWARTEN_MAX) { c.abwarten++; geaendert = true; }
+    });
+    if (geaendert) sortCombatants();
+}
+
+// Liest die Gegnerabwehr aus der Bewaffnungszeile eines Statblocks,
+// z.B. "Massive Keule (WB+2; GA-2)" -> -2. Ohne Angabe: 0.
+function gaAusBewaffnung(text) {
+    const treffer = String(text || '').match(/GA\s*([+-−]?\s*\d+)/);
+    if (!treffer) return 0;
+    return parseInt(treffer[1].replace(/[\s−]/g, m => (m === '−' ? '-' : '')), 10) || 0;
 }
 
 function addNpc() {
@@ -129,6 +177,10 @@ function bestiaryZahl(wert, ersatz, feld) {
         const summe = wert.split('+').map(t => parseInt(t.trim(), 10));
         if (summe.every(Number.isFinite)) return summe.reduce((a, b) => a + b, 0);
         if (feld) bestiaryUnklar.push(`${feld} = "${wert}"`);
+    } else if (feld) {
+        // Kreaturen ohne diesen Wert (z.B. Augenball ohne Schlagen) bekämen sonst
+        // stillschweigend einen Platzhalter, den der Spielleiter für echt hält.
+        bestiaryUnklar.push(`${feld} ist im Statblock nicht angegeben`);
     }
     return ersatz;
 }
@@ -151,6 +203,7 @@ function addFromBestiary(index) {
         lkCurrent: lk,
         abwehr: bestiaryZahl(c.abwehr, 10, 'Abwehr'),
         schlagen: bestiaryZahl(c.schlagen, 10, 'Schlagen'),
+        gaMod: gaAusBewaffnung(c.bewaffnung),
         notiz: (c.besonderes || []).map(b => b.name).join(', ')
     });
     npc.bestiarium = c.name;
@@ -200,7 +253,7 @@ function syncPlayersIntoCombat() {
 }
 
 function sortCombatants() {
-    combatants.sort((a, b) => (b.initiative - a.initiative) || (b.stechen - a.stechen));
+    combatants.sort((a, b) => (effektiveInitiative(b) - effektiveInitiative(a)) || (b.stechen - a.stechen));
 }
 
 function startCombat() {
@@ -210,7 +263,7 @@ function startCombat() {
         return;
     }
     // Einmaliges Stechen pro Kampf für Gleichstände
-    combatants.forEach(c => { c.stechen = d20(); });
+    combatants.forEach(c => { c.stechen = d20(); c.abwarten = 0; });
     sortCombatants();
     combatActive = true;
     currentRound = 1;
@@ -242,6 +295,7 @@ function nextTurn() {
     if (turnIndex >= combatants.length) {
         turnIndex = 0;
         currentRound++;
+        abwartenHochzaehlen();
         broadcastToPlayers({ type: 'round', round: currentRound });
         addGmLog('System', `<strong>Runde ${currentRound}</strong>`, 'neutral');
     }
@@ -266,7 +320,9 @@ function npcAttack(npcId, targetId) {
     const target = combatants.find(c => c.id === targetId);
     if (!npc || !target) return;
 
-    const result = rollProbe(npc.schlagen, { label: `${npc.name}: Schlagen` });
+    // Slayende Würfel stehen ausdrücklich auch NSC zu (Regelwerk S.45)
+    const slayend = typeof slayendeWuerfelAktiv === 'function' && slayendeWuerfelAktiv();
+    const result = rollProbe(npc.schlagen, { label: `${npc.name}: Schlagen`, slayend });
     showProbeResult(result, 'gm-');
 
     if (!result.success) {
@@ -277,12 +333,13 @@ function npcAttack(npcId, targetId) {
 
     const damage = result.total;
     const ga = npc.gaMod || 0;
+    const gaText = ga ? `, Gegnerabwehr ${ga > 0 ? '+' : ''}${ga}` : '';
     if (target.type === 'player') {
         gmAttackPlayer(target.peerId, damage, npc.name, ga);
-        addGmLog('Spielleiter', `<strong>${escapeHtml(npc.name)}</strong> trifft ${escapeHtml(target.name)} für <strong>${damage}</strong> (Wurf ${result.rolls.map(r => r.die).join('+')}) — Abwehr beim Spieler`, result.status);
+        addGmLog('Spielleiter', `<strong>${escapeHtml(npc.name)}</strong> trifft ${escapeHtml(target.name)} für <strong>${damage}</strong> (Wurf ${result.rolls.map(r => r.die).join('+')}${gaText}) — Abwehr beim Spieler`, result.status);
     } else {
         // NSC gegen NSC: Abwehr direkt hier auswürfeln
-        const def = rollProbe(target.abwehr, { label: `${target.name}: Abwehr`, modifier: ga });
+        const def = rollProbe(target.abwehr, { label: `${target.name}: Abwehr`, modifier: ga, slayend });
         const reduced = def.success ? def.total : 0;
         const final = Math.max(0, damage - reduced);
         target.lkCurrent -= final;
@@ -296,7 +353,8 @@ function npcAttack(npcId, targetId) {
 function npcDefend(npcId, damage, gaMod = 0) {
     const npc = combatants.find(c => c.id === npcId);
     if (!npc) return;
-    const result = rollProbe(npc.abwehr, { label: `${npc.name}: Abwehr`, modifier: gaMod });
+    const slayend = typeof slayendeWuerfelAktiv === 'function' && slayendeWuerfelAktiv();
+    const result = rollProbe(npc.abwehr, { label: `${npc.name}: Abwehr`, modifier: gaMod, slayend });
     showProbeResult(result, 'gm-');
     const reduced = result.success ? result.total : 0;
     const final = Math.max(0, damage - reduced);
@@ -364,7 +422,9 @@ function renderCombat() {
         const down = c.lkCurrent <= 0;
 
         return `<div class="combat-row ${isTurn ? 'active-turn' : ''} ${down ? 'defeated' : ''}">
-            <div class="combat-init" title="Initiative">${c.initiative}</div>
+            <div class="combat-init" title="${c.abwarten ? 'Initiative ' + c.initiative + ' + ' + Math.min(ABWARTEN_MAX, c.abwarten * 2) + ' vom Abwarten' : 'Initiative'}">
+                ${effektiveInitiative(c)}${c.abwarten ? '<span class="combat-abwarten">⏳</span>' : ''}
+            </div>
             <div class="combat-main">
                 <div class="combat-name">
                     ${isTurn ? '<span style="color:var(--accent-bright)">▶</span> ' : ''}
@@ -384,6 +444,8 @@ function renderCombat() {
                         · Ini <input type="number" value="${c.initiative}" data-cf="initiative" data-cid="${c.id}" style="width:3rem">
                         · Abw <input type="number" value="${c.abwehr}" data-cf="abwehr" data-cid="${c.id}" style="width:3rem">
                         · Schl <input type="number" value="${c.schlagen}" data-cf="schlagen" data-cid="${c.id}" style="width:3rem">
+                        · <span title="Gegnerabwehr der Bewaffnung — senkt die Abwehr des Ziels">GA</span>
+                        <input type="number" value="${c.gaMod || 0}" data-cf="gaMod" data-cid="${c.id}" style="width:3rem">
                     ` : `
                         LK <strong style="color:${lkColor}">${c.lkCurrent}/${c.lkMax}</strong>
                         · Abwehr <strong>${c.abwehr}</strong> · Schlagen <strong>${c.schlagen}</strong>
@@ -396,11 +458,15 @@ function renderCombat() {
                         </select>
                         <button class="btn btn-sm" data-do-attack="${c.id}">Angriff</button>
                         <button class="btn btn-sm btn-ghost" data-defend="${c.id}" title="Abwehr gegen Spielerangriff würfeln">Abwehr</button>
+                        <button class="btn btn-sm btn-ghost ${c.abwarten ? 'btn-primary' : ''}" data-abwarten="${c.id}"
+                                title="Abwartehandlung: +2 Initiative je Runde ohne Aktion, höchstens +10">⏳</button>
                         <button class="btn btn-sm btn-danger" data-dmg="${c.id}">− LK</button>
                     ` : `
                         <button class="btn btn-sm btn-danger" data-pattack="${c.peerId}" title="Angriff — der Spieler würfelt seine Abwehr">Angreifen</button>
                         <button class="btn btn-sm" data-pheal="${c.peerId}">Heilen</button>
                         <button class="btn btn-sm btn-ghost" data-pmsg="${c.peerId}">Flüstern</button>
+                        <button class="btn btn-sm btn-ghost ${c.abwarten ? 'btn-primary' : ''}" data-abwarten="${c.id}"
+                                title="Abwartehandlung: +2 Initiative je Runde ohne Aktion, höchstens +10">⏳</button>
                     `}
                     <button class="icon-btn" data-crm="${c.id}" title="Entfernen">✕</button>
                 </div>
@@ -468,6 +534,10 @@ function wireCombatControls(box) {
             const text = prompt('Nachricht an diesen Spieler:');
             if (text) gmSendMessage(btn.dataset.pmsg, text);
         });
+    });
+
+    box.querySelectorAll('[data-abwarten]').forEach(btn => {
+        btn.addEventListener('click', () => abwartenUmschalten(btn.dataset.abwarten));
     });
 
     box.querySelectorAll('[data-crm]').forEach(btn => {

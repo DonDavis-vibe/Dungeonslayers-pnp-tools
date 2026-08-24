@@ -52,7 +52,7 @@
 <!-- W20 als Favicon, direkt eingebettet (kein zusätzlicher Netzwerkabruf) -->
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%2314100c'/%3E%3Cpath d='M16 3 29 10.5v11L16 29 3 21.5v-11z' fill='none' stroke='%23d4a24c' stroke-width='2' stroke-linejoin='round'/%3E%3Cpath d='M16 3 16 29M3 10.5 29 21.5M29 10.5 3 21.5' stroke='%23d4a24c' stroke-width='1' opacity='.45'/%3E%3Ctext x='16' y='20' font-family='Georgia,serif' font-size='11' font-weight='bold' fill='%23f0c069' text-anchor='middle'%3E20%3C/text%3E%3C/svg%3E">
 
-<link rel="stylesheet" href="style.css?v=20260823i">
+<link rel="stylesheet" href="style.css?v=20260823l">
 </head>
 <body>
 
@@ -207,6 +207,7 @@
                 </div>
             </div>
             <div class="kampfwerte" id="kampfwerte-container"></div>
+            <div id="slayerpunkte-box" style="margin-top:0.8rem"></div>
             <div id="situative-talente" class="hint-rule" style="margin-top:0.8rem"></div>
         </div>
     </div>
@@ -335,6 +336,16 @@
                             <input type="number" id="mod-zielen" value="0" min="0" max="5" title="+2 je Runde, höchstens +10">
                         </div>
                     </div>
+                    <div style="display:flex;gap:0.5rem;align-items:end">
+                        <div class="field" style="flex:1"><label>Getümmel (Individuen)</label>
+                            <input type="number" id="mod-getuemmel" value="0" min="0" max="20"
+                                   title="Blindlings in eine Menge schießen: +1 je Individuum (max. +20). Das Ziel bestimmt der Zufall, der Schaden wird auf den normalen Höchstschaden gedeckelt.">
+                        </div>
+                        <div class="field" style="flex:1"><label>Hindernisse dazwischen</label>
+                            <input type="number" id="mod-hindernisse" value="0" min="0" max="10"
+                                   title="−1 je Baum, Gegner, Kamerad oder Wandstück, an dem vorbeigeschossen wird">
+                        </div>
+                    </div>
                     <div class="radio-row" id="mod-toggles">
                         <span class="radio-pill" data-mod="imNahkampf" title="−2">Ziel im Nahkampf</span>
                         <span class="radio-pill" data-mod="selbstLiegend" title="−2">ich liege</span>
@@ -342,6 +353,7 @@
                         <span class="radio-pill" data-mod="vonDerSeite" title="+1">von der Seite</span>
                         <span class="radio-pill" data-mod="vonHinten" title="+2">von hinten</span>
                         <span class="radio-pill" data-mod="zweiWaffen" title="−10, durch das Talent gemildert">zwei Waffen</span>
+                        <span class="radio-pill" data-mod="wehrlos" title="Gefesselte oder schlafende Gegner: doppelter Schaden im Nahkampf, Abwehr ohne Rüstung">Ziel wehrlos</span>
                     </div>
                     <div style="display:flex;gap:0.5rem;align-items:end">
                         <div class="field" style="flex:1"><label>Größenunterschied</label>
@@ -360,6 +372,8 @@
             </details>
 
             <div style="display:flex;gap:0.4rem;margin-top:0.6rem;flex-wrap:wrap">
+                <button class="btn btn-sm" onclick="openMehrereGegner()"
+                        title="Den Schlagen-Wert auf bis zu vier angrenzende Gegner aufteilen (Regelwerk S.43)">⚔️ Mehrere Gegner</button>
                 <button class="btn btn-sm btn-ghost" onclick="rollPlainD20()">Blanker 1W20</button>
                 <button class="btn btn-sm btn-ghost" onclick="clearLog()">Log leeren</button>
             </div>
@@ -404,6 +418,18 @@
                 per Webhook in einem Discord-Kanal.
             </p>
         </section>
+        <section>
+            <h2>Mitreden &amp; Fehler melden</h2>
+            <p>
+                Auf dem Discord-Server werden die Pen-&amp;-Paper-Tools entwickelt und getestet.
+                Dort ist der richtige Ort für Bug-Reports, Wünsche und Fragen zum Bogen.
+            </p>
+            <p>
+                <a class="footer-discord" href="https://discord.gg/DPk8QRSZ5W" target="_blank" rel="noopener">
+                    💬 Discord-Server beitreten
+                </a>
+            </p>
+        </section>
     </div>
 
     <div class="footer-disclaimer">
@@ -411,7 +437,8 @@
         und steht in keiner Verbindung zu Christian Kennig oder dem Burning Books Verlag.<br>
         Entwickelt von
         <a href="https://github.com/DonDavis-vibe" target="_blank" rel="noopener">DonDavis</a> |
-        <a href="https://github.com/DonDavis-vibe/Dungeonslayers-pnp-tools" target="_blank" rel="noopener">Repository auf GitHub</a><br>
+        <a href="https://github.com/DonDavis-vibe/Dungeonslayers-pnp-tools" target="_blank" rel="noopener">Repository auf GitHub</a> |
+        <a href="https://discord.gg/DPk8QRSZ5W" target="_blank" rel="noopener">Discord</a><br>
         Das Pen-&amp;-Paper-Regelsystem <em>Dungeonslayers</em> wurde geschaffen von
         <strong>Christian Kennig</strong>; seine Texte und Regelmechaniken unterliegen der
         <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.de" target="_blank" rel="noopener">CC BY-NC-SA 4.0</a>
@@ -687,6 +714,16 @@
     </div>
 </div>
 
+<!-- Schlagen auf mehrere Gegner aufteilen (Regelwerk S.43) -->
+<div class="modal-overlay" id="mehrere-modal">
+    <div class="modal">
+        <div class="panel-head"><h3>⚔️ Mehrere Gegner</h3>
+            <div class="panel-actions"><button class="btn btn-sm btn-ghost" onclick="closeModal('mehrere-modal')">✕</button></div>
+        </div>
+        <div class="panel-body" id="mehrere-body"></div>
+    </div>
+</div>
+
 <!-- Regeln -->
 <div class="modal-overlay" id="rules-modal">
     <div class="modal modal-lg">
@@ -697,21 +734,21 @@
     </div>
 </div>
 
-<script src="data.js?v=20260823i"></script>
-<script src="talents.js?v=20260823i"></script>
-<script src="zauber.js?v=20260823i"></script>
-<script src="bestiarium.js?v=20260823i"></script>
-<script src="hausregeln.js?v=20260823i"></script>
-<script src="rules.js?v=20260823i"></script>
-<script src="app.js?v=20260823i"></script>
-<script src="talentPicker.js?v=20260823i"></script>
-<script src="spellPicker.js?v=20260823i"></script>
-<script src="wizard.js?v=20260823i"></script>
-<script src="combat.js?v=20260823i"></script>
-<script src="battlemap.js?v=20260823i"></script>
-<script src="multiplayer.js?v=20260823i"></script>
-<script src="mapui.js?v=20260823i"></script>
-<script src="session.js?v=20260823i"></script>
-<script src="discord.js?v=20260823i"></script>
+<script src="data.js?v=20260823l"></script>
+<script src="talents.js?v=20260823l"></script>
+<script src="zauber.js?v=20260823l"></script>
+<script src="bestiarium.js?v=20260823l"></script>
+<script src="hausregeln.js?v=20260823l"></script>
+<script src="rules.js?v=20260823l"></script>
+<script src="app.js?v=20260823l"></script>
+<script src="talentPicker.js?v=20260823l"></script>
+<script src="spellPicker.js?v=20260823l"></script>
+<script src="wizard.js?v=20260823l"></script>
+<script src="combat.js?v=20260823l"></script>
+<script src="battlemap.js?v=20260823l"></script>
+<script src="multiplayer.js?v=20260823l"></script>
+<script src="mapui.js?v=20260823l"></script>
+<script src="session.js?v=20260823l"></script>
+<script src="discord.js?v=20260823l"></script>
 </body>
 </html>

@@ -51,6 +51,10 @@ function renderSpells() {
         const onCooldown = s.cooldownUntil && typeof currentRound === 'number' && currentRound > 0 && currentRound < s.cooldownUntil;
         const typ = data ? data.typ : (s.typ || 'normal');
         const probe = typ === 'ziel' ? 'Zielzauber' : 'Zaubern';
+        // Formelhafte Zauberboni ("−(KÖR+VE)/2 des Ziels") kann der Bogen nicht
+        // vorausberechnen — er rechnet mit 0 und weist darauf hin.
+        const zbText = String(s.zb != null && s.zb !== '' ? s.zb : (data ? data.zb : 0)).trim();
+        const zbUnklar = !/^[+−-]?\d+$/.test(zbText.replace('−', '-'));
 
         return `<div class="talent-entry" ${onCooldown ? 'style="opacity:0.62"' : ''}>
             <div class="talent-entry-head">
@@ -60,6 +64,7 @@ function renderSpells() {
                 </button>
                 <strong>${escapeHtml(s.name)}</strong>
                 <span class="tag">${probe}</span>
+                ${zbUnklar ? '<span class="tag tag-warn" title="Der Bogen rechnet mit ZB 0 — der tatsächliche Wert hängt vom Ziel ab und gehört als Modifikator in den Wurf">ZB formelhaft</span>' : ''}
                 ${data && data.geistesbeeinflussend ? '<span class="tag">geistesbeeinflussend</span>' : ''}
                 ${onCooldown ? `<span class="tag tag-warn">abklingend bis Runde ${s.cooldownUntil}</span>` : ''}
                 <span style="margin-left:auto;display:flex;gap:0.3rem;align-items:center">
