@@ -431,7 +431,7 @@ Bildschirmgröße und Zoomstufe und ist klein genug, um ihn bei jeder Bewegung z
 
 ### Nach einer Änderung: Versionsnummer hochzählen
 
-Alle eigenen Dateien werden mit einem Versionsparameter eingebunden (`app.js?v=20260824c`). Wer
+Alle eigenen Dateien werden mit einem Versionsparameter eingebunden (`app.js?v=20260824d`). Wer
 etwas ändert, zählt die Version in `index.html` hoch — sonst behalten Besucher die alte Fassung
 aus dem Browser-Cache.
 

@@ -146,6 +146,10 @@ const DS4_TALENT_SITUATIV = {
 // da sie sich je Erwerb auf ein eigenes Gebiet beziehen.
 const DS4_TALENT_PROBEN = {
     'Wahrnehmung': { proRang: 2, proben: ['Bemerken'] },
+    // Steht nicht in der Talentbeschreibung, sondern bei den erweiterten Proben
+    // (S.90/91): "Pro Rang in Einstecker erhält man einen Bonus von +1 auf die
+    // Probe." Der LK-Bonus des Talents kommt aus DS4_TALENT_BONI zusätzlich.
+    'Einstecker': { proRang: 1, proben: ['Gift trotzen', 'Krankheit trotzen'] },
     'Akrobat': { proRang: 2, proben: ['Klettern', 'Springen'] },
     'Kletterass': { proRang: 2, proben: ['Klettern'] },
     'Heimlichkeit': { proRang: 2, proben: ['Schleichen', 'Verbergen', 'Taschendiebstahl'] },
@@ -181,6 +185,28 @@ function groessenDifferenz(angreiferGk, zielGk) {
 function groessenName(gk) {
     const eintrag = typeof DS4_GROESSENKATEGORIEN !== 'undefined' ? DS4_GROESSENKATEGORIEN[gk] : null;
     return eintrag ? eintrag.name : (gk || 'normal');
+}
+
+// Talente, die auf eine typische Probe nur unter Bedingungen wirken. Sie werden
+// nicht eingerechnet, sondern beim Würfeln als Erinnerung mitgegeben.
+const DS4_TALENT_PROBEN_SITUATIV = {
+    'Bemerken': [
+        { talent: 'Diebeskunst', proRang: 2, bedingung: 'wenn nach Fallen oder Geheimtüren Ausschau gehalten wird (S.89)' }
+    ],
+    'Suchen': [
+        { talent: 'Diebeskunst', proRang: 2, bedingung: 'bei der Suche nach Fallen oder Geheimtüren (S.89)' }
+    ]
+};
+
+// Hinweise auf situative Talentboni, die der Charakter tatsächlich besitzt.
+function situativeProbenHinweise(talents, probenName) {
+    return (DS4_TALENT_PROBEN_SITUATIV[probenName] || [])
+        .map(eintrag => {
+            const rang = talentRang(talents, eintrag.talent);
+            if (!rang) return null;
+            return `${eintrag.talent} ${rang}: +${eintrag.proRang * rang} ${eintrag.bedingung}`;
+        })
+        .filter(Boolean);
 }
 
 // Summiert die Talentboni für eine bestimmte typische Probe.

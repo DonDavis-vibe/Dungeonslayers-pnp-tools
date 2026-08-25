@@ -673,6 +673,23 @@ select option { background: #1c1712; }
     vertical-align: super;
 }
 
+/* Fanwerk-Banner im Fußbereich */
+.fanwerk-banner {
+    display: block;
+    width: 100px;
+    margin: 0 auto 0.9rem;
+    line-height: 0;
+    opacity: 0.85;
+    transition: opacity 0.15s;
+}
+.fanwerk-banner:hover { opacity: 1; }
+.fanwerk-banner img {
+    display: block;
+    width: 100px;
+    height: 46px;
+    border-radius: 3px;
+}
+
 /* Einladung auf den Discord-Server, auf dem die Tools entstehen */
 .footer-discord {
     display: inline-flex;

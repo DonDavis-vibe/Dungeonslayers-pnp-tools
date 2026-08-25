@@ -1332,7 +1332,14 @@ function rollTypischeProbe() {
 
     const result = rollProbe(pw, { label: probe.name, modifier });
     showProbeResult(result, '', quellen.join(' · '));
-    logProbe(result, quellen.length ? 'inkl. ' + quellen.join(', ') : '');
+
+    // Talente, die hier nur unter Bedingungen greifen, kommen als Erinnerung dazu
+    const situativ = situativeProbenHinweise(appData.talents, probe.name);
+    const extra = [
+        quellen.length ? 'inkl. ' + quellen.join(', ') : '',
+        situativ.length ? 'zusätzlich möglich — ' + situativ.join(' · ') : ''
+    ].filter(Boolean).join(' · ');
+    logProbe(result, extra);
 }
 
 // Wertet die Formel einer typischen Probe gegen den Charakter aus.
