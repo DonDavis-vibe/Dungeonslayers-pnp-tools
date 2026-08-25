@@ -825,12 +825,28 @@ function besiegteEp() {
         .reduce((sum, c) => sum + c.ep, 0);
 }
 
+// EP-Vergabe nach Regelwerk S.88: Die EP für getötete oder überlistete Gegner
+// errechnen sich aus der EP-SUMME aller Gegner GETEILT DURCH die Anzahl der
+// beteiligten Charaktere. Für ein erreichtes Abenteuerziel kommt mindestens ein
+// Viertel der Gegner-EP obendrauf.
 function promptGrantEp() {
-    const vorschlag = besiegteEp();
-    const hinweis = vorschlag
-        ? `Besiegte Gegner in diesem Kampf ergeben ${vorschlag} EP.`
-        : 'Kein besiegter Gegner mit EP-Wert im laufenden Kampf.';
-    const eingabe = prompt(`${hinweis}\n\nWie viele EP bekommt jeder Held?`, vorschlag || '');
+    const summe = besiegteEp();
+    // Beteiligt sind die verbundenen Helden; ohne Verbindung mindestens einer
+    const helden = Math.max(1, Object.keys(connectedPlayers).length);
+    const proKopf = Math.floor(summe / helden);
+
+    const zeilen = summe
+        ? [`Besiegte Gegner in diesem Kampf: ${summe} EP.`,
+           `Geteilt durch ${helden} beteiligte${helden === 1 ? 'n' : ''} Held${helden === 1 ? 'en' : 'en'}: ` +
+           `${proKopf} EP pro Kopf (Regelwerk S.88).`,
+           '',
+           `Für ein abgeschlossenes Abenteuerziel kommen mindestens ${Math.floor(summe / 4 / helden)} EP dazu ` +
+           '(ein Viertel der Gegner-EP).']
+        : ['Kein besiegter Gegner mit EP-Wert im laufenden Kampf.',
+           'Rollenspiel bringt bis zu Stufe × 2 EP pro Situation,',
+           'gute Ideen und überwundene Fallen 5–25 EP.'];
+
+    const eingabe = prompt(zeilen.join('\n') + '\n\nWie viele EP bekommt jeder Held?', proKopf || '');
     const amount = parseInt(eingabe, 10);
     if (!isNaN(amount) && amount !== 0) gmGrantEp(null, amount);
 }

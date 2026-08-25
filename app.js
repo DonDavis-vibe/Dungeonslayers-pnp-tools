@@ -1821,6 +1821,15 @@ function openRulesModal() {
             <li><strong>Wehrlose Gegner</strong> (gefesselt, schlafend): doppelter Schaden im Nahkampf, Abwehr ohne Rüstung.</li>
             <li><strong>Zurückdrängen:</strong> ein gelungener Nahkampftreffer schiebt gleich große oder kleinere Gegner 1m zurück (<em>Blocker</em> darf mit KÖR+HÄ dagegenhalten).</li>
             <li><strong>Rüstung anlegen:</strong> 2 Aktionen je Punkt Panzerung, Helme sind frei. Wer in Metallrüstung schläft, würfelt morgens KÖR+HÄ oder kassiert −1 auf alle Proben für 24 Stunden.</li>
+            <li><strong>Größenkategorien</strong> (S.104): ${DS4_GROESSEN_REIHE.map(k => `${groessenName(k)} (${DS4_GROESSENKATEGORIEN[k].bereich})`).join(' · ')}. Je Kategorie Unterschied ±2 auf den Angriff.</li>
+        </ul>
+
+        <h4 style="color:var(--accent-bright);margin-top:1rem">Erfahrungspunkte (S.88)</h4>
+        <ul class="hint" style="margin:0.3rem 0 0 1.2rem">
+            <li><strong>Gegner:</strong> EP-Summe aller Gegner <strong>geteilt durch die Anzahl der beteiligten Charaktere</strong>. Fünf Helden gegen 10 Goblins zu je 20 EP: jeder bekommt 40.</li>
+            <li><strong>Quests:</strong> mindestens ein Viertel aller Gegner-EP für ein erreichtes Abenteuerziel.</li>
+            <li><strong>Rollenspiel:</strong> bis zu Stufe × 2 EP je Situation.</li>
+            <li><strong>Sonstiges:</strong> 5–25 EP für gute Ideen und überwundene Fallen, 1 EP je erforschtem Dungeonraum oder 10 gereisten Kilometern.</li>
         </ul>
 
         <h4 style="color:var(--accent-bright);margin-top:1rem">Optionale Regeln (S.45)</h4>

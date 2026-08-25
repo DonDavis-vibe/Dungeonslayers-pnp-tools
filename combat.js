@@ -22,6 +22,11 @@ function makeNpc(preset = {}) {
         schlagen: preset.schlagen != null ? preset.schlagen : 12,
         // Gegnerabwehr der Bewaffnung — senkt die Abwehr des Ziels
         gaMod: preset.gaMod != null ? preset.gaMod : 0,
+        // Größenkategorie (S.104) — steuert den Größenmodifikator im Angriff
+        gk: preset.gk || 'normal',
+        ep: preset.ep != null ? preset.ep : null,
+        // normal | heroisch | episch (S.105)
+        rang: 'normal',
         notiz: preset.notiz || '',
         // Abwartehandlung: +2 Initiative je abgewartete Runde, höchstens +10 (S.43)
         abwarten: 0,
@@ -63,6 +68,46 @@ function abwartenHochzaehlen() {
         if (c.abwarten && c.abwarten * 2 < ABWARTEN_MAX) { c.abwarten++; geaendert = true; }
     });
     if (geaendert) sortCombatants();
+}
+
+// --- Heroische und epische Gegner (Regelwerk S.105) -------------------------
+
+// Macht aus einem gewöhnlichen Gegner einen Boss: Lebenskraft x5 bzw. x10,
+// Abwehr +2/+4 und EIN Angriffswert +2/+4. Die EP werden vorher um
+// (4 + zusätzliche Lebenskraft) erhöht und dann verdoppelt.
+// Die Ausgangswerte bleiben erhalten, damit sich die Stufe zurücknehmen lässt.
+function gegnerRangSetzen(id, rang) {
+    const c = combatants.find(x => x.id === id);
+    if (!c || !DS4_GEGNER_RAENGE[rang]) return;
+
+    if (!c.basiswerte) {
+        c.basiswerte = { lkMax: c.lkMax, abwehr: c.abwehr, schlagen: c.schlagen, ep: c.ep };
+    }
+    const basis = c.basiswerte;
+    const stufe = DS4_GEGNER_RAENGE[rang];
+    // Verletzungsgrad beibehalten, damit ein angeschlagener Gegner nicht geheilt wird
+    const anteil = c.lkMax > 0 ? Math.max(0, c.lkCurrent) / c.lkMax : 1;
+
+    c.lkMax = basis.lkMax * stufe.lkFaktor;
+    c.lkCurrent = c.lkCurrent <= 0 ? c.lkCurrent : Math.round(c.lkMax * anteil);
+    c.abwehr = basis.abwehr + stufe.abwehr;
+    c.schlagen = basis.schlagen + stufe.angriff;
+
+    if (basis.ep != null) {
+        const zusatzLk = c.lkMax - basis.lkMax;
+        c.ep = rang === 'normal' ? basis.ep : (basis.ep + 4 + zusatzLk) * stufe.epFaktor;
+    }
+    c.rang = rang;
+
+    const text = rang === 'normal'
+        ? `<strong>${escapeHtml(c.name)}</strong> ist wieder ein gewöhnlicher Gegner (LK ${c.lkMax}, Abwehr ${c.abwehr}).`
+        : `<strong>${escapeHtml(c.name)}</strong> ist jetzt <strong>${stufe.name}</strong>: ` +
+          `LK ${c.lkMax}, Abwehr ${c.abwehr}, Schlagen ${c.schlagen}` +
+          (c.ep != null ? `, ${c.ep} EP` : '') +
+          '. Auch die Beutewürfe sollten sich verdoppeln bzw. vervierfachen.';
+    addGmLog('Spielleiter', text, rang === 'normal' ? 'neutral' : 'erfolg');
+
+    renderCombat();
 }
 
 // Liest die Gegnerabwehr aus der Bewaffnungszeile eines Statblocks,
@@ -137,6 +182,7 @@ function renderBestiary() {
                 <strong>${escapeHtml(c.name)}</strong>
                 <span class="tag">GH ${c.gh}</span>
                 <span class="tag">${escapeHtml(c.kategorie)}</span>
+                <span class="tag" title="Größenkategorie — je Kategorie Unterschied ±2 auf den Angriff (S.44)">${escapeHtml(groessenName(c.gk))}</span>
                 ${c.ep != null ? `<span class="hint">${c.ep} EP</span>` : ''}
                 <span style="margin-left:auto;display:flex;gap:0.3rem">
                     <button class="btn btn-sm btn-primary" data-badd="${idx}">In den Kampf</button>
@@ -211,13 +257,13 @@ function addFromBestiary(index, auchAufKarte) {
         abwehr: bestiaryZahl(c.abwehr, 10, 'Abwehr'),
         schlagen: bestiaryZahl(c.schlagen, 10, 'Schlagen'),
         gaMod: gaAusBewaffnung(c.bewaffnung),
+        gk: c.gk || 'normal',
+        ep: c.ep,
         notiz: (c.besonderes || []).map(b => b.name).join(', ')
     });
     npc.bestiarium = c.name;
     npc.schiessen = bestiaryZahl(c.schiessen, null);
     npc.laufen = c.laufen;
-    npc.ep = c.ep;
-    npc.gk = c.gk;
 
     combatants.push(npc);
     sortCombatants();
@@ -263,7 +309,9 @@ function syncPlayersIntoCombat() {
                 id: 'pl-' + peerId, peerId, type: 'player',
                 name: p.name, initiative: p.initiative,
                 lkCurrent: p.lkCurrent, lkMax: p.lkMax,
-                abwehr: p.abwehr, schlagen: p.schlagen, notiz: '', stechen: 0
+                abwehr: p.abwehr, schlagen: p.schlagen, notiz: '', stechen: 0,
+                // Die Spielervölker gelten alle als normal groß (S.104)
+                gk: 'normal', abwarten: 0
             });
         }
     });
@@ -341,12 +389,18 @@ function npcAttack(npcId, targetId) {
 
     // Slayende Würfel stehen ausdrücklich auch NSC zu (Regelwerk S.45)
     const slayend = typeof slayendeWuerfelAktiv === 'function' && slayendeWuerfelAktiv();
-    const result = rollProbe(npc.schlagen, { label: `${npc.name}: Schlagen`, slayend });
+    // Größenunterschied: je Kategorie ±2 auf den Angriff (S.44)
+    const groessenDiff = groessenDifferenz(npc.gk, target.gk);
+    const groessenMod = groessenDiff * 2;
+    const groessenText = groessenMod
+        ? ` · ${groessenName(target.gk)} gegen ${groessenName(npc.gk)}: ${groessenMod > 0 ? '+' : ''}${groessenMod}`
+        : '';
+    const result = rollProbe(npc.schlagen, { label: `${npc.name}: Schlagen`, modifier: groessenMod, slayend });
     showProbeResult(result, 'gm-');
 
     if (!result.success) {
         const extra = result.patzer ? ` · ${DS4_KAMPFPATZER.schlagen}` : '';
-        addGmLog('Spielleiter', `<strong>${escapeHtml(npc.name)}</strong> greift ${escapeHtml(target.name)} an — ${DS4_STATUS_TEXT[result.status]} (Wurf ${result.rolls.map(r => r.die).join('+')})${extra}`, result.status);
+        addGmLog('Spielleiter', `<strong>${escapeHtml(npc.name)}</strong> greift ${escapeHtml(target.name)} an — ${DS4_STATUS_TEXT[result.status]} (Wurf ${result.rolls.map(r => r.die).join('+')})${groessenText}${extra}`, result.status);
         return;
     }
 
@@ -355,14 +409,14 @@ function npcAttack(npcId, targetId) {
     const gaText = ga ? `, Gegnerabwehr ${ga > 0 ? '+' : ''}${ga}` : '';
     if (target.type === 'player') {
         gmAttackPlayer(target.peerId, damage, npc.name, ga);
-        addGmLog('Spielleiter', `<strong>${escapeHtml(npc.name)}</strong> trifft ${escapeHtml(target.name)} für <strong>${damage}</strong> (Wurf ${result.rolls.map(r => r.die).join('+')}${gaText}) — Abwehr beim Spieler`, result.status);
+        addGmLog('Spielleiter', `<strong>${escapeHtml(npc.name)}</strong> trifft ${escapeHtml(target.name)} für <strong>${damage}</strong> (Wurf ${result.rolls.map(r => r.die).join('+')}${gaText})${groessenText} — Abwehr beim Spieler`, result.status);
     } else {
         // NSC gegen NSC: Abwehr direkt hier auswürfeln
         const def = rollProbe(target.abwehr, { label: `${target.name}: Abwehr`, modifier: ga, slayend });
         const reduced = def.success ? def.total : 0;
         const final = Math.max(0, damage - reduced);
         target.lkCurrent -= final;
-        addGmLog('Spielleiter', `<strong>${escapeHtml(npc.name)}</strong> trifft ${escapeHtml(target.name)}: ${damage} − ${reduced} Abwehr = <strong>${final}</strong> (LK ${target.lkCurrent}/${target.lkMax})`, final > 0 ? 'fehlschlag' : 'erfolg');
+        addGmLog('Spielleiter', `<strong>${escapeHtml(npc.name)}</strong> trifft ${escapeHtml(target.name)}${groessenText}: ${damage} − ${reduced} Abwehr = <strong>${final}</strong> (LK ${target.lkCurrent}/${target.lkMax})`, final > 0 ? 'fehlschlag' : 'erfolg');
         renderCombat();
     }
 }
@@ -451,7 +505,8 @@ function renderCombat() {
                     ${c.type === 'npc'
                         ? `<input type="text" value="${escapeHtml(c.name)}" data-cf="name" data-cid="${c.id}" style="width:9rem">`
                         : `<strong>${escapeHtml(c.name)}</strong>`}
-                    ${down ? '<span class="tag tag-warn">besiegt</span>' : ''}
+                    ${down ? '<span class="tag tag-warn" title="Der schnelle Tod (S.104): Gegner unter 1 LK sollten zugunsten des Spieltempos als tot gelten — wichtige NSC ausgenommen.">besiegt</span>' : ''}
+                    ${c.rang && c.rang !== 'normal' ? `<span class="tag" style="border-color:var(--accent-bright);color:var(--accent-bright)">${escapeHtml(DS4_GEGNER_RAENGE[c.rang].name)}</span>` : ''}
                 </div>
                 <div class="lk-bar-track" style="margin-top:0.25rem;height:10px">
                     <div class="lk-bar-fill" style="width:${lkPct}%;background:${lkColor}"></div>
@@ -465,6 +520,16 @@ function renderCombat() {
                         · Schl <input type="number" value="${c.schlagen}" data-cf="schlagen" data-cid="${c.id}" style="width:3rem">
                         · <span title="Gegnerabwehr der Bewaffnung — senkt die Abwehr des Ziels">GA</span>
                         <input type="number" value="${c.gaMod || 0}" data-cf="gaMod" data-cid="${c.id}" style="width:3rem">
+                        <br>
+                        <span title="Größenkategorie (S.104) — je Kategorie Unterschied ±2 auf den Angriff">Größe</span>
+                        <select data-cf="gk" data-cid="${c.id}" style="font-size:0.78rem;padding:0.1rem">
+                            ${DS4_GROESSEN_REIHE.map(k => `<option value="${k}" ${(c.gk || 'normal') === k ? 'selected' : ''}>${escapeHtml(groessenName(k))}</option>`).join('')}
+                        </select>
+                        · <span title="Heroische und epische Gegner (S.105): LK x5 bzw. x10, Abwehr +2/+4, ein Angriff +2/+4">Rang</span>
+                        <select data-rang="${c.id}" style="font-size:0.78rem;padding:0.1rem">
+                            ${Object.entries(DS4_GEGNER_RAENGE).map(([key, r]) => `<option value="${key}" ${(c.rang || 'normal') === key ? 'selected' : ''}>${escapeHtml(r.name)}</option>`).join('')}
+                        </select>
+                        ${c.ep != null ? `· <span class="hint">${c.ep} EP</span>` : ''}
                     ` : `
                         LK <strong style="color:${lkColor}">${c.lkCurrent}/${c.lkMax}</strong>
                         · Abwehr <strong>${c.abwehr}</strong> · Schlagen <strong>${c.schlagen}</strong>
@@ -553,6 +618,10 @@ function wireCombatControls(box) {
             const text = prompt('Nachricht an diesen Spieler:');
             if (text) gmSendMessage(btn.dataset.pmsg, text);
         });
+    });
+
+    box.querySelectorAll('[data-rang]').forEach(sel => {
+        sel.addEventListener('change', () => gegnerRangSetzen(sel.dataset.rang, sel.value));
     });
 
     box.querySelectorAll('[data-abwarten]').forEach(btn => {

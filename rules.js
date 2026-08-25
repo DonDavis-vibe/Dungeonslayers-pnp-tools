@@ -156,8 +156,32 @@ const DS4_TALENT_PROBEN = {
     'Bildung': { proRang: 2, proben: ['Wissen'] },
     'Schlitzohr': { proRang: 3, proben: ['Feilschen'] },
     'Charmant': { proRang: 2, proben: ['Flirten'] },
-    'Beute schätzen': { proRang: 3, proben: ['Schätzen'] }
+    // "Auch kann er mit GEI+AU spüren, ob dieser magisch ist ... worauf der
+    // gleiche Bonus angerechnet wird." (S.30) — das Identifizieren bleibt außen vor.
+    'Beute schätzen': { proRang: 3, proben: ['Schätzen', 'Magie erspüren'] },
+    // "Er erhält auf Proben, um seine Zauber zu wechseln, pro Talentrang +2." (S.46)
+    'Wechsler': { proRang: 2, proben: ['Zauber wechseln'] }
 };
+
+// --- Größenkategorien (Regelwerk S.44/S.104) --------------------------------
+
+// Rangfolge der Kategorien. Die Beschreibungen selbst stehen in
+// DS4_GROESSENKATEGORIEN (bestiarium.js), das auch die Karte nutzt.
+const DS4_GROESSEN_REIHE = ['winzig', 'klein', 'normal', 'gross', 'riesig', 'gewaltig'];
+
+// Unterschied in Kategorien zwischen Angreifer und Ziel. Positiv = das Ziel ist
+// größer und damit leichter zu treffen (+2 je Kategorie).
+function groessenDifferenz(angreiferGk, zielGk) {
+    const a = DS4_GROESSEN_REIHE.indexOf(angreiferGk || 'normal');
+    const z = DS4_GROESSEN_REIHE.indexOf(zielGk || 'normal');
+    if (a < 0 || z < 0) return 0;
+    return z - a;
+}
+
+function groessenName(gk) {
+    const eintrag = typeof DS4_GROESSENKATEGORIEN !== 'undefined' ? DS4_GROESSENKATEGORIEN[gk] : null;
+    return eintrag ? eintrag.name : (gk || 'normal');
+}
 
 // Summiert die Talentboni für eine bestimmte typische Probe.
 function talentProbenBonus(talents, probenName) {

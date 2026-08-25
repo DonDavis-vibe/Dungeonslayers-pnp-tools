@@ -239,6 +239,15 @@ const DS4_SLAYERPUNKTE = [
     { kosten: 3, name: 'Laufen +3m' }
 ];
 
+// Heroische und epische Gegner (Regelwerk S.105): Aus einem gewöhnlichen
+// Bestiariumseintrag wird ein Boss. Erhöht wird nur EIN Angriffswert.
+// Die EP werden vorher um (4 + zusätzliche Lebenskraft) erhöht und dann verdoppelt.
+const DS4_GEGNER_RAENGE = {
+    normal:   { name: 'normal',   lkFaktor: 1,  abwehr: 0, angriff: 0, epFaktor: 1 },
+    heroisch: { name: 'heroisch', lkFaktor: 5,  abwehr: 2, angriff: 2, epFaktor: 2 },
+    episch:   { name: 'episch',   lkFaktor: 10, abwehr: 4, angriff: 4, epFaktor: 2 }
+};
+
 const DS4_TYPISCHE_PROBEN = [
     { name: 'Bemerken', formula: 'GEI+VE (mind. 8)' },
     { name: 'Erwachen', formula: 'GEI+VE' },
@@ -251,6 +260,10 @@ const DS4_TYPISCHE_PROBEN = [
     { name: 'Klettern', formula: 'AGI+ST' },
     { name: 'Kraftakt', formula: 'KÖR+ST' },
     { name: 'Krankheit trotzen', formula: 'KÖR+HÄ' },
+    // Magie analysieren (S.46): erst mit GEI+AU erspüren, dann mit GEI+VE
+    // (und Berührung) erkennen, was sie bewirkt. Je Magie nur einmal pro Stufe.
+    { name: 'Magie erspüren', formula: 'GEI+AU' },
+    { name: 'Magie identifizieren', formula: 'GEI+VE' },
     { name: 'Mechanismus öffnen', formula: 'GEI+GE oder VE' },
     { name: 'Reiten', formula: 'AGI+BE oder AU' },
     { name: 'Schätzen', formula: 'GEI+VE' },
@@ -263,5 +276,8 @@ const DS4_TYPISCHE_PROBEN = [
     { name: 'Taschendiebstahl', formula: 'AGI+GE' },
     { name: 'Verbergen', formula: 'AGI+BE' },
     { name: 'Verständigen', formula: 'GEI+GE' },
-    { name: 'Wissen', formula: 'GEI+VE' }
+    { name: 'Wissen', formula: 'GEI+VE' },
+    // Den aktiven Zauber austauschen kostet eine ganze Aktion (S.46);
+    // bei einem Immersieg ist der Wechsel aktionsfrei.
+    { name: 'Zauber wechseln', formula: 'GEI+VE' }
 ];

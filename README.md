@@ -174,9 +174,11 @@ Vollständig nach Regelwerk S.38–40 umgesetzt:
 - **Kampfpatzer nennen die geführte Ausrüstung**: Die Keule zerbricht, die Schlachtgeißel trifft
   den Angreifer selbst, der Holzschild zerspringt beim Abwehr-Patzer — statt eines allgemeinen
   Standardsatzes.
-- 24 typische Proben (Klettern, Schleichen, Schlösser öffnen …) mit automatisch passender
+- **27 typische Proben** (Klettern, Schleichen, Schlösser öffnen …) mit automatisch passender
   Attribut+Eigenschaft-Formel, inklusive Sonderfällen wie dem Mindestwert 8 bei *Bemerken*
-  und dem elfischen *Leichtfüßig*-Bonus auf Schleichen.
+  und dem elfischen *Leichtfüßig*-Bonus auf Schleichen. Dazu gehören auch die drei Proben aus
+  dem Magie-Kapitel: *Magie erspüren* (GEI+AU), *Magie identifizieren* (GEI+VE) und
+  *Zauber wechseln* (GEI+VE) — letzteres mit dem Bonus aus dem Talent *Wechsler*.
 
 ### 📡 Live-Multiplayer (WebRTC, serverlos)
 Der Spielleiter eröffnet einen Raum und erhält einen 4-stelligen Code; die Spieler treten damit bei.
@@ -198,9 +200,11 @@ SL-Notizen (lokal gespeichert).
 - **Heilung** und **Schaden ohne Abwehrmöglichkeit**
 - **Probe fordern** — einzeln oder von der ganzen Gruppe; beim Spieler wird die passende Probe
   direkt vorgewählt
-- **Erfahrungspunkte** einzeln oder an alle. Die EP der besiegten Gegner werden aus dem
-  Bestiarium vorgeschlagen, und ein dadurch ausgelöster Stufenaufstieg schreibt Lern- und
-  Talentpunkte automatisch gut — nach den **Hausregeln der Runde**, falls welche gesetzt sind
+- **Erfahrungspunkte** einzeln oder an alle — nach Regelwerk S.88 als **EP-Summe der besiegten
+  Gegner geteilt durch die Zahl der beteiligten Helden**. Der Dialog nennt Summe, Teiler und
+  Ergebnis und schlägt zusätzlich das Viertel für ein erreichtes Abenteuerziel vor. Ein dadurch
+  ausgelöster Stufenaufstieg schreibt Lern- und Talentpunkte automatisch gut — nach den
+  **Hausregeln der Runde**, falls welche gesetzt sind
 - **Flüstern** an einzelne Spieler und **Ansagen an alle**
 - die **aktuelle Kampfrunde**, an der die Abklingzeiten der Zauber hängen
 
@@ -310,6 +314,13 @@ frühere Sitzung wiederherzustellen.
   NSC wird sie direkt mit ausgewürfelt
 - **Gegnerabwehr der Monsterwaffen** wird aus dem Statblock gelesen (z.B. „Massive Keule
   (WB+2; GA−2)") und beim Angriff mitgeschickt; in der Zeile ist sie nachträglich änderbar
+- **Heroische und epische Gegner** (S.105) per Auswahl: Lebenskraft ×5 bzw. ×10, Abwehr +2/+4,
+  ein Angriffswert +2/+4 und die neu berechneten EP. Aus dem Ork (LK 23, 63 EP) wird so ein
+  heroischer Brocken mit LK 115 und 318 EP — jederzeit wieder zurücknehmbar, ein angeschlagener
+  Gegner behält dabei seinen Verletzungsgrad
+- **Größenkategorien** stehen an jedem Gegner und fließen automatisch in den Angriff ein:
+  Ein Oger, der auf einen Goblin einschlägt, bekommt seine −4 für zwei Kategorien Unterschied
+  ohne Zutun des Spielleiters
 - Werte, die ein Statblock gar nicht nennt oder als Ausdruck führt (Schwarmwert, „5+1"), setzt der
   Tracker als Platzhalter ein und **sagt ausdrücklich dazu**, dass sie nachgetragen gehören
 - Verbundene Spieler werden mit Live-Werten in die Reihenfolge übernommen
@@ -420,7 +431,7 @@ Bildschirmgröße und Zoomstufe und ist klein genug, um ihn bei jeder Bewegung z
 
 ### Nach einer Änderung: Versionsnummer hochzählen
 
-Alle eigenen Dateien werden mit einem Versionsparameter eingebunden (`app.js?v=20260823l`). Wer
+Alle eigenen Dateien werden mit einem Versionsparameter eingebunden (`app.js?v=20260824c`). Wer
 etwas ändert, zählt die Version in `index.html` hoch — sonst behalten Besucher die alte Fassung
 aus dem Browser-Cache.
 
