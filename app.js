@@ -15,6 +15,11 @@ function blankCharacter() {
         gold: 10, silber: 0, kupfer: 0, bonusLk: 0, extraTp: 0,
         slayerpunkte: 0,   // optionale Regel, verfällt am Kampfende
         ntp: 0,          // zweiter Talentpunkt-Topf, falls die Runde ihn führt
+        // Merkt sich, was mit Lernpunkten gekauft wurde. Nur so lassen sich
+        // Steigerungen zurücknehmen und die Punkte korrekt erstatten.
+        gekauft: { staerke: 0, haerte: 0, bewegung: 0, geschick: 0, verstand: 0, aura: 0, lk: 0, tp: 0 },
+        // Bereits gutgeschriebene Stufenaufstiege — verhindert doppelte Vergabe
+        stufenGutgeschrieben: 1,
         portrait: '',
         talents: [], spells: [], inventory: [],
         notes: '', log: []
@@ -181,6 +186,27 @@ function importCharacter(event) {
     event.target.value = '';
 }
 
+// Setzt den Bogen vollständig zurück. Das Charakterbild bleibt nur, wenn der
+// Nutzer es ausdrücklich behalten will.
+function charakterLoeschen() {
+    if (!confirm('Diesen Charakter wirklich vollständig löschen?\n\n' +
+        'Werte, Talente, Zauber, Inventar und Notizen gehen verloren.\n' +
+        'Ungespeicherte Änderungen lassen sich nicht wiederherstellen.')) return;
+
+    const altesBild = appData.portrait || '';
+    const bildBehalten = altesBild &&
+        confirm('Das Charakterbild behalten?\n\nOK = Bild bleibt · Abbrechen = auch das Bild löschen');
+
+    appData = blankCharacter();
+    if (bildBehalten) appData.portrait = altesBild;
+
+    renderAll();
+    refreshBoundInputs();
+    scheduleSave();
+    syncMultiplayerState();
+    addLog('Charakterbogen geleert.', 'neutral');
+}
+
 // --- Beispielcharaktere -----------------------------------------------------
 
 const DS4_BEISPIELE = [
@@ -267,6 +293,11 @@ function bindInputs() {
         el.addEventListener('input', () => {
             const value = el.type === 'number' ? (parseFloat(el.value) || 0) : el.value;
             setByPath(appData, path, value);
+            // Ändern sich EP oder Heldenklasse, verschiebt sich die Stufe —
+            // die Punkte müssen dann in beide Richtungen mitwandern.
+            if (path === 'ep' || path === 'heldenklasse') {
+                if (stufenAbgleichen()) { refreshBoundInputs(); renderAll(); }
+            }
             onDataChanged();
         });
     });
@@ -368,10 +399,19 @@ function renderBudgets() {
     attrEl.innerHTML = `Attribute: <strong>${attrSum}</strong>/20`;
     attrEl.className = 'budget' + (attrSum > 20 ? ' over' : (attrSum === 20 ? ' done' : ''));
 
+    // Nach der Erschaffung wachsen die Eigenschaften über Lernpunkte weiter.
+    // Das Soll ist dann 8 plus alles, was nachweislich gekauft wurde — so bleibt
+    // die Anzeige grün, statt eine erlaubte Steigerung als Überschreitung zu zeigen.
+    const gekaufteEig = Object.keys(DS4_EIGENSCHAFT_NAMES)
+        .reduce((summe, key) => summe + gekaufteStufen(key), 0);
+    const soll = 8 + gekaufteEig;
+
     const eigEl = document.getElementById('budget-eig');
-    // Nach der Erschaffung wachsen die Eigenschaften über Lernpunkte weiter über 8 hinaus
-    eigEl.innerHTML = `Eigenschaften: <strong>${eigSum}</strong>${eigSum > 8 ? '' : '/8'}`;
-    eigEl.className = 'budget' + (eigSum === 8 ? ' done' : '');
+    eigEl.innerHTML = `Eigenschaften: <strong>${eigSum}</strong>/${soll}`;
+    eigEl.className = 'budget' + (eigSum === soll ? ' done' : (eigSum > soll ? ' over' : ''));
+    eigEl.title = gekaufteEig
+        ? `8 aus der Erschaffung plus ${gekaufteEig} mit Lernpunkten gekauft`
+        : 'Bei der Erschaffung werden 8 Punkte verteilt';
 }
 
 // --- Rendering: Kampfwerte --------------------------------------------------
@@ -1003,6 +1043,7 @@ function renderSlayerpunkte() {
                 <span class="slayer-pips">${pips}</span>
                 <span class="hint">${sp}/${DS4_SLAYERPUNKTE_MAX}</span>
                 <span style="margin-left:auto;display:flex;gap:0.3rem">
+                    <button class="btn btn-sm btn-ghost" id="slayer-heal" ${sp >= DS4_SLAYERPUNKTE_MAX ? 'disabled style="opacity:0.35"' : ''} title="Punkt für das Heilen eines im Kampf verletzten Kameraden">★ Heilung</button>
                     <button class="btn btn-sm btn-ghost" id="slayer-plus" ${sp >= DS4_SLAYERPUNKTE_MAX ? 'disabled style="opacity:0.35"' : ''} title="Punkt von Hand gutschreiben">+</button>
                     <button class="btn btn-sm btn-ghost" id="slayer-clear" ${sp ? '' : 'disabled style="opacity:0.35"'} title="Alle Punkte verfallen lassen">✕</button>
                 </span>
@@ -1012,7 +1053,9 @@ function renderSlayerpunkte() {
                 <button class="btn btn-sm btn-primary" id="slayer-spend" ${optionen.length ? '' : 'disabled style="opacity:0.35"'}>Einsetzen</button>
             </div>
             <div class="hint" style="margin-top:0.35rem">
-                1 SP je Kampfrunde mit verursachtem Schaden. Boni wirken, bis du in der nächsten
+                1 SP je Kampfrunde mit verursachtem Schaden. Auch Heiler, die im Kampf verletzte
+                Kameraden heilen, bekommen dafür einen Punkt (S.45) — dafür ist der Knopf
+                <strong>&#9733; Heilung</strong>. Boni wirken, bis du in der nächsten
                 Runde wieder an der Reihe bist, und ändern nie den PW einer bereits gewürfelten Probe.
             </div>
         </div>`;
@@ -1021,6 +1064,8 @@ function renderSlayerpunkte() {
         appData.slayerpunkte = Math.min(DS4_SLAYERPUNKTE_MAX, (appData.slayerpunkte || 0) + 1);
         renderSlayerpunkte(); scheduleSave();
     });
+    document.getElementById('slayer-heal').addEventListener('click',
+        () => slayerpunktVerdienen('Kameraden geheilt'));
     document.getElementById('slayer-clear').addEventListener('click', () => slayerpunkteVerfallen('von Hand geleert'));
     document.getElementById('slayer-spend').addEventListener('click', () => {
         const idx = parseInt(document.getElementById('slayer-option').value, 10);
@@ -1225,6 +1270,16 @@ function rollKampfwert(key, label, pw) {
 
 // Abklingzeit des vorbereiteten Zaubers starten. Ohne laufenden Kampf gibt es
 // keine Rundenzählung — dann wird die Abklingzeit nur als Hinweis vermerkt.
+// Erkennt einen Heilzauber an Name und Wirkungstext. Bewusst großzügig — im
+// Zweifel gibt es den Punkt lieber einmal zu viel als gar nicht, und der Tisch
+// kann ihn über den ✕-Knopf wieder wegnehmen.
+function istHeilzauber(spell) {
+    const daten = typeof alleZauber === 'function'
+        ? alleZauber().find(z => z.name === spell.name) : null;
+    const text = `${spell.name} ${(daten && daten.effekt) || spell.effekt || ''}`;
+    return /heil|genes|kurier|wundverschluss|lebenskraft zurück/i.test(text);
+}
+
 function startSpellCooldown(result) {
     const spell = (appData.spells || []).find(s => s.prepared);
     if (!spell) return '';
@@ -1236,6 +1291,11 @@ function startSpellCooldown(result) {
         return `Kampfpatzer: <strong>${escapeHtml(spell.name)}</strong> ist herausgesprungen und nicht mehr aktiv`;
     }
     if (!result.success) return '';
+
+    // Heiler bekommen auch für das Heilen verletzter Kameraden einen
+    // Slayerpunkt (Regelwerk S.45). Ob wirklich jemand verletzt war, weiß nur
+    // der Tisch — deshalb greift das nur bei einem erkennbaren Heilzauber.
+    if (istHeilzauber(spell)) slayerpunktVerdienen('Heilzauber gewirkt');
 
     const rounds = parseInt(spell.abklingzeit, 10);
     if (!rounds) return '';
@@ -1444,6 +1504,57 @@ function wireMenschCap(body) {
     });
 }
 
+// Wie viele Steigerungen dieses Postens wurden mit Lernpunkten gekauft?
+function gekaufteStufen(key) {
+    return (appData.gekauft && appData.gekauft[key]) || 0;
+}
+
+function buchen(key, delta) {
+    if (!appData.gekauft) {
+        appData.gekauft = { staerke: 0, haerte: 0, bewegung: 0, geschick: 0, verstand: 0, aura: 0, lk: 0, tp: 0 };
+    }
+    appData.gekauft[key] = Math.max(0, (appData.gekauft[key] || 0) + delta);
+}
+
+// Nimmt eine mit Lernpunkten gekaufte Steigerung zurück und erstattet die Punkte.
+// Erstattet wird zum aktuellen Preis — bei geänderten Hausregeln ist das die
+// nachvollziehbarere Variante als ein gemerkter alter Preis.
+function steigerungZuruecknehmen(art, key) {
+    const costs = lpCosts();
+    if (!costs) return;
+
+    if (art === 'eig') {
+        if (!gekaufteStufen(key)) return;
+        appData.eigenschaften[key] = Math.max(0, (appData.eigenschaften[key] || 0) - 1);
+        appData.lp = (appData.lp || 0) + costs[key];
+        buchen(key, -1);
+        addLog(`${DS4_EIGENSCHAFT_NAMES[key]} zurückgenommen — ${costs[key]} LP zurück`, 'neutral');
+    } else if (art === 'lk') {
+        if (!gekaufteStufen('lk')) return;
+        appData.bonusLk = Math.max(0, (appData.bonusLk || 0) - 1);
+        appData.lkCurrent = Math.max(0, (appData.lkCurrent || 0) - 1);
+        appData.lp = (appData.lp || 0) + costs.lk;
+        buchen('lk', -1);
+        addLog(`Lebenskraft zurückgenommen — ${costs.lk} LP zurück`, 'neutral');
+    } else if (art === 'tp') {
+        if (!gekaufteStufen('tp')) return;
+        if ((appData.tp || 0) < 1) {
+            addLog('Der gekaufte Talentpunkt ist bereits ausgegeben — erst ein Talent zurücknehmen.', 'fehlschlag');
+            return;
+        }
+        appData.tp -= 1;
+        appData.extraTp = Math.max(0, (appData.extraTp || 0) - 1);
+        appData.lp = (appData.lp || 0) + costs.tp;
+        buchen('tp', -1);
+        addLog(`Talentpunkt-Kauf zurückgenommen — ${costs.tp} LP zurück`, 'neutral');
+    }
+
+    renderAll();
+    renderLevelUp();
+    scheduleSave();
+    syncMultiplayerState();
+}
+
 function renderLevelUp() {
     const body = document.getElementById('levelup-body');
     const cls = activeClass();
@@ -1458,15 +1569,19 @@ function renderLevelUp() {
 
     const rows = Object.keys(DS4_EIGENSCHAFT_NAMES).map(key => {
         const cost = costs[key];
-        const base = appData.eigenschaften[key] || 0;
         const eff = effectiveEigenschaft(key);
         const max = eigenschaftMax(key, appData.volk, appData.klasse, appData.menschCapChoices);
         const blocked = eff >= max;
         const affordable = lp >= cost && !blocked;
+        // Zurücknehmen geht nur, soweit hier auch gekauft wurde
+        const gekauft = gekaufteStufen(key);
         return `<div class="list-row">
             <span style="flex:1">${DS4_EIGENSCHAFT_NAMES[key]}
-                <span class="eig-abbr">${eff} → ${eff + 1} (max ${max})</span></span>
+                <span class="eig-abbr">${eff} → ${eff + 1} (max ${max})${gekauft ? ` · ${gekauft} gekauft` : ''}</span></span>
             <span class="tag">${cost} LP</span>
+            <button class="btn btn-sm" data-refund="eig" data-key="${key}"
+                    ${gekauft ? '' : 'disabled style="opacity:0.3"'}
+                    title="${gekauft ? `Steigerung zurücknehmen, ${cost} LP zurück` : 'Hier wurde nichts mit Lernpunkten gekauft'}">−</button>
             <button class="btn btn-sm ${affordable ? 'btn-primary' : ''}" ${affordable ? '' : 'disabled style="opacity:0.4"'}
                     data-buy="eig" data-key="${key}" data-cost="${cost}">
                 ${blocked ? 'Höchstwert' : 'Steigern'}
@@ -1493,14 +1608,22 @@ function renderLevelUp() {
 
         <h4 style="color:var(--accent);font-size:0.9rem;margin:0.9rem 0 0.4rem">Sonstiges</h4>
         <div class="list-row">
-            <span style="flex:1">Lebenskraft <span class="eig-abbr">dauerhaft +1</span></span>
+            <span style="flex:1">Lebenskraft
+                <span class="eig-abbr">dauerhaft +1${gekaufteStufen('lk') ? ` · ${gekaufteStufen('lk')} gekauft` : ''}</span></span>
             <span class="tag">${costs.lk} LP</span>
+            <button class="btn btn-sm" data-refund="lk"
+                    ${gekaufteStufen('lk') ? '' : 'disabled style="opacity:0.3"'}
+                    title="${gekaufteStufen('lk') ? `Steigerung zurücknehmen, ${costs.lk} LP zurück` : 'Noch keine Lebenskraft gekauft'}">−</button>
             <button class="btn btn-sm ${lkAffordable ? 'btn-primary' : ''}" ${lkAffordable ? '' : 'disabled style="opacity:0.4"'}
                     data-buy="lk" data-cost="${costs.lk}">Steigern</button>
         </div>
         <div class="list-row">
-            <span style="flex:1">Zusätzlicher Talentpunkt</span>
+            <span style="flex:1">Zusätzlicher Talentpunkt
+                <span class="eig-abbr">${gekaufteStufen('tp') ? `${gekaufteStufen('tp')} gekauft` : ''}</span></span>
             <span class="tag">${costs.tp} LP</span>
+            <button class="btn btn-sm" data-refund="tp"
+                    ${gekaufteStufen('tp') ? '' : 'disabled style="opacity:0.3"'}
+                    title="${gekaufteStufen('tp') ? `Kauf zurücknehmen, ${costs.tp} LP zurück` : 'Noch keinen Talentpunkt gekauft'}">−</button>
             <button class="btn btn-sm ${tpAffordable ? 'btn-primary' : ''}" ${tpAffordable ? '' : 'disabled style="opacity:0.4"'}
                     data-buy="tp" data-cost="${costs.tp}">Kaufen</button>
         </div>
@@ -1515,6 +1638,10 @@ function renderLevelUp() {
 
     wireMenschCap(body);
 
+    body.querySelectorAll('[data-refund]').forEach(btn => {
+        btn.addEventListener('click', () => steigerungZuruecknehmen(btn.dataset.refund, btn.dataset.key));
+    });
+
     body.querySelectorAll('[data-buy]').forEach(btn => {
         btn.addEventListener('click', () => {
             const cost = parseInt(btn.dataset.cost, 10);
@@ -1525,15 +1652,18 @@ function renderLevelUp() {
             if (kind === 'eig') {
                 const key = btn.dataset.key;
                 appData.eigenschaften[key] = (appData.eigenschaften[key] || 0) + 1;
+                buchen(key, 1);
                 addLog(`${DS4_EIGENSCHAFT_NAMES[key]} auf ${effectiveEigenschaft(key)} gesteigert (${cost} LP)`, 'erfolg');
             } else if (kind === 'lk') {
                 appData.bonusLk = (appData.bonusLk || 0) + 1;
                 appData.lkCurrent = (appData.lkCurrent || 0) + 1;
+                buchen('lk', 1);
                 addLog(`Lebenskraft dauerhaft um 1 gesteigert (${cost} LP)`, 'erfolg');
             } else if (kind === 'tp') {
                 appData.tp = (appData.tp || 0) + 1;
                 // Zusätzlich gekaufte TP zählen im Talent-Budget mit
                 appData.extraTp = (appData.extraTp || 0) + 1;
+                buchen('tp', 1);
                 addLog(`Talentpunkt gekauft (${cost} LP)`, 'erfolg');
             }
 
@@ -1548,19 +1678,43 @@ function renderLevelUp() {
 // Punkte für einen oder mehrere Stufenaufstiege gutschreiben. Zentral, damit der
 // Aufstieg über EP vom Spielleiter dieselben (Haus-)Regeln nutzt wie der Knopf
 // im Stufenaufstiegs-Dialog. Liefert einen lesbaren Text der Gutschrift.
+// Schreibt die Punkte fuer eine Anzahl Stufen gut. Negative Werte nehmen sie
+// wieder weg — nur so bleibt ein Herabsetzen der Stufe sauber.
 function gutschriftFuerStufen(stufen) {
-    if (stufen <= 0) return '';
+    if (!stufen) return '';
     const hr = typeof hausregeln !== 'undefined' ? hausregeln : null;
     const tpZuwachs = (hr ? hr.tpProStufe : 1) * stufen;
     const ntpZuwachs = ((hr && hr.ntpAktiv) ? hr.ntpProStufe : 0) * stufen;
     const lpZuwachs = 2 * stufen;
 
-    appData.lp = (appData.lp || 0) + lpZuwachs;
-    appData.tp = (appData.tp || 0) + tpZuwachs;
-    if (ntpZuwachs) appData.ntp = (appData.ntp || 0) + ntpZuwachs;
+    // Beim Zurücknehmen nicht unter Null rutschen: Wer die Punkte schon
+    // ausgegeben hat, behält das Gekaufte — der Bogen weist die Abweichung aus.
+    appData.lp = Math.max(0, (appData.lp || 0) + lpZuwachs);
+    appData.tp = Math.max(0, (appData.tp || 0) + tpZuwachs);
+    if (ntpZuwachs) appData.ntp = Math.max(0, (appData.ntp || 0) + ntpZuwachs);
 
-    return `+${lpZuwachs} Lernpunkt${lpZuwachs === 1 ? '' : 'e'}, +${tpZuwachs} Talentpunkt${tpZuwachs === 1 ? '' : 'e'}` +
-        (ntpZuwachs ? `, +${ntpZuwachs} ${escapeHtml(hr.ntpName)}` : '');
+    const vz = stufen > 0 ? '+' : '';
+    return `${vz}${lpZuwachs} Lernpunkte, ${vz}${tpZuwachs} Talentpunkte` +
+        (ntpZuwachs ? `, ${vz}${ntpZuwachs} ${escapeHtml(hr.ntpName)}` : '');
+}
+
+// Gleicht die vergebenen Punkte mit der Stufe ab, die sich aus den EP ergibt.
+// Wird immer aufgerufen, wenn sich EP oder Heldenklasse ändern — dadurch wirkt
+// ein Herabsetzen der Stufe genauso wie ein Aufstieg, nur in die andere Richtung.
+function stufenAbgleichen(still) {
+    const stufe = stufeFuerEp(appData.ep || 0, !!appData.heldenklasse);
+    const bisher = appData.stufenGutgeschrieben || 1;
+    if (stufe === bisher) return false;
+
+    const text = gutschriftFuerStufen(stufe - bisher);
+    appData.stufenGutgeschrieben = stufe;
+
+    if (!still) {
+        addLog(stufe > bisher
+            ? `<strong>Stufe ${stufe} erreicht</strong> — ${text}`
+            : `Stufe auf ${stufe} gesenkt — ${text}`, stufe > bisher ? 'erfolg' : 'neutral');
+    }
+    return true;
 }
 
 function grantLevelUp() {
@@ -1571,8 +1725,8 @@ function grantLevelUp() {
     if (!naechste) { addLog('Höchststufe 20 bereits erreicht.', 'neutral'); return; }
     appData.ep = naechste.needed;
 
-    const text = gutschriftFuerStufen(1);
-    addLog(`Stufenaufstieg auf <strong>Stufe ${naechste.stufe}</strong> (${naechste.needed} EP): ${text}`, 'erfolg');
+    stufenAbgleichen(true);
+    addLog(`Stufenaufstieg auf <strong>Stufe ${naechste.stufe}</strong> (${naechste.needed} EP)`, 'erfolg');
     refreshBoundInputs();
     renderAll();
     renderLevelUp();

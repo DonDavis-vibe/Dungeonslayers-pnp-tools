@@ -170,6 +170,7 @@ function renderKartenWerkzeuge() {
         <input type="number" id="map-gridsize" value="${r.rasterGroesse}" min="4" max="400" style="width:4rem" title="Feldgröße in Pixeln">
         <input type="number" id="map-offx" value="${r.rasterVersatzX}" style="width:3.4rem" title="Versatz waagerecht">
         <input type="number" id="map-offy" value="${r.rasterVersatzY}" style="width:3.4rem" title="Versatz senkrecht">
+        <button class="btn btn-sm btn-ghost" onclick="figurGroesseDialog()" title="Größe einer Figur ändern (Drache, Riese ...)">📏 Größe</button>
         <button class="btn btn-sm btn-ghost" onclick="verdecktUmschalten()" title="Einzelne Gegner vor den Spielern verbergen">🙈</button>
         <button class="btn btn-sm btn-danger" style="margin-left:auto" onclick="figurenLeeren()">Figuren leeren</button>`;
 
@@ -300,7 +301,10 @@ function figurSetzen(daten) {
         }
     }
 
-    karte.addFigur({ id: daten.id, name: daten.name, farbe: daten.farbe, besitzer: daten.besitzer, x, y, groesse: 1 });
+    karte.addFigur({
+        id: daten.id, name: daten.name, farbe: daten.farbe, besitzer: daten.besitzer,
+        x, y, groesse: daten.groesse || 1
+    });
     if (daten.portrait) {
         karte.setFigurBild(daten.id, daten.portrait);
         verteileFigurenBilder();
@@ -401,6 +405,69 @@ function verteileKartenBild(nurAn) {
 
     const status = document.getElementById('map-status');
     if (status) status.textContent += ` · an ${nurAn ? 'einen Spieler' : Object.keys(clientConnections).length + ' Spieler'} gesendet`;
+}
+
+// --- Figurengröße -----------------------------------------------------------
+
+// Ein Feld entspricht 1m (Anhang B), deshalb lassen sich die Größenkategorien
+// des Bestiariums direkt in Felder übersetzen.
+const GK_ZU_FELDERN = {
+    winzig: 0.5,   // unter 0,5 m
+    klein: 1,      // 0,5 - 1 m
+    normal: 1,     // 1 - 3 m
+    gross: 2,      // 3 - 6 m
+    riesig: 3,     // 6 - 12 m
+    gewaltig: 4    // über 12 m
+};
+
+function groesseAusKategorie(gk) {
+    return GK_ZU_FELDERN[gk] || 1;
+}
+
+// Erst fragen, welche Figur — dann die Größe
+function figurGroesseDialog() {
+    const figuren = karte.figuren;
+    if (!figuren.length) {
+        const status = document.getElementById('map-status');
+        if (status) status.textContent = 'Keine Figuren auf der Karte.';
+        return;
+    }
+    const zeilen = figuren.map((f, i) =>
+        `${i + 1}) ${f.name} — ${String(f.groesse || 1).replace('.', ',')} Feld(er)`);
+    const eingabe = prompt('Welche Figur?\n\n' + zeilen.join('\n'));
+    const nummer = parseInt(eingabe, 10);
+    if (figuren[nummer - 1]) figurGroesseAendern(figuren[nummer - 1].id);
+}
+
+// Größe einer Figur ändern — Auswahl nach den Kategorien des Regelwerks
+function figurGroesseAendern(id) {
+    const figur = karte.figuren.find(f => f.id === id);
+    if (!figur) return;
+
+    const kategorien = Object.entries(GK_ZU_FELDERN);
+    const zeilen = kategorien.map(([k, felder], i) => {
+        const def = (typeof DS4_GROESSENKATEGORIEN !== 'undefined' && DS4_GROESSENKATEGORIEN[k]) || {};
+        const aktuell = (figur.groesse || 1) === felder ? '  ← aktuell' : '';
+        return `${i + 1}) ${def.name || k} (${def.bereich || ''}) — ${felder} Feld${felder === 1 ? '' : 'er'}${aktuell}`;
+    });
+
+    const eingabe = prompt(
+        `Größe von "${figur.name}"\n\nNummer wählen oder eine Feldzahl eingeben:\n\n` + zeilen.join('\n'),
+        String(figur.groesse || 1));
+    if (!eingabe) return;
+
+    const nummer = parseInt(eingabe, 10);
+    let felder;
+    if (nummer >= 1 && nummer <= kategorien.length && !eingabe.includes('.') && !eingabe.includes(',')) {
+        felder = kategorien[nummer - 1][1];
+    } else {
+        felder = parseFloat(eingabe.replace(',', '.'));
+    }
+    if (!Number.isFinite(felder) || felder <= 0) return;
+
+    karte.setFigurGroesse(id, felder);
+    const status = document.getElementById('map-status');
+    if (status) status.textContent = `${figur.name}: Größe auf ${String(felder).replace('.', ',')} Feld(er) gesetzt.`;
 }
 
 // --- Figuren ----------------------------------------------------------------

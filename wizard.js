@@ -397,6 +397,15 @@ function renderWizardEquipWarnings() {
 // --- Übernahme --------------------------------------------------------------
 
 function applyWizard() {
+    // Vollständig von einem leeren Bogen ausgehen. Vorher blieben Talente,
+    // Zauber und Inventar des alten Charakters stehen und tauchten beim neuen
+    // wieder auf. Nur Dinge, die nicht zum Charakter gehören, werden übernommen.
+    const behalten = {
+        portrait: appData.portrait || '',
+        log: appData.log || []
+    };
+    appData = Object.assign(blankCharacter(), behalten);
+
     appData.volk = wizardDraft.volk;
     appData.klasse = wizardDraft.klasse;
     appData.subtype = wizardDraft.subtype;
@@ -407,10 +416,7 @@ function applyWizard() {
     appData.equipment = Object.assign({}, wizardDraft.equipment);
     appData.name = wizardDraft.name;
     appData.spieler = wizardDraft.spieler;
-    appData.ep = 0;
-    appData.lp = 0;
     appData.tp = wizardDraft.volk === 'mensch' ? 2 : 1;
-    appData.gold = 10;
 
     const derived = computeDerived(charForRules());
     appData.lkCurrent = derived.lebenskraft;

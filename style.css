@@ -230,6 +230,11 @@ select option { background: #1c1712; }
 .status-patzer { color: var(--patzer); }
 
 .quick-probe { display: grid; grid-template-columns: 1fr auto; gap: 0.4rem; align-items: end; }
+/* Ohne min-width:0 schrumpft die 1fr-Spalte nicht unter die Breite des längsten
+   Auswahleintrags — der Knopf daneben wird dann aus dem Panel geschoben. */
+.quick-probe > * { min-width: 0; }
+.quick-probe select, .quick-probe input { width: 100%; }
+.quick-probe .btn { white-space: nowrap; }
 
 .log-list { list-style: none; max-height: 320px; overflow-y: auto; display: flex; flex-direction: column; gap: 0.4rem; }
 .log-list li {

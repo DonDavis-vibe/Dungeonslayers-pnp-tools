@@ -4,8 +4,8 @@
 # Beide PDFs gibt es kostenlos auf https://www.dungeonslayers.net/downloads/
 regeln/*.pdf
 
-# Entwurf für den Forenbeitrag — persönlicher Text, gehört nicht ins Repository
-forenbeitrag.md
+# Entwürfe für Forenbeiträge — persönliche Texte, gehören nicht ins Repository
+forenbeitrag*.md
 
 # Werkzeug-Konfiguration der lokalen Entwicklungsumgebung
 .claude/

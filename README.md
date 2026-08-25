@@ -90,6 +90,16 @@ verteilt ist, und die Plus-Knöpfe sperren an den Obergrenzen.
   (günstige Eigenschaften 2 LP, übrige 3 LP, Lebenskraft 1 LP, Talentpunkt 3 LP). Der Knopf
   „+1 Stufe gutschreiben" hebt auch die Erfahrungspunkte auf die nächste Schwelle, damit Stufe,
   Talentzugang und Punktebudget zusammenpassen.
+- **Steigerungen lassen sich zurücknehmen.** Jede Zeile im Aufstiegsdialog hat ein **−**, das den
+  Wert senkt und die Lernpunkte erstattet — auch bei der Lebenskraft. Der Bogen merkt sich, was
+  tatsächlich gekauft wurde, deshalb ist der Knopf gesperrt, wo nichts zu erstatten ist.
+  Das Eigenschaften-Budget wächst dabei mit: Nach einer bezahlten Steigerung steht dort **9/9**
+  in Grün, während ein unbezahlt hochgesetzter Wert weiterhin als Überschreitung erscheint.
+- **Stufe herabsetzen wirkt symmetrisch.** Senkt man die Erfahrungspunkte, werden Lern- und
+  Talentpunkte wieder abgezogen, statt sich aufzusummieren.
+- **Charakter löschen** leert den Bogen vollständig (das Bild auf Nachfrage). Auch der
+  Erschaffungs-Assistent startet von einem leeren Bogen, damit keine Talente oder Zauber des
+  Vorgängers zurückbleiben.
 - **Rasten** — *Verschnaufen* (halbe im Kampf verlorene LK zurück) und *Nachtruhe*
   (1W20/2 LK, +1 je 4 Stunden Bettruhe) als Ein-Klick-Aktionen. Läuft ein Kampf über den
   Rundenzähler mit, merkt sich der Bogen den Stand bei Kampfbeginn und verschnauft nur über die
@@ -235,6 +245,10 @@ Nach Anhang B des Regelwerks gilt: **ein Feld = 1 Meter**.
   übertragen. Raster, Feldgröße und Versatz sind frei einstellbar.
 - **Figuren** kommen per Klick aus dem Kampf-Tracker oder werden einzeln gesetzt. Spieler
   erscheinen mit ihrem **Charakterbild**, umrandet in ihrer Farbe.
+- **Figurengröße nach Größenkategorie.** Weil ein Feld einem Meter entspricht, lassen sich die
+  Kategorien des Regelwerks direkt übersetzen: groß = 2 Felder, riesig = 3, gewaltig = 4. Über
+  **📏 Größe** ist jede Figur anpassbar; Kreaturen aus dem Bestiarium bekommen ihre Größe
+  automatisch. Ein Drache belegt damit ohne Zutun mehr Platz als ein Goblin.
 - **Bewegung mit Bestätigung:** Zieht ein Spieler seine Figur, bleibt sie stehen und meldet den
   Zug als Vorschlag an — mit Entfernung in Feldern und Metern. Der Spielleiter sieht ihn neben
   dem *Laufen*-Wert des Helden, bekommt eine Warnung bei zu weiten Zügen und entscheidet.
@@ -266,6 +280,9 @@ einstellbar, ohne die Regeldateien anzufassen:
     1 SP je Kampfrunde gut, in der du Schaden verursachst (höchstens 3), lässt sie am Kampfende
     und bei Bewusstlosigkeit verfallen und bietet die komplette Ausgabetabelle des Regelwerks
     zum Einsetzen an — gefiltert nach dem, was du dir gerade leisten kannst.
+    Auch **Heiler, die im Kampf verletzte Kameraden heilen**, bekommen einen Punkt: automatisch
+    bei einem gelungenen Heilzauber, sonst über den Knopf **★ Heilung** — ob der Kamerad in
+    diesem Kampf verletzt wurde, weiß nur der Tisch.
   - Sind Slayende Würfel ohne Slayerpunkte aktiv, weist das Tool auf die Empfehlung des Regelwerks hin.
 - **Eigene Talente, Zauber und Heldenklassen** anlegen — sie erscheinen in den Auswahllisten neben
   den offiziellen, sind als *Hausregel* gekennzeichnet und unterliegen derselben Zugangsprüfung.
@@ -285,8 +302,10 @@ frühere Sitzung wiederherzustellen.
 - **Abwartehandlung** per Klick: +2 Initiative je Runde ohne Aktion (höchstens +10), die
   Reihenfolge sortiert sich live um; sobald der Charakter handelt, verfällt der Bonus
 - **Bestiarium mit 78 Kreaturen** aus dem Regelwerk — durchsuchbar, nach Gegnerhärte sortiert,
-  per Klick direkt in die Initiative-Reihenfolge. Mehrfach eingesetzte Gegner werden automatisch
-  durchnummeriert. Eigene Gegner lassen sich daneben frei anlegen.
+  per Klick direkt in die Initiative-Reihenfolge. Der Knopf **„+ Karte"** setzt die Kreatur in
+  einem Zug in den Kampf *und* als Figur auf die Karte, in der Größe ihrer Kategorie.
+  Mehrfach eingesetzte Gegner werden automatisch durchnummeriert. Eigene Gegner lassen sich
+  daneben frei anlegen.
 - **NSC-Angriffe** per Klick: gegen Spieler würfelt der Spieler selbst die Abwehr, gegen andere
   NSC wird sie direkt mit ausgewürfelt
 - **Gegnerabwehr der Monsterwaffen** wird aus dem Statblock gelesen (z.B. „Massive Keule

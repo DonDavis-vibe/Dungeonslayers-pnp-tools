@@ -138,8 +138,10 @@ function renderBestiary() {
                 <span class="tag">GH ${c.gh}</span>
                 <span class="tag">${escapeHtml(c.kategorie)}</span>
                 ${c.ep != null ? `<span class="hint">${c.ep} EP</span>` : ''}
-                <span style="margin-left:auto">
+                <span style="margin-left:auto;display:flex;gap:0.3rem">
                     <button class="btn btn-sm btn-primary" data-badd="${idx}">In den Kampf</button>
+                    <button class="btn btn-sm" data-badd-karte="${idx}"
+                            title="In den Kampf und zugleich als Figur auf die Karte, in passender Größe">+ Karte</button>
                 </span>
             </div>
             <div class="talent-perrank">${escapeHtml(werte)}</div>
@@ -150,7 +152,10 @@ function renderBestiary() {
 
     wireBestiarySearch();
     body.querySelectorAll('[data-badd]').forEach(btn => {
-        btn.addEventListener('click', () => addFromBestiary(parseInt(btn.dataset.badd, 10)));
+        btn.addEventListener('click', () => addFromBestiary(parseInt(btn.dataset.badd, 10), false));
+    });
+    body.querySelectorAll('[data-badd-karte]').forEach(btn => {
+        btn.addEventListener('click', () => addFromBestiary(parseInt(btn.dataset.baddKarte, 10), true));
     });
 }
 
@@ -185,7 +190,9 @@ function bestiaryZahl(wert, ersatz, feld) {
     return ersatz;
 }
 
-function addFromBestiary(index) {
+// auchAufKarte: setzt die Kreatur zusätzlich als Figur auf die Karte — mit der
+// Größe, die ihrer Größenkategorie entspricht.
+function addFromBestiary(index, auchAufKarte) {
     const c = DS4_BESTIARIUM[index];
     if (!c) return;
 
@@ -210,13 +217,25 @@ function addFromBestiary(index) {
     npc.schiessen = bestiaryZahl(c.schiessen, null);
     npc.laufen = c.laufen;
     npc.ep = c.ep;
+    npc.gk = c.gk;
 
     combatants.push(npc);
     sortCombatants();
     renderCombat();
     renderBestiary();
 
-    addGmLog('System', `<strong>${escapeHtml(name)}</strong> in den Kampf gestellt (GH ${c.gh}, LK ${lk}, Abwehr ${npc.abwehr})`, 'neutral');
+    // Auf Wunsch gleich als Figur auf die Karte, in passender Größe
+    let kartenHinweis = '';
+    if (auchAufKarte && typeof karte !== 'undefined' && karte && typeof figurSetzen === 'function') {
+        const felder = typeof groesseAusKategorie === 'function' ? groesseAusKategorie(c.gk) : 1;
+        figurSetzen({
+            id: 'kampf:' + npc.id, name, farbe: '#a8342c', besitzer: 'sl', groesse: felder
+        });
+        const kat = (typeof DS4_GROESSENKATEGORIEN !== 'undefined' && DS4_GROESSENKATEGORIEN[c.gk]) || {};
+        kartenHinweis = ` und auf die Karte gesetzt (${kat.name || c.gk}, ${String(felder).replace('.', ',')} Feld${felder === 1 ? '' : 'er'})`;
+    }
+
+    addGmLog('System', `<strong>${escapeHtml(name)}</strong> in den Kampf gestellt (GH ${c.gh}, LK ${lk}, Abwehr ${npc.abwehr})${kartenHinweis}`, 'neutral');
     if (bestiaryUnklar.length) {
         addGmLog('System', `<strong>${escapeHtml(name)}</strong>: ${escapeHtml(bestiaryUnklar.join(', '))} steht im Regelwerk nicht als feste Zahl — Platzhalter eingesetzt, bitte in der Zeile anpassen.`, 'fehlschlag');
     }

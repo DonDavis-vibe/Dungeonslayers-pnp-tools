@@ -739,6 +739,15 @@ const BattleMap = (() => {
             melden();
         }
 
+        // Größe einer vorhandenen Figur ändern (in Feldern)
+        function setFigurGroesse(id, groesse) {
+            const f = zustand.figuren.find(x => x.id === id);
+            if (!f) return;
+            f.groesse = Math.max(0.5, Math.min(8, groesse));
+            zeichnen();
+            melden();
+        }
+
         function addFigur(figur) {
             const vorhanden = zustand.figuren.find(f => f.id === figur.id);
             if (vorhanden) { Object.assign(vorhanden, figur); }
@@ -951,7 +960,7 @@ const BattleMap = (() => {
 
         return {
             setBild, setRaster, addFigur, removeFigur, figurenLoeschen,
-            setFigurBild, getFigurBilder,
+            setFigurBild, getFigurBilder, setFigurGroesse,
             setBestaetigung, zugBestaetigen, zugVerwerfen, offeneZuege,
             setMessModus, istMessModus, setVerdeckt, getStateFuerSpieler,
             setWerkzeug, getWerkzeug, setMalArt, getMalArt, setMalFarbe, getMalFarbe, formenLoeschen,
