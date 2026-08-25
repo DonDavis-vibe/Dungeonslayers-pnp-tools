@@ -58,7 +58,12 @@ select option { background: #1c1712; }
     align-items: center;
     gap: 1rem;
     padding: 0.7rem 1.2rem;
-    background: linear-gradient(180deg, rgba(40, 30, 18, 0.95), rgba(24, 19, 13, 0.9));
+    /* Kopfbild hinter der Leiste, darüber ein Verlauf, damit Titel und
+       Knöpfe lesbar bleiben. Die Leiste wird dadurch nicht höher. */
+    background:
+        linear-gradient(180deg, rgba(28, 21, 13, 0.82), rgba(20, 16, 11, 0.88)),
+        url('header.svg?v=20260824e') center / cover no-repeat,
+        linear-gradient(180deg, rgba(40, 30, 18, 0.95), rgba(24, 19, 13, 0.9));
     border-bottom: 1px solid var(--panel-border-strong);
     position: sticky;
     top: 0;

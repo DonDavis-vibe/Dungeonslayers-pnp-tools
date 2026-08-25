@@ -366,6 +366,7 @@ Im Ordner [`beispiele/`](beispiele/) liegen zwei fertige Helden zum Ausprobieren
 | `session.js` | Sitzung des Spielleiters sichern, laden und nach einem Reload retten |
 | `multiplayer.js` | WebRTC-Verbindung und SL-Dashboard |
 | `discord.js` | Optionale Discord-Webhook-Anbindung |
+| `header.svg` | Kopfbild der Seite — von Hand gezeichnetes SVG in der Farbpalette des Bogens |
 | `regeln/` | Die offiziellen PDFs plus aufbereitete Regel-Referenzen |
 | `beispiele/` | Fertige Charaktere als JSON |
 
@@ -431,7 +432,7 @@ Bildschirmgröße und Zoomstufe und ist klein genug, um ihn bei jeder Bewegung z
 
 ### Nach einer Änderung: Versionsnummer hochzählen
 
-Alle eigenen Dateien werden mit einem Versionsparameter eingebunden (`app.js?v=20260824d`). Wer
+Alle eigenen Dateien werden mit einem Versionsparameter eingebunden (`app.js?v=20260824e`). Wer
 etwas ändert, zählt die Version in `index.html` hoch — sonst behalten Besucher die alte Fassung
 aus dem Browser-Cache.
 
