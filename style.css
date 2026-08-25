@@ -117,6 +117,7 @@ select option { background: #1c1712; }
     display: flex;
     align-items: center;
     gap: 0.6rem;
+    flex-wrap: wrap;
     padding: 0.6rem 0.9rem;
     background: linear-gradient(180deg, rgba(70, 52, 26, 0.6), rgba(40, 30, 18, 0.4));
     border-bottom: 1px solid var(--panel-border);
@@ -727,6 +728,105 @@ select option { background: #1c1712; }
     text-align: center;
 }
 
+
+/* ---------- Hilfe: "?"-Symbole und Popover ---------- */
+
+.help-btn {
+    flex: none;
+    width: 1.15rem;
+    height: 1.15rem;
+    padding: 0;
+    border: 1px solid var(--panel-border-strong);
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.35);
+    color: var(--accent);
+    font-family: 'Georgia', serif;
+    font-size: 0.75rem;
+    font-weight: 700;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    vertical-align: middle;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.help-btn:hover, .help-btn:focus-visible, .help-btn.active {
+    background: var(--accent);
+    border-color: var(--accent-bright);
+    color: #14100c;
+}
+/* Im Fließtext nur als Symbol, nicht als Knopf */
+.help-btn-inline { cursor: default; }
+
+.help-pop {
+    position: fixed;
+    z-index: 400;
+    display: none;
+    width: min(360px, calc(100vw - 1.6rem));
+    max-height: 72vh;
+    overflow-y: auto;
+    background: var(--bg-alt);
+    border: 1px solid var(--panel-border-strong);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    opacity: 0;
+    transition: opacity 0.15s;
+}
+.help-pop.active { opacity: 1; }
+.help-pop-head {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.45rem 0.5rem 0.45rem 0.7rem;
+    background: linear-gradient(180deg, rgba(70, 52, 26, 0.6), rgba(40, 30, 18, 0.4));
+    border-bottom: 1px solid var(--panel-border);
+    font-family: 'Georgia', serif;
+    font-size: 0.9rem;
+    color: var(--accent-bright);
+}
+.help-pop-head span { flex: 1; }
+.help-pop-body { padding: 0.7rem 0.8rem; font-size: 0.83rem; line-height: 1.55; }
+.help-pop-foot {
+    padding: 0.4rem 0.6rem;
+    border-top: 1px solid var(--panel-border);
+    text-align: right;
+}
+
+/* Gemeinsame Textauszeichnung in Popover und Anleitung */
+.help-pop-body p, .help-guide-body p { margin-bottom: 0.55rem; }
+.help-pop-body p:last-child, .help-guide-body p:last-child { margin-bottom: 0; }
+.help-pop-body ul, .help-pop-body ol,
+.help-guide-body ul, .help-guide-body ol { margin: 0 0 0.55rem 1.1rem; }
+.help-pop-body li, .help-guide-body li { margin-bottom: 0.3rem; }
+.help-pop-body strong, .help-guide-body strong { color: var(--accent-bright); font-weight: 600; }
+.help-pop-body em, .help-guide-body em { color: var(--text); }
+.help-pop-body a, .help-guide-body a { color: var(--accent); }
+
+/* Gesamtanleitung im Modal */
+.help-guide-group {
+    font-size: 0.95rem;
+    color: var(--accent-bright);
+    margin: 1.1rem 0 0.45rem;
+    padding-bottom: 0.25rem;
+    border-bottom: 1px solid var(--panel-border);
+}
+.help-guide-group:first-of-type { margin-top: 0.2rem; }
+.help-guide-item {
+    border: 1px solid var(--panel-border);
+    border-radius: 4px;
+    margin-bottom: 0.4rem;
+    background: rgba(0, 0, 0, 0.2);
+}
+.help-guide-item > summary {
+    cursor: pointer;
+    padding: 0.45rem 0.6rem;
+    font-size: 0.88rem;
+    color: var(--text);
+    list-style-position: inside;
+}
+.help-guide-item > summary:hover { color: var(--accent-bright); }
+.help-guide-item[open] > summary { color: var(--accent-bright); border-bottom: 1px solid var(--panel-border); }
+.help-guide-body { padding: 0.6rem 0.75rem; font-size: 0.83rem; line-height: 1.55; }
 /* Scrollbars */
 ::-webkit-scrollbar { width: 9px; height: 9px; }
 ::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.3); }

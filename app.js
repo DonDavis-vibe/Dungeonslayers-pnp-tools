@@ -1040,6 +1040,7 @@ function renderSlayerpunkte() {
         <div class="hint-rule">
             <div style="display:flex;align-items:center;gap:0.6rem;flex-wrap:wrap">
                 <strong>Slayerpunkte</strong>
+                <button class="help-btn" type="button" data-hilfe="slayerpunkte" aria-label="Hilfe: Slayerpunkte" title="Hilfe: Slayerpunkte">?</button>
                 <span class="slayer-pips">${pips}</span>
                 <span class="hint">${sp}/${DS4_SLAYERPUNKTE_MAX}</span>
                 <span style="margin-left:auto;display:flex;gap:0.3rem">

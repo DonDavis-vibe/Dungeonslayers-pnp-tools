@@ -41,6 +41,9 @@ keine digitalen Werkzeuge hat. Dieses Projekt schließt die Lücke.
 öffnen — mehr braucht es nicht. Beim ersten Aufruf startet der Erschaffungs-Assistent; über
 **👤 Beispiel** lädt man einen fertigen Charakter zum Ausprobieren.
 
+Wer wissen will, was ein Kasten tut: Neben den Überschriften sitzt überall ein **„?"**, und
+**❓ Hilfe** in der Kopfzeile öffnet die Kurzanleitung.
+
 **Lokal weiterentwickeln:**
 
 ```bash
@@ -294,6 +297,45 @@ einstellbar, ohne die Regeldateien anzufassen:
 Der **Spielleiter stellt die Regeln ein und schickt sie an die Runde**; wer später beitritt,
 bekommt sie automatisch. Zusätzlich lassen sie sich als Datei speichern und weitergeben.
 
+### ❓ Eingebaute Hilfe
+Neben jeder Überschrift und an den erklärungsbedürftigen Bedienelementen sitzt ein kleines
+**„?"**. Ein Klick öffnet ein Popover mit der Erklärung dazu — was der Kasten tut, welche Regel
+dahintersteckt und worauf man achten muss. Ein zweiter Klick, ein Klick daneben oder `Esc`
+schließt es wieder.
+
+Der Knopf **❓ Hilfe** in der Kopfzeile (im Dashboard ebenso) fasst dieselben Texte zu einer
+**Kurzanleitung** zusammen, gegliedert in Erste Schritte, Charakterbogen, Würfeln, Zusammen
+spielen und Spielleiter-Dashboard. Aus jedem Popover führt *📖 Ganze Anleitung* direkt zum
+passenden Abschnitt.
+
+36 Themen sind es derzeit, verteilt auf die fünf Gruppen. Besonderes Augenmerk lag auf den
+Stellen, die sich von selbst nicht erklären:
+
+- **Die Karten-Werkzeugleiste des Spielleiters** — rund 20 Bedienelemente in einer Zeile. Bisher
+  erklärten die nur `title`-Tooltips, die beim Hovern erscheinen und auf dem Tablet **gar nicht**.
+  Die Hilfe geht die Leiste in vier Blöcken durch: Karte & Figuren, Werkzeuge, Nebel, Raster.
+  Vor allem der Nebel ist zweistufig — 🔦 Auf *merkt nur vor*, erst „Für Spieler freigeben"
+  deckt wirklich auf.
+- **Slayerpunkte** — wann es automatisch einen Punkt gibt (1 SP je Kampfrunde, in der du Schaden
+  verursachst, nie zwei in derselben Runde) und wofür der Knopf ★ Heilung da ist: Ob der geheilte
+  Kamerad *in diesem Kampf* verletzt wurde, kann das Tool nicht wissen — das weiß nur der Tisch.
+- **Kampfmodifikatoren** — dass sie je nach Probenart unterschiedlich greifen und für gewöhnliche
+  Fertigkeitsproben gar nicht.
+- **Klassenfremde Rüstung**, **Kettenwürfe über 20** und die **EP-Vergabe nach S.88** — überall
+  dort, wo das Tool mehr rechnet, als man ihm ansieht.
+
+Die Texte stehen gesammelt in [`hilfe.js`](hilfe.js) — ein Eintrag im Verzeichnis, und das „?"
+im HTML verweist über `data-hilfe="…"` darauf. Neue Hilfen brauchen also keine Verdrahtung:
+
+```html
+<h3>Talente</h3><button class="help-btn" data-hilfe="talente">?</button>
+```
+
+Die Klicks laufen über Delegation am `document`, deshalb funktionieren „?" auch in Markup, das
+erst zur Laufzeit entsteht — etwa in der Werkzeugleiste der Karte oder im Slayerpunkte-Kasten.
+Ein neues Thema gehört in `HILFE_THEMEN` und erscheint damit automatisch an beiden Orten: im
+Popover und in der Kurzanleitung.
+
 ### 💾 Sitzung speichern und laden (Spielleiter)
 Notizen, Gegner samt Lebenskraft und Position, Figurenplätze auf der Karte, Nebel, Markierungen
 und der Rundenzähler wandern in eine JSON-Datei — wahlweise mit oder ohne Kartenbild. Zusätzlich
@@ -366,6 +408,7 @@ Im Ordner [`beispiele/`](beispiele/) liegen zwei fertige Helden zum Ausprobieren
 | `session.js` | Sitzung des Spielleiters sichern, laden und nach einem Reload retten |
 | `multiplayer.js` | WebRTC-Verbindung und SL-Dashboard |
 | `discord.js` | Optionale Discord-Webhook-Anbindung |
+| `hilfe.js` | Hilfetexte hinter den „?"-Symbolen und die Kurzanleitung |
 | `header.svg` | Kopfbild der Seite — von Hand gezeichnetes SVG in der Farbpalette des Bogens |
 | `regeln/` | Die offiziellen PDFs plus aufbereitete Regel-Referenzen |
 | `beispiele/` | Fertige Charaktere als JSON |

@@ -140,6 +140,7 @@ function renderKartenWerkzeuge() {
     const farben = ['#f0c069', '#6fa84a', '#4a90d4', '#c4569e', '#b8462f'];
 
     leiste.innerHTML = `
+        <button class="help-btn" type="button" data-hilfe="karte-werkzeuge" aria-label="Hilfe: Karten-Werkzeuge" title="Hilfe: Karten-Werkzeuge">?</button>
         <button class="btn btn-sm btn-primary" onclick="document.getElementById('map-file').click()">🖼️ Karte</button>
         ${karteBildDatenUrl ? '<button class="btn btn-sm" onclick="verteileKartenBild()" title="Karte erneut an alle verbundenen Spieler schicken">📤 Senden</button>' : ''}
         <button class="btn btn-sm" onclick="figurenAusKampfUebernehmen()" title="Alle Kampfteilnehmer auf einmal setzen">👥 Aus Kampf</button>
