@@ -1351,6 +1351,12 @@ function rollKampfwert(key, label, pw) {
         // Beim Patzer ersetzt der Hinweis mit Zaubernamen den allgemeinen
         // Kampfpatzer-Text, statt dasselbe zweimal in die Zeile zu schreiben.
         if (cooldownNote) extra = result.patzer ? cooldownNote : extra + (extra ? ' · ' : '') + cooldownNote;
+
+        // Ein erfolgreicher Heilzauber fragt gleich, wem die LK gutkommen
+        if (result.success) {
+            const spell = (appData.spells || []).find(s => s.prepared);
+            if (spell && istHeilzauber(spell)) heilzauberAnwenden(result.total, spell.name);
+        }
     }
 
     // Slayerpunkt für eine Runde, in der Schaden verursacht wurde (S.45)
@@ -1369,6 +1375,47 @@ function istHeilzauber(spell) {
         ? alleZauber().find(z => z.name === spell.name) : null;
     const text = `${spell.name} ${(daten && daten.effekt) || spell.effekt || ''}`;
     return /heil|genes|kurier|wundverschluss|lebenskraft zurück/i.test(text);
+}
+
+// Ein erfolgreicher Heilzauber fragt, wem die Heilung gutkommt - sich selbst
+// oder, ueber den Spielleiter weitergeleitet, einem verbundenen Mitspieler.
+// Es gibt keine direkte Verbindung zwischen Spielern (Stern-Topologie um den
+// Spielleiter herum), deshalb laeuft die Weiterleitung ueber ihn - er muss
+// dabei aber selbst nichts tun, wie beim Angriff auch.
+// Leer lassen ueberspringt die Zuteilung, genau wie bisher.
+function heilzauberAnwenden(betrag, quelle) {
+    const verbunden = typeof hostConnection !== 'undefined' && hostConnection && hostConnection.open;
+    // gruppenStand fuehrt die GANZE Gruppe inklusive der eigenen Person -
+    // fuer die Zielauswahl gehoert man selbst da nicht rein, dafuer gibt es 'S'.
+    const mitspieler = verbunden && typeof gruppenStand !== 'undefined'
+        ? gruppenStand.filter(p => p.name !== characterName()) : [];
+
+    const zeilen = ['S) Mir selbst'];
+    mitspieler.forEach((p, i) => zeilen.push(`${i + 1}) ${p.name}`));
+
+    const eingabe = prompt(
+        `${quelle} heilt ${betrag} LK. Wem gutschreiben?\n\n` + zeilen.join('\n') +
+        `\n\nBuchstabe/Nummer eingeben, leer lassen zum Überspringen:`);
+    if (!eingabe) return;
+
+    const wahl = eingabe.trim().toUpperCase();
+
+    if (wahl === 'S') {
+        const max = lastDerived ? lastDerived.lebenskraft : 0;
+        appData.lkCurrent = Math.min(max, (appData.lkCurrent || 0) + betrag);
+        refreshBoundInputs();
+        renderDerived();
+        scheduleSave();
+        addLog(`${escapeHtml(quelle)}: dir selbst ${betrag} LK gutgeschrieben — jetzt ${appData.lkCurrent}/${max}`, 'erfolg');
+        if (verbunden) sendMultiplayerLog(`heilt sich selbst um ${betrag} LK (${escapeHtml(quelle)}) — jetzt ${appData.lkCurrent}/${max}`, 'erfolg', false);
+        return;
+    }
+
+    const ziel = mitspieler[parseInt(wahl, 10) - 1];
+    if (!ziel || !verbunden) return;
+
+    hostConnection.send({ type: 'healRequest', zielName: ziel.name, betrag, quelle });
+    addLog(`${escapeHtml(quelle)}: ${betrag} LK an <strong>${escapeHtml(ziel.name)}</strong> geschickt.`, 'erfolg');
 }
 
 function startSpellCooldown(result) {

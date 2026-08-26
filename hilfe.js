@@ -355,7 +355,13 @@ const HILFE_THEMEN = {
                Bewusstlose und Tote sind ausgewiesen. Gegner-Werte siehst du bewusst nicht;
                in der Reihenfolge stehen sie nur mit Namen.</p>
                <p><strong>🤫 Flüstern</strong> schickt eine Nachricht, die nur der Spielleiter
-               sieht — die Gegenrichtung zu seinem Flüstern an dich.</p>`
+               sieht — die Gegenrichtung zu seinem Flüstern an dich.</p>
+               <p><strong>Heilzauber wirken auf Mitspieler:</strong> Wirkst du erfolgreich einen
+               Zauber, den der Bogen als Heilung erkennt (z.B. <em>Heilende Hand</em>), fragt er
+               sofort, wem die Lebenskraft gutkommt — dir selbst oder einem Mitspieler aus dieser
+               Liste. Es gibt keine direkte Verbindung zwischen Spielern, deshalb läuft das über
+               den Spielleiter — der muss dafür aber nichts tun, genau wie bei einem Angriff auch.
+               Leer lassen überspringt die Zuteilung.</p>`
     },
     'multiplayer': {
         gruppe: 'runde',
@@ -519,7 +525,10 @@ const HILFE_THEMEN = {
                      zurückgemeldet. Für Fallen, Stürze und Umgebungsschaden, wo es keinen
                      Angriffswurf gibt, schreibst du ein <strong>=</strong> davor
                      (<em>=8</em>) — dann gilt der Wert unverändert als Schaden.</li>
-                 <li><strong>Heilung</strong> und <strong>Schaden ohne Abwehrmöglichkeit</strong>.</li>
+                 <li><strong>Heilung</strong> und <strong>Schaden ohne Abwehrmöglichkeit</strong>.
+                     Heilzauber zwischen Spielern (z.B. ein Heiler, der einen Kameraden heilt)
+                     laufen automatisch über dich als Verteiler — im Log siehst du das als
+                     <em>System</em>-Eintrag, ohne dass du etwas tun musst.</li>
                  <li><strong>🎲 Probe von allen</strong> — beim Spieler ist die passende Probe
                      direkt vorgewählt.</li>
                  <li><strong>✨ EP vergeben</strong> — nach S.88 die EP-Summe der besiegten Gegner

@@ -360,7 +360,32 @@ function handleIncomingData(peerId, payload) {
         const player = connectedPlayers[peerId];
         const name = player ? player.name : 'Unbekannt';
         addGmLog(name, `🤫 <em>flüstert:</em> ${sichererHtml(payload.text)}`, 'neutral');
+    } else if (payload.type === 'healRequest') {
+        behandleHealRequest(peerId, payload);
     }
+}
+
+// Heilzauber zwischen Spielern: es gibt keine direkte Verbindung zwischen
+// ihnen, deshalb leitet der Spielleiter automatisch weiter - ohne selbst
+// etwas tun zu muessen, genau wie bei einem eingehenden Angriff.
+function behandleHealRequest(vonPeerId, payload) {
+    const absender = connectedPlayers[vonPeerId];
+    const absenderName = absender ? absender.name : 'Jemand';
+    const betrag = parseInt(payload.betrag, 10) || 0;
+    if (!betrag) return;
+
+    const zielEintrag = Object.entries(connectedPlayers).find(([, p]) => p.name === payload.zielName);
+    if (!zielEintrag) {
+        addGmLog('System', `${escapeHtml(absenderName)} wollte <strong>${escapeHtml(payload.zielName)}</strong> heilen, ist aber nicht mehr verbunden.`, 'fehlschlag');
+        sendToPlayer(vonPeerId, { type: 'message', text: `${payload.zielName} ist nicht mehr verbunden — die Heilung kam nicht an.` });
+        return;
+    }
+
+    const [zielPeerId] = zielEintrag;
+    // Derselbe Nachrichtentyp wie bei gmHealPlayer — die Zielseite behandelt
+    // beides identisch (Kappung aufs Maximum, eigenes Log, Echo an den SL).
+    sendToPlayer(zielPeerId, { type: 'heal', amount: betrag });
+    addGmLog('System', `<strong>${escapeHtml(absenderName)}</strong> heilt <strong>${escapeHtml(payload.zielName)}</strong> um ${betrag} LK (${escapeHtml(payload.quelle || 'Zauber')}).`, 'erfolg');
 }
 
 // --- Der Spielleiter als Verteiler ------------------------------------------
@@ -376,6 +401,9 @@ function sendeGruppenliste() {
         name: p.name,
         klasse: p.klasse,
         stufe: p.stufe,
+        // Klein genug, um es bei jeder Aenderung mitzuschicken - dieselbe Idee
+        // wie beim Spielleiter-Dashboard, nur zum Wiedererkennen der Mitspieler
+        portrait: p.portrait || '',
         lkCurrent: p.lkCurrent,
         lkMax: p.lkMax,
         bewusstlos: p.lkCurrent <= (p.bewusstlosAb || 0),
@@ -1136,8 +1164,13 @@ function renderGruppe() {
         const anteil = p.lkMax ? Math.max(0, Math.min(100, (p.lkCurrent / p.lkMax) * 100)) : 0;
         const zustand = p.tot ? '<span style="color:var(--fail)">tot</span>'
             : p.bewusstlos ? '<span style="color:var(--fail)">bewusstlos</span>' : '';
+        const farbe = colorForPlayer(p.name);
+        const avatar = p.portrait
+            ? `<img class="gm-portrait" src="${p.portrait}" alt="" style="border-color:${farbe}">`
+            : `<span class="gm-portrait gm-portrait-leer" style="border-color:${farbe};color:${farbe}">${escapeHtml((p.name || '?').trim().slice(0, 2).toUpperCase())}</span>`;
         return `<div class="gruppen-eintrag">
             <div class="gruppen-kopf">
+                ${avatar}
                 <strong>${escapeHtml(p.name)}</strong>
                 <span class="hint">${escapeHtml(p.klasse || '')}${p.stufe ? ' · Stufe ' + p.stufe : ''}</span>
                 <span style="margin-left:auto">${p.lkCurrent}/${p.lkMax} ${zustand}</span>
