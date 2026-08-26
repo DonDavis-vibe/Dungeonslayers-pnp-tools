@@ -62,7 +62,7 @@ select option { background: #1c1712; }
        Knöpfe lesbar bleiben. Die Leiste wird dadurch nicht höher. */
     background:
         linear-gradient(180deg, rgba(28, 21, 13, 0.82), rgba(20, 16, 11, 0.88)),
-        url('header.svg?v=20260825g') center / cover no-repeat,
+        url('header.svg?v=20260825h') center / cover no-repeat,
         linear-gradient(180deg, rgba(40, 30, 18, 0.95), rgba(24, 19, 13, 0.9));
     border-bottom: 1px solid var(--panel-border-strong);
     position: sticky;
@@ -196,6 +196,14 @@ select option { background: #1c1712; }
 .kw-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-dim); }
 .kw-value { font-size: 1.7rem; font-weight: bold; color: var(--accent-bright); font-family: Georgia, serif; line-height: 1.2; }
 .kw-formula { font-size: 0.65rem; color: var(--text-dim); opacity: 0.75; }
+/* Herkunft des Zauberbonus unter dem Wert — sonst sieht ein fehlender ZB
+   wie ein Rechenfehler aus, obwohl er zum Zaubertyp schlicht nicht passt. */
+.kw-zb {
+    font-size: 0.62rem;
+    line-height: 1.25;
+    color: var(--text-dim);
+    margin-top: 0.2rem;
+}
 .kw-talent { color: var(--accent); opacity: 1; font-weight: 600; }
 
 /* Lebenskraft */

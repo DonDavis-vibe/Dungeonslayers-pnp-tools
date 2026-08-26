@@ -68,7 +68,7 @@ function schlaeftInMetall(equipment) {
 // ruesttraegerRang mindert den Laufen-Malus der Rüstung um 0,5m je Rang (S.40).
 // rules/geruestetRang dienen dazu, klassenfremde Rüstung zu erkennen (S.41):
 // deren PA-Malus aufs Zaubern wird vervierfacht und senkt zusätzlich die Agilität.
-function armorTotals(equipment, ruesttraegerRang = 0, rules = null, geruestetRang = 0, boni = {}) {
+function armorTotals(equipment, ruesttraegerRang = 0, rules = null, geruestetRang = 0, boni = {}, ruestzaubererRang = 0) {
     const totals = { pa: 0, laufenMod: 0, initMod: 0, auraMod: 0, nonClothPa: 0, fremdePa: 0, fremdeTeile: [] };
     ['koerper', 'helm', 'schienen', 'schild'].forEach(slot => {
         const armor = findArmor(equipment[slot]);
@@ -93,6 +93,11 @@ function armorTotals(equipment, ruesttraegerRang = 0, rules = null, geruestetRan
     // Der Malus wird gemindert, kann aber nicht zum Bonus werden
     if (ruesttraegerRang && totals.laufenMod < 0) {
         totals.laufenMod = Math.min(0, totals.laufenMod + 0.5 * ruesttraegerRang);
+    }
+    // Rüstzauberer ignoriert je Talentrang 2 Punkte Panzerungsmalus beim
+    // Zaubern und Zielzaubern (Regelwerk S.40) — höchstens bis auf 0.
+    if (ruestzaubererRang) {
+        totals.nonClothPa = Math.max(0, totals.nonClothPa - 2 * ruestzaubererRang);
     }
     return totals;
 }
@@ -146,6 +151,16 @@ const DS4_TALENT_SITUATIV = {
     'Raserei': { wert: 'Schlagen', proRang: 2, bedingung: 'je Rang −1 Abwehr für +2 Schlagen, rundenweise umschichtbar' },
     // Waffenartgebunden — welche Art gemeint ist, steht in der Notiz am Talent
     'Waffenkenner': { wert: 'Schlagen', proRang: 1, bedingung: 'nur mit der je Rang gewählten Waffenart (dazu Gegnerabwehr −1)' },
+    // Zaubertalente, die nur für bestimmte Arten von Zaubern gelten. Welcher
+    // Spruch dazugehört, steht nicht als Merkmal in den Zauberdaten, deshalb
+    // bleibt die Entscheidung am Tisch — der Bogen erinnert nur daran.
+    'Fürsorger': { wert: 'Zaubern/Zielzauber', proRang: 1, bedingung: 'auf alle Heil- und Schutzzauber' },
+    'Feuermagier': { wert: 'Zaubern/Zielzauber', proRang: 1, bedingung: 'auf alle Zauber mit Feuereffekt' },
+    'Blitzmacher': { wert: 'Zaubern/Zielzauber', proRang: 1, bedingung: 'auf alle Zauber, die Blitzschaden verursachen' },
+    'Herr der Elemente': { wert: 'Zaubern/Zielzauber', proRang: 1, bedingung: 'auf Zauber mit Erd-, Feuer-, Luft- oder Wasserschaden' },
+    'Nekromantie': { wert: 'Zaubern/Zielzauber', proRang: 2, bedingung: 'auf Zauber, die Untote bannen, erwecken oder kontrollieren' },
+    'Manipulator': { wert: 'Zaubern/Zielzauber', proRang: 1, bedingung: 'auf geistesbeeinflussende Zauber (im Zauberpanel gekennzeichnet)' },
+    'Magieresistent': { wert: 'gegnerische Zauber', proRang: -2, bedingung: 'gegen den Charakter gerichtet, nicht bei Elementarschaden' },
     'Perfektion': { wert: 'Schlagen', proRang: 1, bedingung: 'einmal pro Kampf je Rang, nur mit einer per Waffenkenner beherrschten Waffenart' }
 };
 
@@ -285,10 +300,19 @@ function todesGrenze(koerper) {
 //         eigenschaften: {staerke, haerte, bewegung, geschick, verstand, aura},
 //         equipment: {melee, ranged, koerper, helm, schienen, schild},
 //         zauberZb, zauberTyp: 'normal' | 'ziel', armorRules }
+// "Meister seiner Klasse" steigert das primäre Attribut der Grundklasse um 1.
+const DS4_PRIMAERATTRIBUT = { krieger: 'koerper', spaeher: 'agilitaet', zauberwirker: 'geist' };
+
 function computeDerived(char) {
-    const attr = char.attribute;
-    const eig = char.eigenschaften;
     const talents = char.talents || [];
+
+    // Das Primärattribut fließt in alles Abgeleitete ein, deshalb vor der Rechnung
+    const attr = Object.assign({}, char.attribute);
+    if (talentRang(talents, 'Meister seiner Klasse')) {
+        const primaer = DS4_PRIMAERATTRIBUT[char.klasse];
+        if (primaer) attr[primaer] = (attr[primaer] || 0) + 1;
+    }
+    const eig = char.eigenschaften;
     const { boni, herkunft } = talentBoni(talents);
 
     const geruestet = talentRang(talents, 'Gerüstet');
@@ -296,7 +320,8 @@ function computeDerived(char) {
     const eqBoni = char.equipmentBoni || {};
     const eqBonus = (slot, feld) => (eqBoni[slot] && eqBoni[slot][feld]) || 0;
     const armor = armorTotals(char.equipment || {}, talentRang(talents, 'Rüstträger'),
-                              char.armorRules || null, geruestet, eqBoni);
+                              char.armorRules || null, geruestet, eqBoni,
+                              talentRang(talents, 'Rüstzauberer'));
     const melee = findWeapon(char.equipment && char.equipment.melee);
     const ranged = findWeapon(char.equipment && char.equipment.ranged);
 
@@ -318,8 +343,14 @@ function computeDerived(char) {
     // Waffenbonus UND Initiative)
     const weaponInit = (melee ? (melee.initMod || 0) + eqBonus('melee', 'wb') : 0)
                      + (ranged ? (ranged.initMod || 0) + eqBonus('ranged', 'wb') : 0);
-    // Manche Waffen helfen beim Zielzauber, solange sie geführt werden (Kampfstab +1)
-    const weaponZielzauber = (melee ? melee.zielzauberMod || 0 : 0) + (ranged ? ranged.zielzauberMod || 0 : 0);
+    // Manche Waffen helfen beim Zielzauber, solange sie geführt werden (Kampfstab +1).
+    // Dazu die Talente Stabbindung (an einen Kampfstab) und Zauberwaffe (an eine
+    // Nahkampfwaffe): je Rang +1 auf Zielzauber, solange die Waffe in der Hand ist.
+    let weaponZielzauber = (melee ? melee.zielzauberMod || 0 : 0) + (ranged ? ranged.zielzauberMod || 0 : 0);
+    if (melee) {
+        weaponZielzauber += melee.name === 'Kampfstab' ? talentRang(talents, 'Stabbindung') : 0;
+        weaponZielzauber += talentRang(talents, 'Zauberwaffe');
+    }
 
     return {
         // bonusLk: über Lernpunkte dauerhaft gesteigerte Lebenskraft

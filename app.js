@@ -493,14 +493,29 @@ function renderDerived() {
         const value = def.unit === 'm' ? raw.toFixed(1).replace('.', ',').replace(',0', '') : raw;
         const talentQuellen = (derived.talentHerkunft || {})[def.key] || [];
 
+        // Bei Zaubern/Zielzauber sichtbar machen, ob der Zauberbonus drinsteckt.
+        // Der ZB gehört nur auf den Kampfwert, mit dem der vorbereitete Spruch
+        // auch gewirkt wird — ohne Hinweis sieht das nach einem Fehler aus.
+        let zbHinweis = '';
+        if (def.key === 'zaubern' || def.key === 'zielzauber') {
+            const zauber = preparedSpellInfo();
+            const passt = zauber.typ === (def.key === 'zielzauber' ? 'ziel' : 'normal');
+            if (!zauber.name) zbHinweis = 'kein Zauber vorbereitet — ZB 0';
+            else if (!passt) zbHinweis = `ZB 0 — „${zauber.name}" wird über ${def.key === 'zaubern' ? 'Zielzauber' : 'Zaubern'} gewirkt`;
+            else if (zauber.unklar) zbHinweis = `„${zauber.name}": ZB ${zauber.rohZb} — formelhaft, selbst einrechnen`;
+            else zbHinweis = `inkl. ZB ${zauber.zb > 0 ? '+' : ''}${zauber.zb} von „${zauber.name}"`;
+        }
+
         const card = document.createElement('div');
         card.className = 'kw-card' + (def.rollable ? ' rollable' : '');
         card.innerHTML = `
             <div class="kw-label">${def.label}</div>
             <div class="kw-value">${value}${def.unit || ''}</div>
-            <div class="kw-formula">${def.formula}${talentQuellen.length ? ' <span class="kw-talent">+ Talent</span>' : ''}</div>`;
+            <div class="kw-formula">${def.formula}${talentQuellen.length ? ' <span class="kw-talent">+ Talent</span>' : ''}</div>
+            ${zbHinweis ? `<div class="kw-zb">${escapeHtml(zbHinweis)}</div>` : ''}`;
 
-        const talentText = talentQuellen.length ? `\nTalente: ${talentQuellen.join(', ')}` : '';
+        const talentText = (talentQuellen.length ? `\nTalente: ${talentQuellen.join(', ')}` : '') +
+                           (zbHinweis ? `\n${zbHinweis}` : '');
         if (def.rollable) {
             card.title = `${def.label}-Probe würfeln (PW ${raw})${talentText}`;
             card.addEventListener('click', () => rollKampfwert(def.key, def.label, raw));
