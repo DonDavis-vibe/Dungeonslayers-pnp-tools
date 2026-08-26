@@ -110,8 +110,12 @@ verteilt ist, und die Plus-Knöpfe sperren an den Obergrenzen.
 - **Rüstzeiten** — wie viele Aktionen das Anlegen der getragenen Rüstung kostet (2 je Punkt
   Panzerung, Helme frei) und der Hinweis auf die KÖR+HÄ-Probe, wenn jemand in Metallrüstung schläft.
 - **Verbesserungen und Verzauberungen** je Ausrüstungsplatz: ein Bonus auf Waffenbonus bzw.
-  Panzerung plus freie Notiz für eingebettete Zauber oder freie Aktionen. Der Bonus fließt in
-  Schlagen, Schießen und Abwehr ein — für die Rüstzeit zählt er regelkonform nicht mit (S.44).
+  Panzerung plus freie Notiz für eingebettete Zauber oder freie Aktionen. Die Sonderregeln für
+  magische Boni aus S.102 sind dabei umgesetzt: Ein **Waffenbonus** zählt auf Waffenbonus *und*
+  Initiative und wird bei Treffern zusätzlich von der Abwehr des Gegners abgezogen. Ein
+  **Rüstungsbonus** zählt auf die Panzerung, wirkt aber ausdrücklich **nicht** als Malus auf
+  Zaubern und Zielzauber und mindert je Punkt den Initiative-Malus um 1 und den Laufen-Malus um
+  0,5m. Für die Rüstzeit zählen magische Boni nicht mit (S.44).
 - Inventar, Münzen und Notizen.
 
 ### ✨ Zaubersprüche (129 Stück, vollständig aus dem Regelwerk)
@@ -490,7 +494,7 @@ Bildschirmgröße und Zoomstufe und ist klein genug, um ihn bei jeder Bewegung z
 
 ### Nach einer Änderung: Versionsnummer hochzählen
 
-Alle eigenen Dateien werden mit einem Versionsparameter eingebunden (`app.js?v=20260825f`). Wer
+Alle eigenen Dateien werden mit einem Versionsparameter eingebunden (`app.js?v=20260825g`). Wer
 etwas ändert, zählt die Version in `index.html` hoch — sonst behalten Besucher die alte Fassung
 aus dem Browser-Cache.
 

@@ -73,14 +73,17 @@ function armorTotals(equipment, ruesttraegerRang = 0, rules = null, geruestetRan
     ['koerper', 'helm', 'schienen', 'schild'].forEach(slot => {
         const armor = findArmor(equipment[slot]);
         if (!armor) return;
-        // Verbesserungen und Verzauberungen zählen auf die Panzerung
+        // Magischer Rüstungsbonus (Regelwerk S.102): zählt auf die Panzerung,
+        // wirkt aber NICHT als Malus auf Zaubern/Zielzauber und mindert je Punkt
+        // den Initiative-Malus um 1 und den Laufen-Malus um 0,5m — beides nur
+        // bis 0, ein Bonus wird daraus nicht.
         const bonusPa = (boni[slot] && boni[slot].pa) || 0;
         totals.pa += armor.pa + bonusPa;
-        totals.laufenMod += armor.laufenMod || 0;
-        totals.initMod += armor.initMod || 0;
+        totals.laufenMod += Math.min(0, (armor.laufenMod || 0) + 0.5 * bonusPa);
+        totals.initMod += Math.min(0, (armor.initMod || 0) + bonusPa);
         totals.auraMod += armor.auraMod || 0;
         // Nur Stoff (Robe) behindert das Zaubern nicht — Regelwerk S.41
-        if (armor.typ !== 'stoff') totals.nonClothPa += armor.pa + bonusPa;
+        if (armor.typ !== 'stoff') totals.nonClothPa += armor.pa;
         if (rules && !ruestungErlaubt(armor, rules, geruestetRang)) {
             totals.fremdePa += armor.pa;
             totals.fremdeTeile.push(armor.name);
@@ -105,7 +108,11 @@ function weaponBonus(weapon) {
 // gegen diesen Angriff — z.B. Langschwert −2, Bihänder −4, waffenlos +5.
 function gegnerabwehr(char, slot) {
     const weapon = findWeapon(char.equipment && char.equipment[slot]);
-    return weapon && weapon.gaMod ? weapon.gaMod : 0;
+    const basis = weapon && weapon.gaMod ? weapon.gaMod : 0;
+    // Ein magischer Waffenbonus wird bei Treffern zusätzlich von der Abwehr
+    // des Gegners abgezogen (Regelwerk S.102).
+    const magisch = ((char.equipmentBoni || {})[slot] || {}).wb || 0;
+    return basis - magisch;
 }
 
 // --- Talentboni -------------------------------------------------------------
@@ -307,7 +314,10 @@ function computeDerived(char) {
 
     // Zwerge: Volksfähigkeit "Zäh" gibt +1 Abwehr
     const zaehBonus = char.volk === 'zwerg' ? 1 : 0;
-    const weaponInit = (melee ? melee.initMod || 0 : 0) + (ranged ? ranged.initMod || 0 : 0);
+    // Waffen-Initiative inklusive magischem Bonus (S.102: der Bonus zählt auf
+    // Waffenbonus UND Initiative)
+    const weaponInit = (melee ? (melee.initMod || 0) + eqBonus('melee', 'wb') : 0)
+                     + (ranged ? (ranged.initMod || 0) + eqBonus('ranged', 'wb') : 0);
     // Manche Waffen helfen beim Zielzauber, solange sie geführt werden (Kampfstab +1)
     const weaponZielzauber = (melee ? melee.zielzauberMod || 0 : 0) + (ranged ? ranged.zielzauberMod || 0 : 0);
 
