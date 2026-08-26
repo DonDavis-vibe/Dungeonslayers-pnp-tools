@@ -360,6 +360,7 @@ function handleIncomingData(peerId, payload) {
         const player = connectedPlayers[peerId];
         const name = player ? player.name : 'Unbekannt';
         addGmLog(name, `🤫 <em>flüstert:</em> ${sichererHtml(payload.text)}`, 'neutral');
+        if (typeof spielSound === 'function') spielSound('fluestern');
     } else if (payload.type === 'healRequest') {
         behandleHealRequest(peerId, payload);
     }
@@ -964,11 +965,11 @@ function gmHealPlayer(peerId, amount) {
 function gmSendMessage(peerId, text) {
     if (!text) return;
     if (peerId) {
-        sendToPlayer(peerId, { type: 'message', text });
+        sendToPlayer(peerId, { type: 'message', text, ansage: false });
         const player = connectedPlayers[peerId];
         addGmLog('Spielleiter', `Flüstern an <strong>${escapeHtml(player ? player.name : '?')}</strong>: ${escapeHtml(text)}`, 'neutral');
     } else {
-        broadcastToPlayers({ type: 'message', text });
+        broadcastToPlayers({ type: 'message', text, ansage: true });
         addGmLog('Spielleiter', `An alle: ${escapeHtml(text)}`, 'neutral');
         // Ansagen an alle gehören auch in den Discord-Kanal, Flüstern nicht
         if (typeof discordPostEreignis === 'function') discordPostEreignis(text, 'neutral');
@@ -1033,6 +1034,7 @@ function handleGmCommand(payload) {
             refreshBoundInputs();
             renderDerived();
             scheduleSave();
+            if (typeof spielSound === 'function') spielSound('heilung');
             addLog(`Geheilt um ${payload.amount} LK — jetzt ${appData.lkCurrent}/${max}`, 'erfolg');
             sendMultiplayerLog(`wird um ${payload.amount} LK geheilt — jetzt ${appData.lkCurrent}/${max}`, 'erfolg');
             break;
@@ -1040,6 +1042,7 @@ function handleGmCommand(payload) {
         case 'message':
             showGmMessage(sichererHtml(payload.text));
             addLog(`<strong>Spielleiter:</strong> ${escapeHtml(payload.text)}`, 'neutral');
+            if (typeof spielSound === 'function') spielSound(payload.ansage ? 'ansage' : 'fluestern');
             break;
         case 'requestProbe': {
             showGmMessage(`Der Spielleiter fordert eine <strong>${escapeHtml(payload.probeName)}</strong>-Probe.`);
@@ -1087,6 +1090,7 @@ function handleGmCommand(payload) {
             break;
         case 'combat': {
             const warAmZug = kampfStand.amZug;
+            const warAktiv = kampfStand.aktiv;
             kampfStand = {
                 aktiv: !!payload.aktiv,
                 runde: payload.runde || 0,
@@ -1094,8 +1098,10 @@ function handleGmCommand(payload) {
                 amZug: (payload.reihenfolge || []).some(e => e.amZug && e.name === characterName())
             };
             // Nur beim Wechsel melden, nicht bei jeder Aktualisierung
+            if (kampfStand.aktiv && !warAktiv && typeof spielSound === 'function') spielSound('kampf-beginnt');
             if (kampfStand.amZug && !warAmZug) {
                 showGmMessage('<strong>Du bist am Zug!</strong> Runde ' + kampfStand.runde);
+                if (typeof spielSound === 'function') spielSound('dein-zug');
             }
             renderGruppe();
             break;
@@ -1113,6 +1119,7 @@ function applyIncomingDamage(amount) {
     renderDerived();
     scheduleSave();
     syncMultiplayerState();
+    if (typeof spielSound === 'function') spielSound('schaden');
     return vorher;
 }
 

@@ -22,6 +22,25 @@ const HILFE_THEMEN = {
 
     // ---------- Erste Schritte ----------
 
+    'sounds': {
+        gruppe: 'start',
+        titel: 'Hinweistöne',
+        text: `<p>Sechs kurze Töne (1-3 Sekunden) machen auf Dinge aufmerksam, die man sonst
+               leicht übersieht — allen voran, dass überhaupt ein Kampf begonnen hat:</p>
+               <ul>
+                 <li>Ein Kampf beginnt</li>
+                 <li>Du bist am Zug</li>
+                 <li>Du erleidest Schaden</li>
+                 <li>Du wirst geheilt</li>
+                 <li>Der Spielleiter flüstert dir etwas oder macht eine Ansage an alle</li>
+               </ul>
+               <p><strong>🔊/🔇</strong> in der Kopfzeile schaltet alle Töne auf einmal stumm —
+               die Einstellung bleibt in diesem Browser gespeichert.</p>
+               <p>Browser blockieren Sound, bevor du überhaupt mit der Seite interagiert hast.
+               Ein Klick irgendwo auf der Seite (z.B. Raum eröffnen oder beitreten) reicht, danach
+               spielen die Töne normal.</p>`
+    },
+
     'ueberblick': {
         gruppe: 'start',
         titel: 'Was ist das hier?',
