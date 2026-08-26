@@ -513,8 +513,12 @@ const HILFE_THEMEN = {
                bei dir).</p>
                <p>Von hier aus schickst du:</p>
                <ul>
-                 <li><strong>Angriff</strong> — der Spieler würfelt automatisch seine Abwehr, der
-                     Restschaden wird angerechnet und zurückgemeldet.</li>
+                 <li><strong>Angriff</strong> — du gibst den <strong>Probenwert</strong> ein, das
+                     Tool würfelt den Angriff aus (mit Patzer und Immersieg), der Spieler würfelt
+                     automatisch seine Abwehr, und der Restschaden wird angerechnet und
+                     zurückgemeldet. Für Fallen, Stürze und Umgebungsschaden, wo es keinen
+                     Angriffswurf gibt, schreibst du ein <strong>=</strong> davor
+                     (<em>=8</em>) — dann gilt der Wert unverändert als Schaden.</li>
                  <li><strong>Heilung</strong> und <strong>Schaden ohne Abwehrmöglichkeit</strong>.</li>
                  <li><strong>🎲 Probe von allen</strong> — beim Spieler ist die passende Probe
                      direkt vorgewählt.</li>

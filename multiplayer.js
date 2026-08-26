@@ -532,9 +532,11 @@ function renderGmDashboard() {
     });
 
     grid.querySelectorAll('[data-card-attack]').forEach(btn => btn.addEventListener('click', () => {
-        const eingabe = parseDamageInput(prompt(
-            'Schaden des Angriffs (Wurfergebnis) — der Spieler würfelt selbst die Abwehr.\n' +
-            'Gegnerabwehr optional dahinter, z.B. "14 -2":'));
+        const eingabe = parseAngriffsEingabe(prompt(
+            'Angriff auf den Spieler — gib den PROBENWERT ein, er wird ausgewürfelt.\n' +
+            'Der Spieler würfelt danach selbst seine Abwehr.\n' +
+            'Gegnerabwehr optional dahinter, z.B. "14 -2".\n' +
+            'Fester Schaden ohne Wurf (Falle, Sturz): "=" davor, z.B. "=8":'));
         if (eingabe) gmAttackPlayer(btn.dataset.cardAttack, eingabe.schaden, 'Spielleiter', eingabe.ga);
     }));
     grid.querySelectorAll('[data-card-heal]').forEach(btn => btn.addEventListener('click', () => {

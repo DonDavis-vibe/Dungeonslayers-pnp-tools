@@ -450,6 +450,36 @@ function parseDamageInput(text) {
     return { schaden, ga };
 }
 
+// Wenn der SPIELLEITER angreift, ist die Eingabe ein PROBENWERT, der hier
+// ausgewuerfelt wird - genau wie beim NSC-Angriff aus dem Kampf-Tracker.
+// Vorher nahm dieser Weg eine feste Zahl entgegen und sah damit aus, als
+// duerfte der Spielleiter den Angriffswurf ueberspringen.
+// Fuer Fallen, Stuerze und Umgebungsschaden, wo es keinen Angriffswurf gibt,
+// laesst ein vorangestelltes "=" den Wert unveraendert durch.
+function parseAngriffsEingabe(text) {
+    if (!text) return null;
+    const roh = String(text).trim();
+    if (roh.startsWith('=')) {
+        const fest = parseDamageInput(roh.slice(1));
+        if (fest) fest.gewuerfelt = false;
+        return fest;
+    }
+
+    const basis = parseDamageInput(roh);
+    if (!basis) return null;
+
+    const slayend = typeof slayendeWuerfelAktiv === 'function' && slayendeWuerfelAktiv();
+    const result = rollProbe(basis.schaden, { label: 'Spielleiter: Angriff', slayend });
+    showProbeResult(result, 'gm-');
+
+    if (!result.success) {
+        const extra = result.patzer ? ` · ${DS4_KAMPFPATZER.schlagen}` : '';
+        addGmLog('Spielleiter', `Angriff misslungen (PW ${basis.schaden}, Wurf ${result.rolls.map(r => r.die).join('+')}) — ${DS4_STATUS_TEXT[result.status]}${extra}`, result.status);
+        return null;
+    }
+    return { schaden: result.total, ga: basis.ga, gewuerfelt: true };
+}
+
 function damageNpc(npcId, amount) {
     const npc = combatants.find(c => c.id === npcId);
     if (!npc) return;
@@ -601,9 +631,11 @@ function wireCombatControls(box) {
 
     box.querySelectorAll('[data-pattack]').forEach(btn => {
         btn.addEventListener('click', () => {
-            const eingabe = parseDamageInput(prompt(
-                'Schaden des Angriffs (Wurfergebnis) — der Spieler würfelt selbst die Abwehr.\n' +
-                'Gegnerabwehr optional dahinter, z.B. "14 -2":'));
+            const eingabe = parseAngriffsEingabe(prompt(
+                'Angriff auf den Spieler — gib den PROBENWERT ein, er wird ausgewürfelt.\n' +
+                'Der Spieler würfelt danach selbst seine Abwehr.\n' +
+                'Gegnerabwehr optional dahinter, z.B. "14 -2".\n' +
+                'Fester Schaden ohne Wurf (Falle, Sturz): "=" davor, z.B. "=8":'));
             if (eingabe) gmAttackPlayer(btn.dataset.pattack, eingabe.schaden, 'Spielleiter', eingabe.ga);
         });
     });
