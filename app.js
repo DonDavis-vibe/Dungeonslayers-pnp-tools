@@ -923,7 +923,8 @@ function wireListInputs(container) {
     });
 }
 
-function addSpell() { appData.spells.push({ id: uid(), name: '', zb: 0, abklingzeit: '', effekt: '', prepared: false }); renderSpells(); onDataChanged(); }
+// addSpell() steht in spellPicker.js — dort mit Zugangsprüfung gegen zauber.js
+// und mit Rückfall auf einen Freitext-Eintrag, falls die Zauberdaten fehlen.
 function addItem() { appData.inventory.push({ id: uid(), name: '', menge: 1, notiz: '' }); renderInventory(); onDataChanged(); }
 
 // --- Würfeln ----------------------------------------------------------------
