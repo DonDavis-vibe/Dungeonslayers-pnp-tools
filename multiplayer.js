@@ -110,6 +110,8 @@ function setConnectionBadge(zustand, roomCode) {
     if (!badge || !text) return;
 
     badge.classList.remove('visible', 'connected', 'connecting', 'lost');
+    // Das Gruppen-Panel haengt an der Verbindung und muss mitgehen
+    if (typeof renderGruppe === 'function') renderGruppe();
 
     if (!zustand) {
         badge.removeAttribute('title');
@@ -229,6 +231,8 @@ function hostMultiplayerSession(preferredCodeArg) {
                 delete clientConnections[conn.peer];
                 delete connectedPlayers[conn.peer];
                 renderGmDashboard();
+                // Die Verbliebenen sollen sehen, dass jemand weg ist
+                sendeGruppenliste();
                 addGmLog('System', `${name} hat den Raum verlassen.`, 'neutral');
             });
             conn.on('error', () => {
@@ -345,11 +349,63 @@ function handleIncomingData(peerId, payload) {
             if (typeof hausregeln !== 'undefined' && typeof hausregelnAktiv === 'function' && hausregelnAktiv()) {
                 sendToPlayer(peerId, { type: 'hausregeln', regeln: hausregeln });
             }
+            if (typeof combatActive !== 'undefined' && combatActive) sendeKampfstand();
         }
+        // Die Runde soll voneinander wissen: jede Aenderung geht als Gruppenliste zurueck
+        sendeGruppenliste();
     } else if (payload.type === 'roll') {
         const player = connectedPlayers[peerId];
         addGmLog(player ? player.name : 'Unbekannt', sichererHtml(payload.message), sichererStatus(payload.status));
+    } else if (payload.type === 'whisper') {
+        const player = connectedPlayers[peerId];
+        const name = player ? player.name : 'Unbekannt';
+        addGmLog(name, `🤫 <em>flüstert:</em> ${sichererHtml(payload.text)}`, 'neutral');
     }
+}
+
+// --- Der Spielleiter als Verteiler ------------------------------------------
+//
+// Bisher floss alles nur in eine Richtung: Spieler meldeten sich beim SL, und der
+// behielt es fuer sich. Fuer Mitspieler-Uebersicht und Kampfanzeige muss er das
+// Gesammelte zurueckgeben. Beides bewusst schlank gehalten - keine Portraits,
+// keine Inventare, nur was am Tisch sichtbar waere.
+
+function sendeGruppenliste() {
+    if (!isGmMode) return;
+    const gruppe = Object.values(connectedPlayers).map(p => ({
+        name: p.name,
+        klasse: p.klasse,
+        stufe: p.stufe,
+        lkCurrent: p.lkCurrent,
+        lkMax: p.lkMax,
+        bewusstlos: p.lkCurrent <= (p.bewusstlosAb || 0),
+        tot: !!p.tot
+    }));
+    broadcastToPlayers({ type: 'party', gruppe });
+}
+
+// Wer ist dran, in welcher Runde, und wie ist die Reihenfolge? Ohne das konnten
+// Spieler nicht einmal erkennen, DASS ein Kampf laeuft.
+function sendeKampfstand() {
+    if (!isGmMode) return;
+    if (typeof combatants === 'undefined') return;
+
+    const aktiv = typeof combatActive !== 'undefined' && combatActive;
+    const reihenfolge = aktiv ? combatants.map((c, i) => ({
+        name: c.name,
+        istSpieler: c.type === 'player',
+        amZug: i === turnIndex,
+        // Gegner-LK geht die Spieler nichts an, eigene Leute schon
+        lkCurrent: c.type === 'player' ? c.lkCurrent : null,
+        lkMax: c.type === 'player' ? c.lkMax : null
+    })) : [];
+
+    broadcastToPlayers({
+        type: 'combat',
+        aktiv,
+        runde: typeof currentRound === 'number' ? currentRound : 0,
+        reihenfolge
+    });
 }
 
 // --- GM Dashboard Rendering -------------------------------------------------
@@ -995,6 +1051,25 @@ function handleGmCommand(payload) {
             // Der Spielleiter gibt die Regeln der Runde vor
             if (typeof hausregelnEmpfangen === 'function') hausregelnEmpfangen(payload.regeln);
             break;
+        case 'party':
+            gruppenStand = payload.gruppe || [];
+            renderGruppe();
+            break;
+        case 'combat': {
+            const warAmZug = kampfStand.amZug;
+            kampfStand = {
+                aktiv: !!payload.aktiv,
+                runde: payload.runde || 0,
+                reihenfolge: payload.reihenfolge || [],
+                amZug: (payload.reihenfolge || []).some(e => e.amZug && e.name === characterName())
+            };
+            // Nur beim Wechsel melden, nicht bei jeder Aktualisierung
+            if (kampfStand.amZug && !warAmZug) {
+                showGmMessage('<strong>Du bist am Zug!</strong> Runde ' + kampfStand.runde);
+            }
+            renderGruppe();
+            break;
+        }
     }
 }
 
@@ -1009,6 +1084,77 @@ function applyIncomingDamage(amount) {
     scheduleSave();
     syncMultiplayerState();
     return vorher;
+}
+
+// --- Gruppe und Kampf beim Spieler ------------------------------------------
+
+let gruppenStand = [];
+let kampfStand = { aktiv: false, runde: 0, reihenfolge: [], amZug: false };
+
+function renderGruppe() {
+    const panel = document.getElementById('panel-gruppe');
+    const kampfBox = document.getElementById('kampf-status');
+    const liste = document.getElementById('gruppen-liste');
+    if (!panel || !kampfBox || !liste) return;
+
+    // Ohne Verbindung gibt es weder Gruppe noch Kampf
+    const verbunden = !!(hostConnection && hostConnection.open);
+    panel.style.display = verbunden ? '' : 'none';
+    if (!verbunden) return;
+
+    if (kampfStand.aktiv) {
+        const dran = kampfStand.reihenfolge.find(e => e.amZug);
+        const reihe = kampfStand.reihenfolge.map(e => {
+            const klassen = ['kampf-eintrag'];
+            if (e.amZug) klassen.push('am-zug');
+            if (e.name === characterName()) klassen.push('ich');
+            const lk = (e.lkCurrent !== null && e.lkCurrent !== undefined)
+                ? ` <span class="hint">${e.lkCurrent}/${e.lkMax}</span>` : '';
+            return `<div class="${klassen.join(' ')}">${e.amZug ? '▶ ' : ''}${escapeHtml(e.name)}${lk}</div>`;
+        }).join('');
+
+        kampfBox.innerHTML = `
+            <div class="kampf-kopf ${kampfStand.amZug ? 'ich-dran' : ''}">
+                ⚔️ <strong>Kampf läuft</strong> — Runde ${kampfStand.runde}
+                ${kampfStand.amZug
+                    ? '<div class="kampf-dran">Du bist am Zug!</div>'
+                    : `<div class="hint">Am Zug: ${dran ? escapeHtml(dran.name) : '—'}</div>`}
+            </div>
+            <div class="kampf-reihenfolge">${reihe}</div>`;
+    } else {
+        kampfBox.innerHTML = '<div class="hint">Gerade läuft kein Kampf.</div>';
+    }
+
+    const andere = gruppenStand.filter(p => p.name !== characterName());
+    if (!andere.length) {
+        liste.innerHTML = '<div class="hint">Keine Mitspieler verbunden.</div>';
+        return;
+    }
+    liste.innerHTML = andere.map(p => {
+        const anteil = p.lkMax ? Math.max(0, Math.min(100, (p.lkCurrent / p.lkMax) * 100)) : 0;
+        const zustand = p.tot ? '<span style="color:var(--fail)">tot</span>'
+            : p.bewusstlos ? '<span style="color:var(--fail)">bewusstlos</span>' : '';
+        return `<div class="gruppen-eintrag">
+            <div class="gruppen-kopf">
+                <strong>${escapeHtml(p.name)}</strong>
+                <span class="hint">${escapeHtml(p.klasse || '')}${p.stufe ? ' · Stufe ' + p.stufe : ''}</span>
+                <span style="margin-left:auto">${p.lkCurrent}/${p.lkMax} ${zustand}</span>
+            </div>
+            <div class="lk-bar-track"><div class="lk-bar-fill" style="width:${anteil}%"></div></div>
+        </div>`;
+    }).join('');
+}
+
+// Bisher konnte nur der Spielleiter fluestern. Die Gegenrichtung fehlte ganz.
+function fluesterAnSl() {
+    if (!hostConnection || !hostConnection.open) {
+        alert('Keine Verbindung zum Spielleiter.');
+        return;
+    }
+    const text = prompt('Nachricht an den Spielleiter (nur er sieht sie):');
+    if (!text) return;
+    hostConnection.send({ type: 'whisper', text });
+    addLog(`🤫 <em>An den Spielleiter:</em> ${escapeHtml(text)}`, 'neutral');
 }
 
 // Einblendung für Nachrichten des Spielleiters

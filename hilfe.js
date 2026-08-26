@@ -342,6 +342,21 @@ const HILFE_THEMEN = {
 
     // ---------- Zusammen spielen ----------
 
+    'gruppe': {
+        gruppe: 'runde',
+        titel: 'Gruppe & Kampf',
+        text: `<p>Der Kasten erscheint nur, solange du mit einem Spielleiter verbunden bist.</p>
+               <p><strong>Läuft ein Kampf</strong>, steht hier die Runde und die vollständige
+               Initiative-Reihenfolge. Wer gerade dran ist, ist markiert — bist du es selbst,
+               wird der Kasten hervorgehoben und du bekommst zusätzlich eine Einblendung.
+               Ohne Kampf steht dort schlicht, dass gerade keiner läuft.</p>
+               <p><strong>Deine Mitspieler</strong> stehen darunter mit Klasse, Stufe und ihrem
+               Lebenskraft-Balken — praktisch, um zu sehen, wer dringend Heilung braucht.
+               Bewusstlose und Tote sind ausgewiesen. Gegner-Werte siehst du bewusst nicht;
+               in der Reihenfolge stehen sie nur mit Namen.</p>
+               <p><strong>🤫 Flüstern</strong> schickt eine Nachricht, die nur der Spielleiter
+               sieht — die Gegenrichtung zu seinem Flüstern an dich.</p>`
+    },
     'multiplayer': {
         gruppe: 'runde',
         titel: 'Multiplayer',

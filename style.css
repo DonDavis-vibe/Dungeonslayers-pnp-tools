@@ -840,3 +840,48 @@ select option { background: #1c1712; }
 ::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.3); }
 ::-webkit-scrollbar-thumb { background: rgba(140, 106, 52, 0.6); border-radius: 5px; }
 ::-webkit-scrollbar-thumb:hover { background: rgba(180, 140, 80, 0.8); }
+
+/* ---------- Gruppe & Kampf (Spieleransicht im Multiplayer) ---------- */
+
+.kampf-kopf {
+    padding: 0.5rem 0.6rem;
+    border: 1px solid var(--panel-border);
+    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.3);
+    font-size: 0.85rem;
+}
+.kampf-kopf.ich-dran {
+    border-color: var(--accent-bright);
+    background: linear-gradient(180deg, rgba(90, 66, 28, 0.5), rgba(40, 30, 18, 0.4));
+}
+.kampf-dran {
+    color: var(--accent-bright);
+    font-weight: 600;
+    margin-top: 0.2rem;
+}
+.kampf-reihenfolge {
+    margin-top: 0.4rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+.kampf-eintrag {
+    font-size: 0.8rem;
+    padding: 0.2rem 0.45rem;
+    border-radius: 3px;
+    color: var(--text-dim);
+}
+.kampf-eintrag.am-zug { background: rgba(212, 162, 76, 0.18); color: var(--accent-bright); }
+.kampf-eintrag.ich { font-weight: 600; color: var(--text); }
+.kampf-eintrag.ich.am-zug { color: var(--accent-bright); }
+
+.gruppen-eintrag { margin-bottom: 0.55rem; }
+.gruppen-eintrag:last-child { margin-bottom: 0; }
+.gruppen-kopf {
+    display: flex;
+    align-items: baseline;
+    gap: 0.4rem;
+    font-size: 0.82rem;
+    margin-bottom: 0.2rem;
+    flex-wrap: wrap;
+}
