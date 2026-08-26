@@ -67,6 +67,7 @@ function charForRules() {
         equipmentBoni: appData.equipmentBoni || {},
         zauberZb: zauber.zb,
         zauberTyp: zauber.typ,
+        zauberArt: zauber.art,
         // Damit die Engine klassenfremde Rüstung erkennt (Regelwerk S.41)
         armorRules: armorRules(),
         bonusLk: appData.bonusLk || 0,
@@ -84,7 +85,7 @@ function preparedSpell() {
 // sich nicht vorausberechnen und wird als `unklar` gemeldet, statt still 0 zu sein.
 function preparedSpellInfo() {
     const spell = preparedSpell();
-    if (!spell) return { zb: 0, typ: null, unklar: false, name: '' };
+    if (!spell) return { zb: 0, typ: null, unklar: false, name: '', art: null };
 
     const data = (typeof zauberListe === 'function' ? zauberListe() : (typeof DS4_ZAUBER !== 'undefined' ? DS4_ZAUBER : []))
         .find(z => z.name === spell.name);
@@ -96,7 +97,12 @@ function preparedSpellInfo() {
     const rein = /^[+−-]?\d+$/.test(text.replace('−', '-'));
     const zb = rein ? parseInt(text.replace('−', '-'), 10) : 0;
 
-    return { zb, typ, unklar: !rein, name: spell.name, rohZb: text };
+    // Art des Spruchs für Talente wie Fürsorger oder Feuermagier
+    const art = data
+        ? { arten: data.arten || [], geistesbeeinflussend: !!data.geistesbeeinflussend }
+        : { arten: spell.arten || [], geistesbeeinflussend: !!spell.geistesbeeinflussend };
+
+    return { zb, typ, unklar: !rein, name: spell.name, rohZb: text, art };
 }
 
 // Alte Aufrufer erwarten weiterhin nur die Zahl

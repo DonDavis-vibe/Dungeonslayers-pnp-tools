@@ -151,15 +151,8 @@ const DS4_TALENT_SITUATIV = {
     'Raserei': { wert: 'Schlagen', proRang: 2, bedingung: 'je Rang −1 Abwehr für +2 Schlagen, rundenweise umschichtbar' },
     // Waffenartgebunden — welche Art gemeint ist, steht in der Notiz am Talent
     'Waffenkenner': { wert: 'Schlagen', proRang: 1, bedingung: 'nur mit der je Rang gewählten Waffenart (dazu Gegnerabwehr −1)' },
-    // Zaubertalente, die nur für bestimmte Arten von Zaubern gelten. Welcher
-    // Spruch dazugehört, steht nicht als Merkmal in den Zauberdaten, deshalb
-    // bleibt die Entscheidung am Tisch — der Bogen erinnert nur daran.
-    'Fürsorger': { wert: 'Zaubern/Zielzauber', proRang: 1, bedingung: 'auf alle Heil- und Schutzzauber' },
-    'Feuermagier': { wert: 'Zaubern/Zielzauber', proRang: 1, bedingung: 'auf alle Zauber mit Feuereffekt' },
-    'Blitzmacher': { wert: 'Zaubern/Zielzauber', proRang: 1, bedingung: 'auf alle Zauber, die Blitzschaden verursachen' },
-    'Herr der Elemente': { wert: 'Zaubern/Zielzauber', proRang: 1, bedingung: 'auf Zauber mit Erd-, Feuer-, Luft- oder Wasserschaden' },
-    'Nekromantie': { wert: 'Zaubern/Zielzauber', proRang: 2, bedingung: 'auf Zauber, die Untote bannen, erwecken oder kontrollieren' },
-    'Manipulator': { wert: 'Zaubern/Zielzauber', proRang: 1, bedingung: 'auf geistesbeeinflussende Zauber (im Zauberpanel gekennzeichnet)' },
+    // Wirkt nur gegen Zauber, die auf den Charakter gerichtet sind — das weiß
+    // der Bogen nicht, deshalb bleibt es ein Hinweis.
     'Magieresistent': { wert: 'gegnerische Zauber', proRang: -2, bedingung: 'gegen den Charakter gerichtet, nicht bei Elementarschaden' },
     'Perfektion': { wert: 'Schlagen', proRang: 1, bedingung: 'einmal pro Kampf je Rang, nur mit einer per Waffenkenner beherrschten Waffenart' }
 };
@@ -231,6 +224,39 @@ function situativeProbenHinweise(talents, probenName) {
             return `${eintrag.talent} ${rang}: +${eintrag.proRang * rang} ${eintrag.bedingung}`;
         })
         .filter(Boolean);
+}
+
+// Talente, die nur für bestimmte ARTEN von Zaubern gelten. Die Zuordnung steckt
+// als `arten` in zauber.js bzw. als Merkmal `geistesbeeinflussend`.
+const DS4_ZAUBERART_TALENTE = {
+    'Fürsorger':         { proRang: 1, art: 'heilung',   text: 'Heil- und Schutzzauber' },
+    'Feuermagier':       { proRang: 1, art: 'feuer',     text: 'Zauber mit Feuereffekt' },
+    'Blitzmacher':       { proRang: 1, art: 'blitz',     text: 'Zauber mit Blitzschaden' },
+    'Herr der Elemente': { proRang: 1, art: 'elementar', text: 'Zauber mit Elementarschaden' },
+    'Nekromantie':       { proRang: 2, art: 'untot',     text: 'Zauber über Untote' },
+    'Manipulator':       { proRang: 1, art: 'geistesbeeinflussend', text: 'geistesbeeinflussende Zauber' }
+};
+
+// Bonus der Zauberart-Talente für den gerade vorbereiteten Spruch.
+// `zauber` ist { arten: [...], geistesbeeinflussend: bool } aus den Zauberdaten.
+function zauberartBonus(talents, zauber) {
+    if (!zauber) return { summe: 0, quellen: [] };
+    const arten = zauber.arten || [];
+    let summe = 0;
+    const quellen = [];
+
+    Object.entries(DS4_ZAUBERART_TALENTE).forEach(([name, def]) => {
+        const rang = talentRang(talents, name);
+        if (!rang) return;
+        const passt = def.art === 'geistesbeeinflussend'
+            ? !!zauber.geistesbeeinflussend
+            : arten.includes(def.art);
+        if (!passt) return;
+        const bonus = def.proRang * rang;
+        summe += bonus;
+        quellen.push(`${name} ${rang}: +${bonus} (${def.text})`);
+    });
+    return { summe, quellen };
 }
 
 // Summiert die Talentboni für eine bestimmte typische Probe.
@@ -332,6 +358,16 @@ function computeDerived(char) {
     const zbZaubern = char.zauberTyp === 'ziel' ? 0 : zb;
     const zbZielzauber = char.zauberTyp === 'normal' ? 0 : zb;
 
+    // Talente, die nur für bestimmte Zauberarten gelten (Fürsorger, Feuermagier ...).
+    // Sie zählen auf denselben Kampfwert wie der Zauberbonus des Spruchs.
+    const zauberart = zauberartBonus(talents, char.zauberArt || null);
+    const artZaubern = char.zauberTyp === 'ziel' ? 0 : zauberart.summe;
+    const artZielzauber = char.zauberTyp === 'normal' ? 0 : zauberart.summe;
+    if (zauberart.quellen.length) {
+        const ziel = char.zauberTyp === 'ziel' ? 'zielzauber' : 'zaubern';
+        herkunft[ziel] = (herkunft[ziel] || []).concat(zauberart.quellen);
+    }
+
     // Klassenfremde Rüstung (S.41): PA-Malus auf Zaubern/Zielzauber vervierfacht
     // (also 3x PA zusätzlich zum normalen Abzug) und Agilität um den PA-Wert gesenkt.
     const fremdZauberMalus = armor.fremdePa * 3;
@@ -360,8 +396,8 @@ function computeDerived(char) {
         laufen: agilitaet / 2 + 1 + armor.laufenMod + boni.laufen,
         schlagen: attr.koerper + eig.staerke + weaponBonus(melee) + eqBonus('melee', 'wb') + boni.schlagen,
         schiessen: agilitaet + eig.geschick + weaponBonus(ranged) + eqBonus('ranged', 'wb') + boni.schiessen,
-        zaubern: attr.geist + aura + zbZaubern - armor.nonClothPa - fremdZauberMalus + boni.zaubern,
-        zielzauber: attr.geist + eig.geschick + zbZielzauber + weaponZielzauber - armor.nonClothPa - fremdZauberMalus + boni.zielzauber,
+        zaubern: attr.geist + aura + zbZaubern + artZaubern - armor.nonClothPa - fremdZauberMalus + boni.zaubern,
+        zielzauber: attr.geist + eig.geschick + zbZielzauber + artZielzauber + weaponZielzauber - armor.nonClothPa - fremdZauberMalus + boni.zielzauber,
         panzerung: armor.pa,
         // Klassenfremd getragene Teile — für die Warnung am Bogen
         fremdePa: armor.fremdePa,

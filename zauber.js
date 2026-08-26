@@ -56,6 +56,7 @@ const DS4_ZAUBER = [
         distanz: 'Berühren',
         abklingzeit: '24 Stunden',
         effekt: 'Heilt sämtliche Verletzungen restlos und narbenfrei; abgetrennte Gliedmaßen lassen sich wieder anfügen, sofern sie höchstens W20 Stunden ab sind.',
+        arten: ['heilung'],
         seite: 60
     },
     {
@@ -92,6 +93,7 @@ const DS4_ZAUBER = [
         distanz: 'Radius von VE x 2 Meter',
         abklingzeit: '100 Kampfrunden',
         effekt: 'Vernichtet feindliche Dämonen, Elementare und Untote im Radius, maximal Stufe/2 Wesenheiten. Jeder misslungene Bannversuch erschwert den nächsten um 2.',
+        arten: ['untot'],
         seite: 60
     },
     {
@@ -116,6 +118,7 @@ const DS4_ZAUBER = [
         distanz: 'VE x 10 Meter',
         abklingzeit: '1 Kampfrunde',
         effekt: 'Ein Blitz trifft einen Gegner; Schaden = Probenergebnis. Gegner in Metallrüstung dürfen keine Abwehr würfeln.',
+        arten: ['blitz', 'elementar'],
         seite: 61
     },
     {
@@ -237,6 +240,7 @@ const DS4_ZAUBER = [
         distanz: 'VE x 2 Meter',
         abklingzeit: '100 Kampfrunden',
         effekt: 'Öffnet auf festem Boden einen Spalt (VE m breit, VE/2 m lang und tief). Betroffene dürfen sich mit AGI+BE aktionsfrei retten; wer beim Schließen darin ist, erleidet 2W20 nicht abwehrbaren Schaden.',
+        arten: ['elementar'],
         seite: 64
     },
     {
@@ -261,6 +265,7 @@ const DS4_ZAUBER = [
         distanz: 'VE Meter',
         abklingzeit: '10 Kampfrunden',
         effekt: 'Eine Flammensäule aus dem Mund trifft alle Gegner in einer 1m breiten, geraden Schneise; nicht abwehrbarer Schaden in Höhe des Probenergebnisses.',
+        arten: ['feuer', 'elementar'],
         seite: 64
     },
     {
@@ -273,6 +278,7 @@ const DS4_ZAUBER = [
         distanz: 'VE x 10 Meter',
         abklingzeit: '10 Kampfrunden',
         effekt: 'Ein Feuerball explodiert im Radius von VE Metern; nicht abwehrbarer Schaden in Höhe des Probenergebnisses.',
+        arten: ['feuer', 'elementar'],
         seite: 65
     },
     {
@@ -285,6 +291,7 @@ const DS4_ZAUBER = [
         distanz: 'VE x 10 Meter',
         abklingzeit: '0 Kampfrunden',
         effekt: 'Mächtigere Variante des Feuerstrahls; Schaden = Probenergebnis.',
+        arten: ['feuer', 'elementar'],
         seite: 65
     },
     {
@@ -297,6 +304,7 @@ const DS4_ZAUBER = [
         distanz: 'VE x 5 Meter',
         abklingzeit: '0 Kampfrunden',
         effekt: 'Ein Feuerstrahl trifft einen Feind; Schaden = Probenergebnis.',
+        arten: ['feuer', 'elementar'],
         seite: 65
     },
     {
@@ -309,6 +317,7 @@ const DS4_ZAUBER = [
         distanz: 'VE x 2 Meter',
         abklingzeit: '100 Kampfrunden',
         effekt: 'Erschafft eine Feuerwand von maximal 1m x VE m x VE m. Wer darin steht oder hindurchspringt, erleidet 2W20 abwehrbaren Schaden.',
+        arten: ['feuer', 'elementar'],
         seite: 65
     },
     {
@@ -321,6 +330,7 @@ const DS4_ZAUBER = [
         distanz: 'Selbst',
         abklingzeit: '100 Kampfrunden',
         effekt: 'Der Zauberwirker flackert und erhöht seine Abwehr um GEI/2 (nicht gegen einhüllenden Flächenschaden).',
+        arten: ['heilung'],
         seite: 66
     },
     {
@@ -333,6 +343,7 @@ const DS4_ZAUBER = [
         distanz: 'VE x 10 Meter',
         abklingzeit: '24 Stunden',
         effekt: 'Eine Kreisfläche mit Radius VE Meter steht in Flammen; jeder darin erleidet pro Kampfrunde nicht abwehrbaren Schaden in Höhe des Probenergebnisses.',
+        arten: ['feuer', 'elementar'],
         seite: 66
     },
     {
@@ -345,6 +356,7 @@ const DS4_ZAUBER = [
         distanz: 'VE x 2m',
         abklingzeit: '100 Kampfrunden',
         effekt: 'Hüllt eine Metallklinge in magisches Feuer: WB +1 und magischer Schaden. Ein Immersieg verdoppelt den erwürfelten Schaden dieser Kampfrunde.',
+        arten: ['feuer', 'elementar'],
         seite: 66
     },
     {
@@ -394,6 +406,7 @@ const DS4_ZAUBER = [
         distanz: 'VE x 10 Meter',
         abklingzeit: '10 Kampfrunden',
         effekt: 'Ein Eisstrahl verursacht nicht abwehrbaren Schaden und friert das Ziel VE Kampfrunden ein oder bis es Schaden erhält.',
+        arten: ['elementar'],
         seite: 67
     },
     {
@@ -406,6 +419,7 @@ const DS4_ZAUBER = [
         distanz: 'VE x 2 Meter',
         abklingzeit: '100 Kampfrunden',
         effekt: 'Hüllt eine Waffe in eisige Kälte: WB +1 und magischer Schaden. Ein Immersieg friert den Gegner 1 Kampfrunde ein (wie Halt). Nicht mit Flammenklinge kombinierbar.',
+        arten: ['elementar'],
         seite: 67
     },
     {
@@ -455,6 +469,7 @@ const DS4_ZAUBER = [
         distanz: 'Berühren',
         abklingzeit: '10 Kampfrunden',
         effekt: 'Neutralisiert augenblicklich ein nichtmagisches Gift, sofern es nicht zu spät ist.',
+        arten: ['heilung'],
         seite: 68
     },
     {
@@ -467,6 +482,7 @@ const DS4_ZAUBER = [
         distanz: 'Berühren',
         abklingzeit: '10 Kampfrunden',
         effekt: 'Das Ziel erhält einen Abwehr-Bonus gegen Gifte in Höhe der Stufe des Zauberwirkers; der Bonus allein wirkt auch, wo sonst keine Abwehr erlaubt ist.',
+        arten: ['heilung'],
         seite: 68
     },
     {
@@ -503,6 +519,7 @@ const DS4_ZAUBER = [
         distanz: 'Berühren',
         abklingzeit: '24 Stunden',
         effekt: 'Versieht Probenergebnis viele Beeren o.ä. mit Heilkraft (bei Druiden x 2); jede heilt 1 LK, bis zu 10 pro Aktion. Wirkung verfällt nach VE Tagen oder beim erneuten Wirken.',
+        arten: ['heilung'],
         seite: 68
     },
     {
@@ -515,6 +532,7 @@ const DS4_ZAUBER = [
         distanz: 'Selbst',
         abklingzeit: '100 Kampfrunden',
         effekt: 'Der Heiler und alle Gefährten im Radius von VE Metern werden jede Kampfrunde um 1 LK geheilt.',
+        arten: ['heilung'],
         seite: 69
     },
     {
@@ -527,6 +545,7 @@ const DS4_ZAUBER = [
         distanz: 'Berühren',
         abklingzeit: '0 Kampfrunden',
         effekt: 'Heilt durch Handauflegen Lebenskraft in Höhe des Probenergebnisses.',
+        arten: ['heilung'],
         seite: 69
     },
     {
@@ -539,6 +558,7 @@ const DS4_ZAUBER = [
         distanz: 'VE x 2 Meter',
         abklingzeit: '2 Kampfrunden',
         effekt: 'Heilt bis zu VE/2 Gefährten um das Probenergebnis. Nur eine Probe; als Malus zählt nur der Distanzmalus des am weitesten entfernten Ziels.',
+        arten: ['heilung'],
         seite: 69
     },
     {
@@ -551,6 +571,7 @@ const DS4_ZAUBER = [
         distanz: 'Radius von VE x 2 Meter',
         abklingzeit: '24 Stunden',
         effekt: 'Heilt alle Gefährten im Wirkungsradius um das Probenergebnis.',
+        arten: ['heilung'],
         seite: 69
     },
     {
@@ -563,6 +584,7 @@ const DS4_ZAUBER = [
         distanz: 'VE x 2 Meter',
         abklingzeit: '2 Kampfrunden',
         effekt: 'Ein Lichtstrahl heilt die Lebenskraft des Ziels in Höhe des Probenergebnisses.',
+        arten: ['heilung'],
         seite: 70
     },
     {
@@ -587,6 +609,7 @@ const DS4_ZAUBER = [
         distanz: 'VE x 5 Meter',
         abklingzeit: '5 Kampfrunden',
         effekt: 'Ein Blitz trifft einen Feind und springt auf bis zu VE weitere Gegner im Umkreis über. Getroffene in Metallrüstung dürfen keine Abwehr würfeln.',
+        arten: ['blitz', 'elementar'],
         seite: 70
     },
     {
@@ -612,6 +635,7 @@ const DS4_ZAUBER = [
         distanz: 'VE x 2 Meter',
         abklingzeit: '10 Kampfrunden',
         effekt: 'Bringt bis zu Stufe viele Untote unter Kontrolle, auch fremd beherrschte; sie führen bedingungslos alle Befehle aus.',
+        arten: ['untot'],
         seite: 70
     },
     {
@@ -732,6 +756,7 @@ const DS4_ZAUBER = [
         distanz: 'VE x 2 Meter',
         abklingzeit: '24 Stunden',
         effekt: 'Erschafft ein unbewegliches Kraftfeld von maximal VE/2 m³, das sämtliche Magie nach innen wie außen blockt; per Konzentration verlängerbar.',
+        arten: ['heilung'],
         seite: 73
     },
     {
@@ -744,6 +769,7 @@ const DS4_ZAUBER = [
         distanz: 'Selbst',
         abklingzeit: '24 Stunden',
         effekt: 'Erhöht die Lebenskraft um das Wurfergebnis. Schaden zehrt zuerst diese (nicht heilbaren) LK auf; sie bleiben bis zum Verbrauch oder erneuten Wirken bestehen.',
+        arten: ['heilung'],
         seite: 73
     },
     {
@@ -876,6 +902,7 @@ const DS4_ZAUBER = [
         distanz: 'Radius von VE x 5 Meter',
         abklingzeit: '24 Stunden',
         effekt: 'Erweckt bis zu Stufe viele Tote im Radius als Schatten. Sie erheben sich nach drei Kampfrunden und greifen den Erwecker an, wenn er sie nicht per Kontrollieren beherrscht. Für Diener des Lichts gesperrt.',
+        arten: ['untot'],
         seite: 75
     },
     {
@@ -948,6 +975,7 @@ const DS4_ZAUBER = [
         distanz: 'Selbst',
         abklingzeit: '100 Kampfrunden',
         effekt: 'Ein Schutzfeld mit Radius VE Meter lässt nichtmagische Geschosse von außen wirkungslos abprallen.',
+        arten: ['heilung'],
         seite: 76
     },
     {
@@ -960,6 +988,7 @@ const DS4_ZAUBER = [
         distanz: 'Selbst',
         abklingzeit: 'W20 Tage',
         effekt: 'Eine unbewegliche Kuppel mit Radius VE Meter ist von beiden Seiten unpassierbar für Angriffe, Personen und Zauber; hält nur bei ununterbrochener Konzentration.',
+        arten: ['heilung'],
         seite: 77
     },
     {
@@ -972,6 +1001,7 @@ const DS4_ZAUBER = [
         distanz: 'Berühren',
         abklingzeit: '100 Kampfrunden',
         effekt: 'Das Ziel erhält das Probenergebnis als Bonus auf seine Abwehr, bis die Zauberdauer abläuft.',
+        arten: ['heilung'],
         seite: 77
     },
     {
@@ -984,6 +1014,7 @@ const DS4_ZAUBER = [
         distanz: 'Berühren',
         abklingzeit: '24 Stunden',
         effekt: 'Verdoppelt die erwürfelte Dauer eines bereits auf das Ziel wirkenden Schutzschild-Zaubers.',
+        arten: ['heilung'],
         seite: 77
     },
     {
@@ -996,6 +1027,7 @@ const DS4_ZAUBER = [
         distanz: 'Berühren',
         abklingzeit: '24 Stunden',
         effekt: 'Verdoppelt den Abwehr-Bonus eines bereits auf das Ziel wirkenden Schutzschild-Zaubers.',
+        arten: ['heilung'],
         seite: 77
     },
     {
@@ -1044,6 +1076,7 @@ const DS4_ZAUBER = [
         distanz: 'Radius von VE x 5 Meter',
         abklingzeit: '24 Stunden',
         effekt: 'Erweckt bis zu Stufe viele Skelette im Radius. Sie erheben sich nach drei Kampfrunden und greifen den Erwecker an, wenn er sie nicht per Kontrollieren beherrscht. Für Diener des Lichts gesperrt.',
+        arten: ['untot'],
         seite: 78
     },
     {
@@ -1347,6 +1380,7 @@ const DS4_ZAUBER = [
         distanz: 'VE x 2 Meter',
         abklingzeit: '0 Kampfrunden',
         effekt: 'Das Ziel erhält das Probenergebnis als Abwehr-Bonus, bis der Zauberwirker in der nächsten Kampfrunde wieder an der Reihe ist.',
+        arten: ['heilung'],
         seite: 82
     },
     {
@@ -1359,6 +1393,7 @@ const DS4_ZAUBER = [
         distanz: 'Radius von VE x 2 Meter',
         abklingzeit: '100 Kampfrunden',
         effekt: 'Vertreibt bis zu Stufe/2 Untote im Wirkungsbereich auf Probenergebnis x 5 Meter Distanz; sie können solange niemanden im Wirkungsbereich angreifen. Endet bei jedem Untoten, der Schaden erleidet.',
+        arten: ['untot'],
         seite: 83
     },
     {
@@ -1445,6 +1480,7 @@ const DS4_ZAUBER = [
         distanz: 'Berühren',
         abklingzeit: 'W20 Tage',
         effekt: 'Teilt ein Gewässer auf 1m Breite bis zum Grund. Gegen flüssige Wesen eingesetzt verursacht das Wurfergebnis nicht abwehrbaren Schaden (Dauer dann augenblicklich).',
+        arten: ['elementar'],
         seite: 85
     },
     {
@@ -1493,6 +1529,7 @@ const DS4_ZAUBER = [
         distanz: 'Berühren',
         abklingzeit: '24 Stunden',
         effekt: 'Belebt einen nicht natürlich Gestorbenen (höchstens W20 Tage tot) mit 1 LK wieder; er verliert permanent 1 Punkt KÖR. Bei KÖR 1 nicht mehr möglich, Verletzungen bleiben.',
+        arten: ['heilung'],
         seite: 86
     },
     {
@@ -1589,6 +1626,7 @@ const DS4_ZAUBER = [
         distanz: 'Radius von VE x 5 Meter',
         abklingzeit: '24 Stunden',
         effekt: 'Erweckt bis zu Stufe viele Leichen im Radius als Zombies. Sie erheben sich nach drei Kampfrunden und greifen den Erwecker an, wenn er sie nicht per Kontrollieren beherrscht. Für Diener des Lichts gesperrt.',
+        arten: ['untot'],
         seite: 87
     },
     {

@@ -155,14 +155,17 @@ Kein Freitextfeld, sondern eine echte Auswahl mit Regelprüfung:
   (Initiative +2), *Flink* (Laufen +1m) oder *Standhaft* (Bewusstlosigkeitsgrenze −3 LK).
   Die betroffene Karte weist den Bonus aus und nennt im Tooltip die Quelle.
 - **Situative Talente** wie *Parade* oder *Blocker* werden bewusst **nicht** automatisch
-  eingerechnet — sie stehen mit ihrer Bedingung als Erinnerung unter den Kampfwerten. Dasselbe
-  gilt für zauberartgebundene Talente wie *Fürsorger*, *Feuermagier* oder *Manipulator*: Ob ein
-  Spruch ein Heil-, Feuer- oder geistesbeeinflussender Zauber ist, steht nicht als Merkmal in den
-  Zauberdaten, also entscheidet das der Tisch.
-- **Zauberrelevante Talente ohne Bedingung** fließen dagegen ein: *Rüstzauberer* (ignoriert je
-  Rang 2 Punkte Panzerungsmalus beim Zaubern), *Stabbindung* und *Zauberwaffe* (je Rang +1 auf
-  Zielzauber, solange die gebundene Waffe geführt wird) sowie *Meister seiner Klasse*
-  (Primärattribut der Grundklasse +1, wirkt damit auf alle abgeleiteten Werte).
+  eingerechnet — sie stehen mit ihrer Bedingung als Erinnerung unter den Kampfwerten.
+- **Zauberrelevante Talente** fließen ein: *Rüstzauberer* (ignoriert je Rang 2 Punkte
+  Panzerungsmalus beim Zaubern), *Stabbindung* und *Zauberwaffe* (je Rang +1 auf Zielzauber,
+  solange die gebundene Waffe geführt wird) sowie *Meister seiner Klasse* (Primärattribut der
+  Grundklasse +1, wirkt damit auf alle abgeleiteten Werte).
+- **Zauberartgebundene Talente** ebenfalls: Dafür sind die Zaubersprüche nach Art ausgezeichnet
+  (Heil- und Schutzzauber, Feuer, Blitz, Elementarschaden, Untote — dazu das schon vorhandene
+  Merkmal *geistesbeeinflussend*). *Fürsorger*, *Feuermagier*, *Blitzmacher*, *Herr der Elemente*,
+  *Nekromantie* und *Manipulator* greifen damit automatisch, sobald der vorbereitete Spruch passt.
+  *Magieresistent* bleibt ein Hinweis — ob ein Zauber gegen den Charakter gerichtet ist, weiß der
+  Bogen nicht.
 - **Heldenklassen** (ab Stufe 10, alle 15 mit ihren exklusiven Talentlisten) schalten zusätzliche
   Talente frei und heben teils den Höchstrang bereits bekannter Talente an.
 - **Volksfähigkeiten** mit exakter Spielwirkung (z.B. Zwergen-*Zäh*: Abwehr +1, wird automatisch
@@ -503,7 +506,7 @@ Bildschirmgröße und Zoomstufe und ist klein genug, um ihn bei jeder Bewegung z
 
 ### Nach einer Änderung: Versionsnummer hochzählen
 
-Alle eigenen Dateien werden mit einem Versionsparameter eingebunden (`app.js?v=20260825h`). Wer
+Alle eigenen Dateien werden mit einem Versionsparameter eingebunden (`app.js?v=20260825i`). Wer
 etwas ändert, zählt die Version in `index.html` hoch — sonst behalten Besucher die alte Fassung
 aus dem Browser-Cache.
 
