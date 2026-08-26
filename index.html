@@ -53,7 +53,7 @@
 <!-- W20 als Favicon, direkt eingebettet (kein zusätzlicher Netzwerkabruf) -->
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%2314100c'/%3E%3Cpath d='M16 3 29 10.5v11L16 29 3 21.5v-11z' fill='none' stroke='%23d4a24c' stroke-width='2' stroke-linejoin='round'/%3E%3Cpath d='M16 3 16 29M3 10.5 29 21.5M29 10.5 3 21.5' stroke='%23d4a24c' stroke-width='1' opacity='.45'/%3E%3Ctext x='16' y='20' font-family='Georgia,serif' font-size='11' font-weight='bold' fill='%23f0c069' text-anchor='middle'%3E20%3C/text%3E%3C/svg%3E">
 
-<link rel="stylesheet" href="style.css?v=20260825c">
+<link rel="stylesheet" href="style.css?v=20260825e">
 </head>
 <body>
 
@@ -234,6 +234,17 @@
             <div id="equipment-warnings" style="margin-top:0.7rem"></div>
             <div id="equipment-details" class="hint" style="margin-top:0.5rem"></div>
 
+            <!-- Verbesserungen und Verzauberungen je Ausrüstungsteil -->
+            <details style="margin-top:0.7rem">
+                <summary style="cursor:pointer;font-size:0.85rem;color:var(--text-dim)">✨ Verbesserungen &amp; Verzauberungen</summary>
+                <div id="equipment-boni" style="margin-top:0.5rem"></div>
+                <p class="hint" style="margin-top:0.4rem">
+                    Der Bonus fließt direkt in Schlagen, Schießen und Abwehr ein. Die Notiz ist frei —
+                    für eingebettete Zauber, freie Aktionen oder was das Stück sonst kann.
+                    Für die Rüstzeit zählen magische Boni nicht mit (Regelwerk S.44).
+                </p>
+            </details>
+
             <h3 style="margin-top:1rem;font-size:0.9rem;color:var(--accent)">Münzen</h3>
             <div class="grid-3" style="margin-top:0.4rem">
                 <div class="field"><label>Gold (GM)</label><input type="number" id="f-gold" data-bind="gold" min="0"></div>
@@ -314,6 +325,25 @@
                     <select id="f-typische-probe"></select>
                 </div>
                 <button class="btn btn-primary" onclick="rollTypischeProbe()">Würfeln</button>
+            </div>
+
+            <!-- Erscheint nur, wenn zur gewählten Probe ein Gebiet passt
+                 (Wissensgebiet bei Wissen, Handwerk bei der Handwerksprobe) -->
+            <div id="gebiet-wahl" style="display:none;margin-top:0.4rem">
+                <div class="field"><label>Gebiet <span class="hint" id="gebiet-hinweis"></span></label>
+                    <select id="f-gebiet"></select>
+                </div>
+            </div>
+
+            <div class="quick-probe" style="margin-top:0.5rem">
+                <div class="field"><label>Handwerksprobe — Attribut &amp; Eigenschaft</label>
+                    <div style="display:flex;gap:0.35rem">
+                        <select id="f-hw-attr" style="flex:1"></select>
+                        <select id="f-hw-eig" style="flex:1"></select>
+                    </div>
+                </div>
+                <button class="btn" onclick="rollHandwerksprobe()"
+                        title="Das Regelwerk legt für Handwerksproben keine feste Formel fest — Attribut und Eigenschaft bestimmt die Spielleitung.">Würfeln</button>
             </div>
 
             <div class="quick-probe" style="margin-top:0.5rem">
@@ -761,22 +791,22 @@
     </div>
 </div>
 
-<script src="data.js?v=20260825c"></script>
-<script src="talents.js?v=20260825c"></script>
-<script src="zauber.js?v=20260825c"></script>
-<script src="bestiarium.js?v=20260825c"></script>
-<script src="hausregeln.js?v=20260825c"></script>
-<script src="rules.js?v=20260825c"></script>
-<script src="app.js?v=20260825c"></script>
-<script src="talentPicker.js?v=20260825c"></script>
-<script src="spellPicker.js?v=20260825c"></script>
-<script src="wizard.js?v=20260825c"></script>
-<script src="combat.js?v=20260825c"></script>
-<script src="battlemap.js?v=20260825c"></script>
-<script src="multiplayer.js?v=20260825c"></script>
-<script src="mapui.js?v=20260825c"></script>
-<script src="session.js?v=20260825c"></script>
-<script src="discord.js?v=20260825c"></script>
-<script src="hilfe.js?v=20260825c"></script>
+<script src="data.js?v=20260825e"></script>
+<script src="talents.js?v=20260825e"></script>
+<script src="zauber.js?v=20260825e"></script>
+<script src="bestiarium.js?v=20260825e"></script>
+<script src="hausregeln.js?v=20260825e"></script>
+<script src="rules.js?v=20260825e"></script>
+<script src="app.js?v=20260825e"></script>
+<script src="talentPicker.js?v=20260825e"></script>
+<script src="spellPicker.js?v=20260825e"></script>
+<script src="wizard.js?v=20260825e"></script>
+<script src="combat.js?v=20260825e"></script>
+<script src="battlemap.js?v=20260825e"></script>
+<script src="multiplayer.js?v=20260825e"></script>
+<script src="mapui.js?v=20260825e"></script>
+<script src="session.js?v=20260825e"></script>
+<script src="discord.js?v=20260825e"></script>
+<script src="hilfe.js?v=20260825e"></script>
 </body>
 </html>

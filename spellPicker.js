@@ -12,8 +12,20 @@ function zauberListe() {
 let spellFilter = '';
 let spellShowAll = false;
 
+// Welche Spruchliste steht offen? Zauberwirker über ihren Untertyp, Paladine
+// über ihre Heldenklasse (Regelwerk S.16).
 function zauberKlasseKey() {
-    return appData.klasse === 'zauberwirker' ? (appData.subtype || null) : null;
+    if (appData.klasse === 'zauberwirker') return appData.subtype || null;
+    const held = typeof heldenZauberzugang === 'function' ? heldenZauberzugang() : null;
+    return held ? held.liste : null;
+}
+
+// Verschiebung der Zugangsstufen. Nur wenn die Grundklasse selbst nicht zaubert:
+// Beim Paladin liegen die Heilersprüche um 9 Stufen höher.
+function zauberStufenversatz() {
+    if (appData.klasse === 'zauberwirker') return 0;
+    const held = typeof heldenZauberzugang === 'function' ? heldenZauberzugang() : null;
+    return held ? held.stufenversatz : 0;
 }
 
 // Zugangsstufe dieses Zaubers für den aktuellen Charakter — oder null.
@@ -23,7 +35,8 @@ function zauberZugang(zauber) {
     const eintrag = (zauber.zugang || []).find(z => z.klasse === klasse);
     if (!eintrag) return null;
     const stufe = charStufe();
-    return { minStufe: eintrag.stufe, erfuellt: stufe >= eintrag.stufe, stufe };
+    const minStufe = eintrag.stufe + zauberStufenversatz();
+    return { minStufe, erfuellt: stufe >= minStufe, stufe };
 }
 
 function kenntZauber(name) {
@@ -120,7 +133,7 @@ function renderSpellPicker() {
     const klasse = zauberKlasseKey();
 
     if (!klasse) {
-        body.innerHTML = '<div class="empty-hint">Nur Zauberwirker können Zauber lernen — bitte Klasse und Typ (Heiler / Zauberer / Schwarzmagier) wählen.</div>';
+        body.innerHTML = '<div class="empty-hint">Zauber lernen können Zauberwirker (Klasse und Typ wählen) sowie Paladine ab Stufe 10.</div>';
         return;
     }
 
@@ -132,6 +145,8 @@ function renderSpellPicker() {
         .sort((a, b) => (a.zugang.minStufe - b.zugang.minStufe) || a.zauber.name.localeCompare(b.zauber.name, 'de'));
 
     const typName = DS4_CLASSES.zauberwirker.subtypes[klasse].name;
+    const versatz = zauberStufenversatz();
+    const held = typeof heldenZauberzugang === 'function' ? heldenZauberzugang() : null;
 
     const kopf = `
         <div style="display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap;margin-bottom:0.8rem">
@@ -139,9 +154,12 @@ function renderSpellPicker() {
             <label class="radio-pill ${spellShowAll ? 'selected' : ''}" id="spell-showall">auch höherstufige</label>
         </div>
         <div class="budget" style="margin-bottom:0.8rem">
-            ${escapeHtml(typName)} · Stufe <strong>${charStufe()}</strong>
+            ${escapeHtml(versatz ? `${appData.heldenklasse} — ${typName}-Sprüche` : typName)} ·
+            Stufe <strong>${charStufe()}</strong>
             <span class="hint" style="margin-left:auto">${eintraege.length} Zauber</span>
         </div>
+        ${held ? `<p class="hint-rule" style="margin-bottom:0.8rem">${escapeHtml(held.hinweis)}
+            Die angezeigten Stufen sind bereits umgerechnet.</p>` : ''}
         <p class="hint-rule" style="margin-bottom:0.8rem">
             Zauber kosten keine Lern- oder Talentpunkte. Pro Stufenaufstieg dürfen Zauber gelernt werden,
             deren Zauberstufen zusammen die neue Charakterstufe ergeben — der Spielleiter entscheidet,

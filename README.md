@@ -109,9 +109,15 @@ verteilt ist, und die Plus-Knöpfe sperren an den Obergrenzen.
   *in diesem Kampf* verlorene Lebenskraft — alte Wunden heilt es nicht mit.
 - **Rüstzeiten** — wie viele Aktionen das Anlegen der getragenen Rüstung kostet (2 je Punkt
   Panzerung, Helme frei) und der Hinweis auf die KÖR+HÄ-Probe, wenn jemand in Metallrüstung schläft.
+- **Verbesserungen und Verzauberungen** je Ausrüstungsplatz: ein Bonus auf Waffenbonus bzw.
+  Panzerung plus freie Notiz für eingebettete Zauber oder freie Aktionen. Der Bonus fließt in
+  Schlagen, Schießen und Abwehr ein — für die Rüstzeit zählt er regelkonform nicht mit (S.44).
 - Inventar, Münzen und Notizen.
 
 ### ✨ Zaubersprüche (129 Stück, vollständig aus dem Regelwerk)
+- **Paladine zaubern mit** — als einzige Heldenklasse einer nicht zaubernden Grundklasse wirken sie
+  Heilersprüche mit um 9 Stufen verschobenem Zugang (S.16): Heilende Hand ab Stufe 10,
+  Wiederbelebung ab 19. Zauber-Kampfwerte und Zauberliste erscheinen entsprechend.
 - Die Auswahl zeigt **nur Zauber, die dein Zauberwirker-Typ auf deiner Stufe lernen darf** —
   Heiler, Zauberer und Schwarzmagier haben unterschiedliche Zugangsstufen für denselben Spruch.
 - Jeder Eintrag bringt Zauberbonus, Dauer, Distanz, Abklingzeit, Preis und Wirkung mit.
@@ -129,6 +135,12 @@ Kein Freitextfeld, sondern eine echte Auswahl mit Regelprüfung:
 - Die Liste zeigt **nur Talente, die deine Klasse auf deiner Stufe lernen darf**. Wer will, blendet
   die noch gesperrten mit ein — dort steht dann, ab welcher Stufe sie verfügbar werden.
 - **Höchstränge werden erzwungen** — jedes Talent hat je Klasse einen eigenen Maximalrang (I–X).
+  Heldenklassen heben ihn oft an, verlangen dafür aber eine höhere Stufe; der Bogen nimmt in dem
+  Fall weiter den Zugang der Grundklasse und weist darauf hin, ab welcher Stufe mehr geht.
+- **Mehrfach erwerbbare Talente je Gebiet** — *Handwerk*, *Wissensgebiet*, *Instrument* und
+  *Waffenkenner* werden laut S.34/S.47 für jedes Gebiet einzeln gelernt und einzeln gesteigert.
+  Ein Charakter kann also *Handwerk (Waffenschmied) III* und *Handwerk (Schreiner) I* nebeneinander
+  führen; beim Lernen fragt der Bogen nach dem Gebiet.
 - **Talentpunkte werden verrechnet**: 1 TP je Rang, beim Entfernen gibt es sie zurück, und ein
   Budget-Zähler warnt, wenn mehr Punkte verteilt sind als die Stufe hergibt.
 - Wirkung und Steigerung pro Rang stehen direkt am Talent.
@@ -182,6 +194,9 @@ Vollständig nach Regelwerk S.38–40 umgesetzt:
   und dem elfischen *Leichtfüßig*-Bonus auf Schleichen. Dazu gehören auch die drei Proben aus
   dem Magie-Kapitel: *Magie erspüren* (GEI+AU), *Magie identifizieren* (GEI+VE) und
   *Zauber wechseln* (GEI+VE) — letzteres mit dem Bonus aus dem Talent *Wechsler*.
+- **Wissensproben mit Gebietsauswahl** — wer *Wissensgebiet* beherrscht, wählt vor dem Wurf sein
+  Gebiet und bekommt die +3 je Rang angerechnet. Dazu ein eigener Knopf für **Handwerksproben**
+  mit frei wählbarem Attribut und Eigenschaft, weil das Regelwerk dafür keine Formel festlegt.
 
 ### 📡 Live-Multiplayer (WebRTC, serverlos)
 Der Spielleiter eröffnet einen Raum und erhält einen 4-stelligen Code; die Spieler treten damit bei.
@@ -475,7 +490,7 @@ Bildschirmgröße und Zoomstufe und ist klein genug, um ihn bei jeder Bewegung z
 
 ### Nach einer Änderung: Versionsnummer hochzählen
 
-Alle eigenen Dateien werden mit einem Versionsparameter eingebunden (`app.js?v=20260824e`). Wer
+Alle eigenen Dateien werden mit einem Versionsparameter eingebunden (`app.js?v=20260825e`). Wer
 etwas ändert, zählt die Version in `index.html` hoch — sonst behalten Besucher die alte Fassung
 aus dem Browser-Cache.
 

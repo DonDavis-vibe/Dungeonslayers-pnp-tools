@@ -732,7 +732,7 @@ function buildSharedState() {
         portrait: appData.portrait || '',
         volk: appData.volk ? DS4_RACES[appData.volk].name : '',
         klasse: cls ? (cls.isCaster && appData.subtype ? cls.subtypes[appData.subtype].name : cls.name) : '',
-        isCaster: !!(cls && cls.isCaster),
+        isCaster: istZauberwirker(),
         stufe: stufeFuerEp(appData.ep || 0, !!appData.heldenklasse),
         lkCurrent: appData.lkCurrent || 0,
         lkMax: derived.lebenskraft,

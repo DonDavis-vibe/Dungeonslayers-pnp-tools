@@ -108,6 +108,17 @@ const DS4_CLASSES = {
     }
 };
 
+// Heldenklassen, die einer nicht zaubernden Grundklasse Zauberzugang verschaffen.
+// Im Grundregelwerk ist der Paladin der einzige Fall (S.16): Er wirkt Heilersprüche,
+// deren Zugangsstufen um 9 nach oben verschoben sind — Heilende Hand also ab Stufe 10.
+const DS4_HELDEN_ZAUBERZUGANG = {
+    Paladin: {
+        liste: 'heiler',
+        stufenversatz: 9,
+        hinweis: 'Paladine wirken Heilersprüche. Die Zugangsstufen entsprechen denen des Heilers +9.'
+    }
+};
+
 // EP-Tabelle: Stufe -> {ep, epHeld, lp, tp}. LP/TP sind die Zuwächse BEIM Erreichen der Stufe.
 const DS4_XP_TABLE = [
     { stufe: 1, ep: 0, epHeld: null, lp: 0, tp: 1 },
@@ -151,6 +162,7 @@ const DS4_DIFFICULTY_MODIFIERS = [
 //   zerbricht     Fußnoten **/****: zerbricht bei einem Schlagen- bzw. Schießen-Patzer
 //   distanzJe     Meter je Punkt Distanzmalus (Standard 10; Schleuder/Wurfmesser 2)
 //   patzerSelbst  Fußnote ***: bei einem Schlagen-Patzer trifft der Angreifer sich selbst
+//   zielzauberMod Bonus auf Zielzauber, solange die Waffe geführt wird (Kampfstab +1)
 //   initMod/gaMod dieselben Angaben als Zahl, damit sie in die Werte einfließen
 const DS4_WEAPONS = [
     { name: 'Waffenlos', wb: 0, type: 'melee', gaMod: 5, besonderes: 'Gegnerabwehr +5', price: '—' },
@@ -164,7 +176,7 @@ const DS4_WEAPONS = [
     { name: 'Brechstange', wb: 1, type: 'melee', besonderes: 'unter „Diverses" gelistet; zerbricht nicht wie hölzerne Waffen', price: '15 SM' },
     { name: 'Fackel', wb: 1, type: 'melee', besonderes: 'unter „Diverses" gelistet; brennt 2 Stunden', price: '1 KM' },
     { name: 'Hammer', wb: 1, type: 'melee', gaMod: -1, besonderes: 'Gegnerabwehr −1', price: '7 GM' },
-    { name: 'Kampfstab', wb: 1, type: 'melee', twoHanded: true, reichweite: 2, stosswaffe: true, zerbricht: 'schlagen', besonderes: 'Zielzauber +1', price: '5 SM' },
+    { name: 'Kampfstab', wb: 1, type: 'melee', twoHanded: true, reichweite: 2, stosswaffe: true, zerbricht: 'schlagen', zielzauberMod: 1, besonderes: 'Zielzauber +1', price: '5 SM' },
     { name: 'Keule', wb: 1, type: 'melee', zerbricht: 'schlagen', besonderes: '—', price: '2 SM' },
     { name: 'Speer', wb: 1, type: 'both', reichweite: 2, stosswaffe: true, zerbricht: 'schiessen', besonderes: 'sowohl für Nah- als auch Fernkampf', price: '1 GM' },
     { name: 'Schwert, Breit-', wb: 1, type: 'melee', gaMod: -2, besonderes: 'Gegnerabwehr −2', price: '8 GM' },

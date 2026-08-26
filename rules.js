@@ -68,17 +68,19 @@ function schlaeftInMetall(equipment) {
 // ruesttraegerRang mindert den Laufen-Malus der Rüstung um 0,5m je Rang (S.40).
 // rules/geruestetRang dienen dazu, klassenfremde Rüstung zu erkennen (S.41):
 // deren PA-Malus aufs Zaubern wird vervierfacht und senkt zusätzlich die Agilität.
-function armorTotals(equipment, ruesttraegerRang = 0, rules = null, geruestetRang = 0) {
+function armorTotals(equipment, ruesttraegerRang = 0, rules = null, geruestetRang = 0, boni = {}) {
     const totals = { pa: 0, laufenMod: 0, initMod: 0, auraMod: 0, nonClothPa: 0, fremdePa: 0, fremdeTeile: [] };
     ['koerper', 'helm', 'schienen', 'schild'].forEach(slot => {
         const armor = findArmor(equipment[slot]);
         if (!armor) return;
-        totals.pa += armor.pa;
+        // Verbesserungen und Verzauberungen zählen auf die Panzerung
+        const bonusPa = (boni[slot] && boni[slot].pa) || 0;
+        totals.pa += armor.pa + bonusPa;
         totals.laufenMod += armor.laufenMod || 0;
         totals.initMod += armor.initMod || 0;
         totals.auraMod += armor.auraMod || 0;
         // Nur Stoff (Robe) behindert das Zaubern nicht — Regelwerk S.41
-        if (armor.typ !== 'stoff') totals.nonClothPa += armor.pa;
+        if (armor.typ !== 'stoff') totals.nonClothPa += armor.pa + bonusPa;
         if (rules && !ruestungErlaubt(armor, rules, geruestetRang)) {
             totals.fremdePa += armor.pa;
             totals.fremdeTeile.push(armor.name);
@@ -283,8 +285,11 @@ function computeDerived(char) {
     const { boni, herkunft } = talentBoni(talents);
 
     const geruestet = talentRang(talents, 'Gerüstet');
+    // Boni aus Verbesserungen und Verzauberungen je Ausrüstungsplatz
+    const eqBoni = char.equipmentBoni || {};
+    const eqBonus = (slot, feld) => (eqBoni[slot] && eqBoni[slot][feld]) || 0;
     const armor = armorTotals(char.equipment || {}, talentRang(talents, 'Rüstträger'),
-                              char.armorRules || null, geruestet);
+                              char.armorRules || null, geruestet, eqBoni);
     const melee = findWeapon(char.equipment && char.equipment.melee);
     const ranged = findWeapon(char.equipment && char.equipment.ranged);
 
@@ -303,6 +308,8 @@ function computeDerived(char) {
     // Zwerge: Volksfähigkeit "Zäh" gibt +1 Abwehr
     const zaehBonus = char.volk === 'zwerg' ? 1 : 0;
     const weaponInit = (melee ? melee.initMod || 0 : 0) + (ranged ? ranged.initMod || 0 : 0);
+    // Manche Waffen helfen beim Zielzauber, solange sie geführt werden (Kampfstab +1)
+    const weaponZielzauber = (melee ? melee.zielzauberMod || 0 : 0) + (ranged ? ranged.zielzauberMod || 0 : 0);
 
     return {
         // bonusLk: über Lernpunkte dauerhaft gesteigerte Lebenskraft
@@ -310,10 +317,10 @@ function computeDerived(char) {
         abwehr: attr.koerper + eig.haerte + armor.pa + zaehBonus + boni.abwehr,
         initiative: agilitaet + eig.bewegung + armor.initMod + weaponInit + boni.initiative,
         laufen: agilitaet / 2 + 1 + armor.laufenMod + boni.laufen,
-        schlagen: attr.koerper + eig.staerke + weaponBonus(melee) + boni.schlagen,
-        schiessen: agilitaet + eig.geschick + weaponBonus(ranged) + boni.schiessen,
+        schlagen: attr.koerper + eig.staerke + weaponBonus(melee) + eqBonus('melee', 'wb') + boni.schlagen,
+        schiessen: agilitaet + eig.geschick + weaponBonus(ranged) + eqBonus('ranged', 'wb') + boni.schiessen,
         zaubern: attr.geist + aura + zbZaubern - armor.nonClothPa - fremdZauberMalus + boni.zaubern,
-        zielzauber: attr.geist + eig.geschick + zbZielzauber - armor.nonClothPa - fremdZauberMalus + boni.zielzauber,
+        zielzauber: attr.geist + eig.geschick + zbZielzauber + weaponZielzauber - armor.nonClothPa - fremdZauberMalus + boni.zielzauber,
         panzerung: armor.pa,
         // Klassenfremd getragene Teile — für die Warnung am Bogen
         fremdePa: armor.fremdePa,

@@ -14,6 +14,8 @@ function blankCharacter() {
         lkCurrent: 0,
         gold: 10, silber: 0, kupfer: 0, bonusLk: 0, extraTp: 0,
         slayerpunkte: 0,   // optionale Regel, verfällt am Kampfende
+        // Verbesserungen und Verzauberungen je Ausrüstungsplatz
+        equipmentBoni: {},
         ntp: 0,          // zweiter Talentpunkt-Topf, falls die Runde ihn führt
         // Merkt sich, was mit Lernpunkten gekauft wurde. Nur so lassen sich
         // Steigerungen zurücknehmen und die Punkte korrekt erstatten.
@@ -62,6 +64,7 @@ function charForRules() {
         attribute: appData.attribute,
         eigenschaften: effectiveEigenschaften(),
         equipment: appData.equipment,
+        equipmentBoni: appData.equipmentBoni || {},
         zauberZb: zauber.zb,
         zauberTyp: zauber.typ,
         // Damit die Engine klassenfremde Rüstung erkennt (Regelwerk S.41)
@@ -105,6 +108,20 @@ function activeClass() {
     return DS4_CLASSES[appData.klasse] || null;
 }
 
+// Manche Heldenklassen bringen Zauberzugang mit, obwohl die Grundklasse nicht
+// zaubert — im Regelwerk ist das nur der Paladin (S.16).
+function heldenZauberzugang() {
+    if (!appData.heldenklasse || typeof DS4_HELDEN_ZAUBERZUGANG === 'undefined') return null;
+    return DS4_HELDEN_ZAUBERZUGANG[appData.heldenklasse] || null;
+}
+
+// Zaubert dieser Charakter überhaupt? Grundlage für die Kampfwerte Zaubern und
+// Zielzauber sowie für das Zauber-Panel.
+function istZauberwirker() {
+    const cls = activeClass();
+    return !!((cls && cls.isCaster) || heldenZauberzugang());
+}
+
 // Für Zauberwirker liegen die Rüstungsregeln beim Untertyp
 function armorRules() {
     const cls = activeClass();
@@ -139,6 +156,7 @@ function loadFromStorage() {
         appData.attribute = Object.assign(blankCharacter().attribute, parsed.attribute || {});
         appData.eigenschaften = Object.assign(blankCharacter().eigenschaften, parsed.eigenschaften || {});
         appData.equipment = Object.assign(blankCharacter().equipment, parsed.equipment || {});
+        appData.equipmentBoni = parsed.equipmentBoni || {};
         return true;
     } catch (e) {
         return false;
@@ -165,6 +183,7 @@ function applyCharacterData(parsed) {
     appData.attribute = Object.assign(base.attribute, parsed.attribute || {});
     appData.eigenschaften = Object.assign(base.eigenschaften, parsed.eigenschaften || {});
     appData.equipment = Object.assign(base.equipment, parsed.equipment || {});
+    appData.equipmentBoni = parsed.equipmentBoni || {};
     renderAll();
     scheduleSave();
     syncMultiplayerState();
@@ -465,7 +484,7 @@ function renderDerived() {
 
     // Kampfwert-Karten
     const container = document.getElementById('kampfwerte-container');
-    const isCaster = !!(activeClass() && activeClass().isCaster);
+    const isCaster = istZauberwirker();
     container.innerHTML = '';
 
     KAMPFWERT_DEFS.forEach(def => {
@@ -496,6 +515,7 @@ function renderDerived() {
 
     document.getElementById('tag-pa').textContent = 'PA ' + derived.panzerung;
     renderEquipmentInfo(derived);
+    renderEquipmentBoni();
 }
 
 // Alles, was der Bogen NICHT automatisch einrechnen kann, sammelt sich unter den
@@ -737,6 +757,54 @@ function renderEquipmentInfo(derived) {
     document.getElementById('equipment-details').innerHTML = details.join(' · ');
 }
 
+// --- Verbesserungen & Verzauberungen ----------------------------------------
+
+// Je Ausrüstungsplatz ein Bonus plus freie Notiz. Bei Waffen zählt der Bonus auf
+// den Waffenbonus (Schlagen bzw. Schießen), bei Rüstung auf die Panzerung.
+const DS4_BONUS_SLOTS = [
+    { slot: 'melee', label: 'Nahkampfwaffe', feld: 'wb', einheit: 'WB' },
+    { slot: 'ranged', label: 'Fernkampfwaffe', feld: 'wb', einheit: 'WB' },
+    { slot: 'koerper', label: 'Körperrüstung', feld: 'pa', einheit: 'PA' },
+    { slot: 'helm', label: 'Helm', feld: 'pa', einheit: 'PA' },
+    { slot: 'schienen', label: 'Schienen', feld: 'pa', einheit: 'PA' },
+    { slot: 'schild', label: 'Schild', feld: 'pa', einheit: 'PA' }
+];
+
+function equipmentBonus(slot) {
+    if (!appData.equipmentBoni) appData.equipmentBoni = {};
+    if (!appData.equipmentBoni[slot]) appData.equipmentBoni[slot] = { wb: 0, pa: 0, notiz: '' };
+    return appData.equipmentBoni[slot];
+}
+
+function renderEquipmentBoni() {
+    const box = document.getElementById('equipment-boni');
+    if (!box) return;
+
+    box.innerHTML = DS4_BONUS_SLOTS.map(def => {
+        const getragen = appData.equipment[def.slot];
+        const b = (appData.equipmentBoni || {})[def.slot] || {};
+        return `<div class="list-row">
+            <span style="flex:1;min-width:7rem">${def.label}
+                <span class="eig-abbr">${getragen ? escapeHtml(getragen) : 'nichts angelegt'}</span></span>
+            <span class="row-sub">${def.einheit}</span>
+            <input type="number" value="${b[def.feld] || 0}" step="1" style="width:3.5rem"
+                   data-eqbonus="${def.slot}" data-feld="${def.feld}" ${getragen ? '' : 'disabled'}>
+            <input type="text" value="${escapeHtml(b.notiz || '')}" placeholder="z.B. Flammenklinge, 1× Feuerstrahl pro Kampf"
+                   style="flex:2;min-width:9rem" data-eqbonus="${def.slot}" data-feld="notiz" ${getragen ? '' : 'disabled'}>
+        </div>`;
+    }).join('');
+
+    box.querySelectorAll('[data-eqbonus]').forEach(input => {
+        input.addEventListener('input', () => {
+            const b = equipmentBonus(input.dataset.eqbonus);
+            b[input.dataset.feld] = input.type === 'number' ? (parseInt(input.value, 10) || 0) : input.value;
+            renderDerived();
+            scheduleSave();
+            syncMultiplayerState();
+        });
+    });
+}
+
 // --- Porträt ----------------------------------------------------------------
 
 // Das Bild wandert über die Leitung zum Spielleiter und auf die Karte — deshalb
@@ -793,7 +861,7 @@ function renderMeta() {
     // Zauberwirker-Untertyp nur für Zauberwirker
     const cls = activeClass();
     document.getElementById('field-subtype').style.display = (cls && cls.isCaster) ? '' : 'none';
-    document.getElementById('panel-zauber').style.display = (cls && cls.isCaster) ? '' : 'none';
+    document.getElementById('panel-zauber').style.display = istZauberwirker() ? '' : 'none';
 
     // Heldenklassen ab Stufe 10
     const heldField = document.getElementById('field-held');
@@ -1310,6 +1378,41 @@ function startSpellCooldown(result) {
     return `${escapeHtml(spell.name)}: ${rounds} Runden Abklingzeit`;
 }
 
+// Welches mehrfach erwerbbare Talent passt zu einer typischen Probe?
+// Wissensgebiet und Handwerk geben je +3 pro Rang, aber nur für ihr Gebiet
+// (Regelwerk S.34 und S.47).
+const DS4_PROBE_GEBIETSTALENT = {
+    'Wissen': { talent: 'Wissensgebiet', proRang: 3 },
+    'Handwerksprobe': { talent: 'Handwerk', proRang: 3 }
+};
+
+// Füllt die Gebietsauswahl, sobald zur gewählten Probe ein Gebietstalent passt
+function renderGebietWahl() {
+    const box = document.getElementById('gebiet-wahl');
+    if (!box) return;
+    const sel = document.getElementById('f-typische-probe');
+    const probe = DS4_TYPISCHE_PROBEN[parseInt(sel.value, 10)];
+    const def = probe ? DS4_PROBE_GEBIETSTALENT[probe.name] : null;
+    const gebiete = def && typeof talentGebiete === 'function' ? talentGebiete(def.talent) : [];
+
+    if (!def || !gebiete.length) { box.style.display = 'none'; return; }
+    box.style.display = '';
+    document.getElementById('gebiet-hinweis').textContent = `${def.talent} — +${def.proRang} je Rang`;
+    document.getElementById('f-gebiet').innerHTML =
+        '<option value="">ohne passendes Gebiet</option>' +
+        gebiete.map(g => `<option value="${escapeHtml(g.gebiet)}">${escapeHtml(g.gebiet)} (Rang ${g.rang})</option>`).join('');
+}
+
+// Bonus aus dem gewählten Gebiet, falls eines passt
+function gebietsBonus(probenName, gebietsWert) {
+    const def = DS4_PROBE_GEBIETSTALENT[probenName];
+    if (!def || !gebietsWert) return null;
+    const treffer = (typeof talentGebiete === 'function' ? talentGebiete(def.talent) : [])
+        .find(g => g.gebiet === gebietsWert);
+    if (!treffer) return null;
+    return { summe: def.proRang * treffer.rang, text: `${def.talent} ${treffer.gebiet} ${treffer.rang}: +${def.proRang * treffer.rang}` };
+}
+
 function rollTypischeProbe() {
     const sel = document.getElementById('f-typische-probe');
     const probe = DS4_TYPISCHE_PROBEN[parseInt(sel.value, 10)];
@@ -1318,6 +1421,13 @@ function rollTypischeProbe() {
     const pw = probeWertFor(probe);
     let modifier = currentModifier();
     const quellen = [];
+
+    // Wissensgebiet zählt nur für das gewählte Gebiet
+    const gebiet = gebietsBonus(probe.name, (document.getElementById('f-gebiet') || {}).value);
+    if (gebiet) {
+        modifier += gebiet.summe;
+        quellen.push(gebiet.text);
+    }
 
     // Elfen sind leichtfüßig: +2 auf Schleichen
     if (probe.name === 'Schleichen' && appData.volk === 'elf') {
@@ -1341,6 +1451,33 @@ function rollTypischeProbe() {
         situativ.length ? 'zusätzlich möglich — ' + situativ.join(' · ') : ''
     ].filter(Boolean).join(' · ');
     logProbe(result, extra);
+}
+
+// Handwerksprobe: Das Regelwerk legt keine feste Formel fest — welches Attribut
+// und welche Eigenschaft passen, entscheidet die Spielleitung je nach Handwerk
+// (Waffenschmied eher KÖR+ST, Feinmechanik eher GEI+GE). Der Rang im passenden
+// Handwerk gibt +3 je Rang (S.34).
+function rollHandwerksprobe() {
+    const attrKey = document.getElementById('f-hw-attr').value;
+    const eigKey = document.getElementById('f-hw-eig').value;
+    if (!attrKey || !eigKey) return;
+
+    const pw = (appData.attribute[attrKey] || 0) + effectiveEigenschaft(eigKey);
+    let modifier = currentModifier();
+    const quellen = [];
+
+    // Nur das ausgewählte Handwerk zählt
+    const auswahl = (document.getElementById('f-gebiet') || {}).value;
+    const gebiet = gebietsBonus('Handwerksprobe', auswahl);
+    if (gebiet) {
+        modifier += gebiet.summe;
+        quellen.push(gebiet.text);
+    }
+
+    const label = `Handwerk${gebiet ? ` (${auswahl})` : ''} — ${DS4_ATTRIBUT_NAMES[attrKey]}+${DS4_EIGENSCHAFT_ABBR[eigKey]}`;
+    const result = rollProbe(pw, { label, modifier });
+    showProbeResult(result, '', quellen.join(' · '));
+    logProbe(result, quellen.length ? 'inkl. ' + quellen.join(', ') : '');
 }
 
 // Wertet die Formel einer typischen Probe gegen den Charakter aus.
@@ -1889,6 +2026,7 @@ function renderAll() {
     renderTalents();
     renderSpells();
     renderInventory();
+    renderGebietWahl();
     renderLog();
 }
 
@@ -1902,6 +2040,13 @@ function populateStaticSelects() {
     probe.innerHTML = DS4_TYPISCHE_PROBEN.map((p, i) =>
         `<option value="${i}">${p.name} — ${p.formula}</option>`
     ).join('');
+    probe.addEventListener('change', renderGebietWahl);
+
+    // Freie Wahl für die Handwerksprobe
+    document.getElementById('f-hw-attr').innerHTML = Object.entries(DS4_ATTRIBUT_NAMES)
+        .map(([k, n]) => `<option value="${k}">${n}</option>`).join('');
+    document.getElementById('f-hw-eig').innerHTML = Object.entries(DS4_EIGENSCHAFT_NAMES)
+        .map(([k, n]) => `<option value="${k}"${k === 'geschick' ? ' selected' : ''}>${n}</option>`).join('');
 
     populateEquipmentSelects();
 }

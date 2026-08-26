@@ -315,7 +315,10 @@ function eigenenZauberAnlegen() {
     const effekt = prompt('Wirkung (kurz):', '') || '';
     const typ = (prompt('Zaubern (n) oder Zielzauber (z)?', 'n') || 'n').toLowerCase().startsWith('z') ? 'ziel' : 'normal';
     const zb = prompt('Zauberbonus (ZB):', '+0') || '+0';
+    const dauer = prompt('Dauer:', 'sofort') || '—';
+    const distanz = prompt('Distanz/Reichweite:', 'Selbst') || '—';
     const abklingzeit = prompt('Abklingzeit:', '1 Kampfrunde') || '';
+    const preis = parseInt(prompt('Preis in Goldmünzen:', '0'), 10) || 0;
     const stufe = parseInt(prompt('Ab welcher Zauberwirker-Stufe?', '1'), 10) || 1;
 
     const typen = ['heiler', 'zauberer', 'schwarzmagier'];
@@ -326,8 +329,7 @@ function eigenenZauberAnlegen() {
         : typen;
 
     hausregeln.eigeneZauber.push({
-        name, typ, effekt, zb, abklingzeit, eigen: true,
-        dauer: '—', distanz: '—', preis: 0,
+        name, typ, effekt, zb, dauer, distanz, abklingzeit, preis, eigen: true,
         zugang: gewaehlt.map(k => ({ klasse: k, stufe }))
     });
     renderHausregeln();
