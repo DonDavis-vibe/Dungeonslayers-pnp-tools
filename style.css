@@ -297,7 +297,7 @@ select option { background: #1c1712; }
 /* ---------- Modal ---------- */
 
 .modal-overlay {
-    display: none; position: fixed; inset: 0; z-index: 200;
+    display: none; position: fixed; inset: 0; z-index: 260;
     background: rgba(0, 0, 0, 0.75);
     align-items: center; justify-content: center; padding: 1rem;
     opacity: 0; transition: opacity 0.25s;

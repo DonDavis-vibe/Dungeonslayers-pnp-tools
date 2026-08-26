@@ -398,11 +398,18 @@ const HILFE_THEMEN = {
                  <li><strong>🖼️ Karte</strong> lädt ein Bild; es wird verkleinert und in Stücken
                      an alle Spieler übertragen. <strong>📤 Senden</strong> schickt es erneut —
                      für alle, die später dazugekommen sind.</li>
-                 <li><strong>👥 Aus Kampf</strong> setzt alle Kampfteilnehmer auf einmal,
-                     <strong>➕ Figur</strong> eine einzelne.</li>
+                 <li><strong>👥 Aus Kampf</strong> setzt alle Kampfteilnehmer auf einmal.
+                     <strong>➕ Figur</strong> setzt eine einzelne: einen verbundenen Spieler,
+                     einen Gegner <em>aus dem Bestiarium</em> — der landet mit allen Werten
+                     zugleich im Kampf-Tracker — oder einen reinen Marker ohne Werte.</li>
                  <li><strong>📏 Größe</strong> ändert die Feldzahl einer Figur (Drache, Riese …),
                      <strong>🙈</strong> verbirgt einzelne Gegner vor den Spielern.</li>
-                 <li><strong>Figuren leeren</strong> räumt die Karte ab.</li>
+                 <li><strong>🗑️ Figur</strong> nimmt eine einzelne Figur von der Karte,
+                     <strong>Figuren leeren</strong> räumt alle auf einmal ab.</li>
+                 <li><strong>🔒 Züge prüfen / 🔓 Züge frei</strong> — normalerweise meldet ein
+                     Spielerzug sich nur als Vorschlag an und du entscheidest. Außerhalb des
+                     Kampfes nervt das; ein Klick gibt die Bewegung frei, die Spieler ziehen dann
+                     direkt. Die Umstellung gilt sofort für alle und auch für später Beitretende.</li>
                </ul>
                <p><strong>Werkzeuge</strong></p>
                <ul>

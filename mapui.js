@@ -8,6 +8,8 @@
 let karte = null;
 let karteOffen = false;
 let karteBildDatenUrl = null;
+// Der Spielleiter kann die Bestaetigungspflicht fuer Spielerzuege abschalten
+let zuegeFrei = false;
 
 // Bild wird in Stücken übertragen — ein DataChannel verträgt keine Megabyte am Stück
 const BILD_STUECK = 16 * 1024;
@@ -52,7 +54,7 @@ function karteEinhaengen() {
     // Spieler dürfen nur die eigene Figur schieben — und nur als Vorschlag,
     // den der Spielleiter bestätigt. Der Spielleiter selbst setzt direkt.
     karte.setBesitzer(isGmMode ? null : eigeneFigurKennung());
-    karte.setBestaetigung(!isGmMode);
+    karte.setBestaetigung(!isGmMode && !zuegeFrei);
     // Spieler sehen den Nebel deckend, der Spielleiter halbdurchsichtig
     karte.setNebelDeckend(!isGmMode);
     if (!isGmMode && ['malen', 'radieren', 'nebel-auf', 'nebel-zu'].includes(karte.getWerkzeug())) {
@@ -172,6 +174,9 @@ function renderKartenWerkzeuge() {
         <input type="number" id="map-offx" value="${r.rasterVersatzX}" style="width:3.4rem" title="Versatz waagerecht">
         <input type="number" id="map-offy" value="${r.rasterVersatzY}" style="width:3.4rem" title="Versatz senkrecht">
         <button class="btn btn-sm btn-ghost" onclick="figurGroesseDialog()" title="Größe einer Figur ändern (Drache, Riese ...)">📏 Größe</button>
+        <button class="btn btn-sm btn-ghost" onclick="figurEntfernenDialog()" title="Eine einzelne Figur von der Karte nehmen">🗑️ Figur</button>
+        <label class="radio-pill ${zuegeFrei ? 'selected' : ''}" onclick="zugFreigabeUmschalten()"
+               title="Aus: jeder Spielerzug muss bestätigt werden. An: Spieler bewegen ihre Figur frei — praktisch außerhalb des Kampfes.">${zuegeFrei ? '🔓 Züge frei' : '🔒 Züge prüfen'}</label>
         <button class="btn btn-sm btn-ghost" onclick="verdecktUmschalten()" title="Einzelne Gegner vor den Spielern verbergen">🙈</button>
         <button class="btn btn-sm btn-danger" style="margin-left:auto" onclick="figurenLeeren()">Figuren leeren</button>`;
 
@@ -265,15 +270,26 @@ function figurSetzenDialog() {
 
     const zeilen = [];
     spieler.forEach((p, i) => zeilen.push(`${i + 1}) ${p.name} (verbundener Spieler)`));
-    zeilen.push('G) Gegner aus dem Bestiarium oder mit eigenem Namen');
+    zeilen.push('B) Gegner aus dem Bestiarium - kommt mit Werten in den Kampf');
+    zeilen.push('N) Nur ein Marker mit eigenem Namen, ohne Werte');
 
     const eingabe = prompt(
         'Welche Figur auf die Karte setzen?\n\n' + zeilen.join('\n') +
-        '\n\nNummer oder G eingeben:');
+        '\n\nNummer, B oder N eingeben:');
     if (!eingabe) return;
 
-    if (eingabe.trim().toUpperCase() === 'G') {
-        const name = prompt('Name der Figur:', 'Gegner');
+    const wahl = eingabe.trim().toUpperCase();
+
+    // Ueber das Bestiarium kommt der Statblock gleich mit: dort erledigt
+    // "+ Karte" Kampf-Tracker und Figur in einem Zug.
+    if (wahl === 'B') {
+        if (typeof openBestiary === 'function') openBestiary();
+        else zeigeKartenHinweis('Das Bestiarium ist gerade nicht erreichbar.');
+        return;
+    }
+
+    if (wahl === 'N') {
+        const name = prompt('Name der Figur (nur Marker, ohne Werte):', 'Gegner');
         if (!name) return;
         figurSetzen({ name, farbe: '#a8342c', besitzer: 'sl', id: 'frei:' + uid() });
         return;
@@ -426,6 +442,40 @@ function groesseAusKategorie(gk) {
 }
 
 // Erst fragen, welche Figur — dann die Größe
+// Eine einzelne Figur von der Karte nehmen. battlemap kann das laengst
+// (removeFigur), es fehlte nur der Weg dorthin — bisher gab es nur "alle loeschen".
+function figurEntfernenDialog() {
+    const figuren = karte.figuren;
+    if (!figuren.length) {
+        const status = document.getElementById('map-status');
+        if (status) status.textContent = 'Keine Figuren auf der Karte.';
+        return;
+    }
+    const zeilen = figuren.map((f, i) => `${i + 1}) ${f.name}${f.besitzer === 'sl' ? '' : ' (Spieler)'}`);
+    const eingabe = prompt('Welche Figur von der Karte nehmen?\nNummer eingeben:\n\n' + zeilen.join('\n'));
+    if (!eingabe) return;
+
+    const f = figuren[parseInt(eingabe, 10) - 1];
+    if (!f) return;
+    karte.removeFigur(f.id);
+    const status = document.getElementById('map-status');
+    if (status) status.textContent = `${f.name} von der Karte genommen.`;
+}
+
+// Ausserhalb des Kampfes nervt die Bestaetigung jedes Schrittes. Der Spielleiter
+// kann die Zuege deshalb freigeben; die Spieler bewegen dann direkt.
+function zugFreigabeUmschalten() {
+    zuegeFrei = !zuegeFrei;
+    broadcastToPlayers({ type: 'mapZugFreigabe', frei: zuegeFrei });
+    renderKartenWerkzeuge();
+    const status = document.getElementById('map-status');
+    if (status) {
+        status.textContent = zuegeFrei
+            ? 'Spieler bewegen ihre Figuren jetzt direkt — ohne Bestätigung.'
+            : 'Spielerzüge müssen wieder bestätigt werden.';
+    }
+}
+
 function figurGroesseDialog() {
     const figuren = karte.figuren;
     if (!figuren.length) {
@@ -665,6 +715,14 @@ function handleKartenNachricht(payload, vonPeer) {
             karte.applyState(payload.zustand);
             return true;
 
+        case 'mapZugFreigabe':
+            zuegeFrei = !!payload.frei;
+            if (karte) karte.setBestaetigung(!isGmMode && !zuegeFrei);
+            zeigeKartenHinweis(zuegeFrei
+                ? 'Der Spielleiter hat die Bewegung freigegeben — du kannst deine Figur direkt ziehen.'
+                : 'Züge müssen wieder vom Spielleiter bestätigt werden.');
+            return true;
+
         case 'mapPortraits':
             if (!karte) return true;
             Object.entries(payload.bilder || {}).forEach(([id, dataUrl]) => karte.setFigurBild(id, dataUrl));
@@ -731,6 +789,8 @@ function handleKartenNachricht(payload, vonPeer) {
             if (!isGmMode) return true;
             if (karteBildDatenUrl) verteileKartenBild(vonPeer);
             verteileFigurenBilder(vonPeer);
+            // Wer spaeter dazukommt, muss den Stand der Zug-Freigabe kennen
+            if (zuegeFrei) sendToPlayer(vonPeer, { type: 'mapZugFreigabe', frei: true });
             return true;
     }
     return false;
