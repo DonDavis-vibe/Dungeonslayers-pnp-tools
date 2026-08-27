@@ -227,6 +227,19 @@ const DS4_TALENT_SITUATIV = {
     'Panzerung zerschmettern': {
         wert: 'gegnerische Panzerung (getroffenes Rüstungsteil)', proRang: -1,
         bedingung: 'bei jedem eigenen Nahkampftreffer, zufälliges Rüstungsteil; wirkungslos gegen magische und natürliche Rüstungen'
+    },
+    // Meisterdieb: kein Kampfwert, sondern eine Probe — die Proben-Tabelle
+    // unten kennt nur feste Zahlen, kein "+AGI", deshalb hier als Hinweis.
+    'Langfinger': {
+        wert: 'Taschendiebstahl (Probe)', proRang: 'AGI je Einsatz',
+        bedingung: 'je Rang 1 Einsatz pro 24 Stunden, mehrere Einsätze in einer Probe kombinierbar; auch mit Diebeskunst kombinierbar'
+    },
+    // Nekromant: begrenzte Nutzungen pro Tag lassen sich nicht automatisch
+    // pruefen (der Bogen fuehrt kein Tagesbudget) - deshalb Hinweis statt
+    // automatischem Abklingzeit-Wegfall wie bei Abklingen (Erzmagier).
+    'Totenrufer': {
+        wert: 'Abklingzeit von Schatten-/Skelette-/Zombies erwecken', proRang: 'entfällt',
+        bedingung: 'je Rang 1 Einsatz pro 24 Stunden'
     }
 };
 
