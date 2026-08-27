@@ -223,7 +223,11 @@ const HILFE_THEMEN = {
                <p>Der Zauberbonus des vorbereiteten Spruchs fließt automatisch in den Kampfwert ein,
                mit dem er auch gewirkt wird. Sprüche mit <em>formelhaftem</em> Zauberbonus (der vom
                Ziel abhängt) sind markiert — dort rechnet der Bogen bewusst mit 0, statt still
-               etwas Falsches einzusetzen.</p>`
+               etwas Falsches einzusetzen.</p>
+               <p>Mit dem Heldenklassen-Talent <em>Zauberroutine</em> (Erzmagier) erscheint zusätzlich
+               ein Knopf <strong>⚙ als Routine</strong> — bis zu so viele Zauber wie Talentränge lassen
+               sich damit dauerhaft aktiv halten, wie mit einem Zauberstab: kein eigener Wurf, keine
+               eigene Abklingzeit, ihr Zauberbonus zählt einfach automatisch mit dazu.</p>`
     },
     'stufenaufstieg': {
         gruppe: 'bogen',

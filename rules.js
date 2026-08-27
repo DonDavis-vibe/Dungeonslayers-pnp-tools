@@ -447,6 +447,21 @@ function computeDerived(char) {
         herkunft[ziel] = (herkunft[ziel] || []).concat(zauberart.quellen);
     }
 
+    // Heldenklasse Erzmagier, Talent Zauberroutine: haelt weitere Zauber
+    // "wie mit einem Zauberstab" dauerhaft aktiv (S.17) - ihr ZB fliesst
+    // additiv ein, je nach eigenem Typ auf Zaubern oder Zielzauber, ohne
+    // eigenen Wurf oder Abklingzeit (siehe app.js: routineSpellsInfo).
+    let routineZaubern = 0, routineZielzauber = 0;
+    (char.routineZauber || []).forEach(r => {
+        if (r.unklar) return; // formelhafter ZB laesst sich nicht vorausrechnen
+        if (r.typ === 'ziel') routineZielzauber += r.zb;
+        else routineZaubern += r.zb;
+        if (r.zb) {
+            const ziel = r.typ === 'ziel' ? 'zielzauber' : 'zaubern';
+            (herkunft[ziel] = herkunft[ziel] || []).push(`Routine „${r.name}": ${r.zb > 0 ? '+' : ''}${r.zb}`);
+        }
+    });
+
     // Klassenfremde Rüstung (S.41): PA-Malus auf Zaubern/Zielzauber vervierfacht
     // (also 3x PA zusätzlich zum normalen Abzug) und Agilität um den PA-Wert gesenkt.
     const fremdZauberMalus = armor.fremdePa * 3;
@@ -502,8 +517,8 @@ function computeDerived(char) {
         laufen: agilitaet / 2 + 1 + armor.laufenMod + boni.laufen,
         schlagen: attr.koerper + eig.staerke + weaponBonus(melee) + eqBonus('melee', 'wb') + boni.schlagen,
         schiessen: agilitaet + eig.geschick + weaponBonus(ranged) + eqBonus('ranged', 'wb') + boni.schiessen,
-        zaubern: attr.geist + aura + zbZaubern + artZaubern - armor.nonClothPa - fremdZauberMalus + boni.zaubern,
-        zielzauber: attr.geist + eig.geschick + zbZielzauber + artZielzauber + weaponZielzauber - armor.nonClothPa - fremdZauberMalus + boni.zielzauber,
+        zaubern: attr.geist + aura + zbZaubern + artZaubern + routineZaubern - armor.nonClothPa - fremdZauberMalus + boni.zaubern,
+        zielzauber: attr.geist + eig.geschick + zbZielzauber + artZielzauber + weaponZielzauber + routineZielzauber - armor.nonClothPa - fremdZauberMalus + boni.zielzauber,
         panzerung: armor.pa,
         // Klassenfremd getragene Teile — für die Warnung am Bogen
         fremdePa: armor.fremdePa,

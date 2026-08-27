@@ -526,7 +526,7 @@ function renderGmDashboard() {
                 <details style="margin-top:0.4rem">
                     <summary style="cursor:pointer;font-size:0.85rem;color:var(--text-dim)">Zauber (${p.spells.length})</summary>
                     <div class="hint" style="margin-top:0.4rem">
-                        ${p.spells.map(s => `${s.prepared ? '★ ' : ''}${escapeHtml(s.name)}${s.cooldownUntil ? ` <span style="color:var(--fail)">(abklingend bis Runde ${s.cooldownUntil})</span>` : ''}`).join('<br>')}
+                        ${p.spells.map(s => `${s.prepared ? '★ ' : (s.routine ? '⚙ ' : '')}${escapeHtml(s.name)}${s.cooldownUntil ? ` <span style="color:var(--fail)">(abklingend bis Runde ${s.cooldownUntil})</span>` : ''}`).join('<br>')}
                     </div>
                 </details>` : (p.preparedSpell ? `<div class="hint" style="margin-top:0.4rem"><strong>Vorbereitet:</strong> ${escapeHtml(p.preparedSpell)}</div>` : '')}
 
@@ -841,7 +841,7 @@ function buildSharedState() {
         talents: appData.talents,
         preparedSpell: prepared ? prepared.name : '',
         // Der Spielleiter muss auch sehen, was die Gruppe dabeihat und kann
-        spells: (appData.spells || []).map(s => ({ name: s.name, prepared: !!s.prepared, cooldownUntil: s.cooldownUntil || 0 })),
+        spells: (appData.spells || []).map(s => ({ name: s.name, prepared: !!s.prepared, routine: !!s.routine, cooldownUntil: s.cooldownUntil || 0 })),
         inventory: (appData.inventory || []).map(i => ({ name: i.name, menge: i.menge })),
         ep: appData.ep || 0, lp: appData.lp || 0, tp: appData.tp || 0,
         gold: appData.gold, silber: appData.silber, kupfer: appData.kupfer

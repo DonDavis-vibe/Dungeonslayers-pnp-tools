@@ -159,7 +159,10 @@ Kein Freitextfeld, sondern eine echte Auswahl mit Regelprüfung:
 - **Zauberrelevante Talente** fließen ein: *Rüstzauberer* (ignoriert je Rang 2 Punkte
   Panzerungsmalus beim Zaubern), *Stabbindung* und *Zauberwaffe* (je Rang +1 auf Zielzauber,
   solange die gebundene Waffe geführt wird) sowie *Meister seiner Klasse* (Primärattribut der
-  Grundklasse +1, wirkt damit auf alle abgeleiteten Werte).
+  Grundklasse +1, wirkt damit auf alle abgeleiteten Werte). *Zauberroutine* (Heldenklasse
+  Erzmagier) lässt bis zu einen Zauber je Rang zusätzlich **als Routine** dauerhaft aktiv halten
+  — wie mit einem Zauberstab: kein eigener Wurf, keine eigene Abklingzeit, der Zauberbonus fließt
+  einfach automatisch mit in Zaubern bzw. Zielzauber ein.
 - **Zauberartgebundene Talente** ebenfalls: Dafür sind die Zaubersprüche nach Art ausgezeichnet
   (Heil- und Schutzzauber, Feuer, Blitz, Elementarschaden, Untote — dazu das schon vorhandene
   Merkmal *geistesbeeinflussend*). *Fürsorger*, *Feuermagier*, *Blitzmacher*, *Herr der Elemente*,

@@ -49,9 +49,12 @@ function renderSpells() {
     const container = document.getElementById('spell-list');
     if (!container) return;
 
+    const routineMax = typeof routineKapazitaet === 'function' ? routineKapazitaet() : 0;
+    const routineAnzahl = appData.spells.filter(s => s.routine && !s.prepared).length;
     const kopf = `<div style="display:flex;gap:0.5rem;align-items:center;margin-bottom:0.7rem;flex-wrap:wrap">
         <span class="budget">Bekannte Zauber: <strong>${appData.spells.length}</strong></span>
-        <span class="hint" style="margin-left:auto">Nur ein Zauber kann vorbereitet sein</span>
+        ${routineMax ? `<span class="budget">Routine (Zauberroutine): <strong>${routineAnzahl}/${routineMax}</strong></span>` : ''}
+        <span class="hint" style="margin-left:auto">Nur ein Zauber kann vorbereitet sein${routineMax ? ` — dazu bis zu ${routineMax} als Routine dauerhaft aktiv` : ''}</span>
     </div>`;
 
     if (!appData.spells.length) {
@@ -75,6 +78,11 @@ function renderSpells() {
                         title="Vorbereiteten Zauber setzen — Wechseln kostet im Kampf eine Aktion und eine GEI+VE-Probe">
                     ${s.prepared ? '★ vorbereitet' : '☆ vorbereiten'}
                 </button>
+                ${routineMax ? `<button class="btn btn-sm ${s.routine ? 'btn-primary' : 'btn-ghost'}" data-routine="${escapeHtml(s.name)}"
+                        ${s.prepared ? 'disabled style="opacity:0.4"' : ''}
+                        title="Zauberroutine: dauerhaft aktiv wie mit einem Zauberstab, kein eigener Wurf, keine Abklingzeit — ZB fließt automatisch in Zaubern/Zielzauber ein">
+                    ${s.routine ? '⚙ Routine' : '⚙ als Routine'}
+                </button>` : ''}
                 <strong>${escapeHtml(s.name)}</strong>
                 <span class="tag">${probe}</span>
                 ${zbUnklar ? '<span class="tag tag-warn" title="Der Bogen rechnet mit ZB 0 — der tatsächliche Wert hängt vom Ziel ab und gehört als Modifikator in den Wurf">ZB formelhaft</span>' : ''}
@@ -100,6 +108,26 @@ function renderSpells() {
             const war = target.prepared;
             appData.spells.forEach(s => { s.prepared = false; });
             target.prepared = !war;
+            // Als Routine aktiv UND vorbereitet waere doppelt gezaehlt - der
+            // Knopf ist dafuer zwar schon gesperrt, aber sauberer ist sauberer.
+            if (target.prepared) target.routine = false;
+            renderSpells();
+            onDataChanged();
+        });
+    });
+    container.querySelectorAll('[data-routine]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const name = btn.dataset.routine;
+            const target = appData.spells.find(s => s.name === name);
+            if (!target.routine) {
+                const max = typeof routineKapazitaet === 'function' ? routineKapazitaet() : 0;
+                const belegt = appData.spells.filter(s => s.routine && !s.prepared).length;
+                if (belegt >= max) {
+                    alert(`Zauberroutine erlaubt höchstens ${max} zusätzlich aktive${max === 1 ? 'n' : ''} Zauber gleichzeitig — erst einen anderen abwählen.`);
+                    return;
+                }
+            }
+            target.routine = !target.routine;
             renderSpells();
             onDataChanged();
         });
