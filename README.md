@@ -160,9 +160,10 @@ Kein Freitextfeld, sondern eine echte Auswahl mit Regelprüfung:
   Panzerungsmalus beim Zaubern), *Stabbindung* und *Zauberwaffe* (je Rang +1 auf Zielzauber,
   solange die gebundene Waffe geführt wird) sowie *Meister seiner Klasse* (Primärattribut der
   Grundklasse +1, wirkt damit auf alle abgeleiteten Werte). *Zauberroutine* (Heldenklasse
-  Erzmagier) lässt bis zu einen Zauber je Rang zusätzlich **als Routine** dauerhaft aktiv halten
-  — wie mit einem Zauberstab: kein eigener Wurf, keine eigene Abklingzeit, der Zauberbonus fließt
-  einfach automatisch mit in Zaubern bzw. Zielzauber ein.
+  Erzmagier) bindet je Talentrang einen Zauber, zu dem der Erzmagier **ohne Aktion und ohne
+  GEI+VE-Probe** wechseln darf — wie mit einem Zauberstab. Es bleibt trotzdem bei einem aktiven
+  Spruch: der Zauberbonus zählt immer nur für den gerade gewirkten Zauber (S.46), die gebundenen
+  Sprüche stehen unter den Kampfwerten nur als Erinnerung, welche ohne Wechselprobe bereit sind.
 - **Zauberartgebundene Talente** ebenfalls: Dafür sind die Zaubersprüche nach Art ausgezeichnet
   (Heil- und Schutzzauber, Feuer, Blitz, Elementarschaden, Untote — dazu das schon vorhandene
   Merkmal *geistesbeeinflussend*). *Fürsorger*, *Feuermagier*, *Blitzmacher*, *Herr der Elemente*,

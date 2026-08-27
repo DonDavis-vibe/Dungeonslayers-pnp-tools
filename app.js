@@ -68,9 +68,6 @@ function charForRules() {
         zauberZb: zauber.zb,
         zauberTyp: zauber.typ,
         zauberArt: zauber.art,
-        // Heldenklasse Erzmagier: zusaetzlich "aktiv gehaltene" Zauber (Talent
-        // Zauberroutine) - passive ZB-Quelle wie ein Kampfstab, kein eigener Wurf
-        routineZauber: routineSpellsInfo(),
         // Damit die Engine klassenfremde Rüstung erkennt (Regelwerk S.41)
         armorRules: armorRules(),
         bonusLk: appData.bonusLk || 0,
@@ -113,34 +110,30 @@ function preparedSpellZb() {
     return preparedSpellInfo().zb;
 }
 
-// Wie viele Zauber zusätzlich zum vorbereiteten "Routine" laufen dürfen
-// (Heldenklasse Erzmagier, Talent Zauberroutine — 1 pro Rang).
+// Wie viele Zauber der Erzmagier mit dem Talent Zauberroutine zusätzlich
+// abrufbereit halten darf (1 je Talentrang).
 function routineKapazitaet() {
     return talentRang(appData.talents, 'Zauberroutine');
 }
 
-// Zauberroutine haelt weitere Zauber "wie mit einem Zauberstab" dauerhaft
-// aktiv — ohne Wechselprobe und ohne Rundenverlust (S.17). Anders als beim
-// vorbereiteten Zauber wird dafuer kein eigener Wurf gebraucht: ihr ZB
-// fliesst einfach zusaetzlich in Zaubern/Zielzauber ein, genau wie beim
-// Kampfstab (Stabbindung/Zauberwaffe) schon. Der aktuell vorbereitete Zauber
-// zaehlt hier bewusst nicht doppelt mit.
+// Zauberroutine (ERZ 16): pro Talentrang ein gebundener Zauber, zu dem der
+// Erzmagier "wie mit einem Zauberstab" ohne Aktion und ohne GEI+VE-Probe
+// wechseln kann. Es bleibt trotzdem bei EINEM aktiven Spruch — der ZB gehört
+// stets dem Spruch, der gerade gewirkt wird (S.46), also fließt hier nichts
+// zusätzlich in die Kampfwerte ein. Die Liste dient nur der Erinnerung, welche
+// Sprüche ohne Wechselprobe bereitstehen.
 function routineSpellsInfo() {
     const data = typeof zauberListe === 'function' ? zauberListe() : (typeof DS4_ZAUBER !== 'undefined' ? DS4_ZAUBER : []);
-    // Kappen, falls noch mehr Zauber als "Routine" markiert sind, als der
-    // aktuelle Talentrang erlaubt (z.B. nach nachtraeglich zurueckgenommenen
-    // Raengen) — stehen bleiben duerfen sie, mitzaehlen nur bis zur Kapazitaet.
+    // Kappen, falls mehr Zauber als "Routine" markiert sind, als der aktuelle
+    // Talentrang erlaubt (z.B. nach zurückgenommenen Rängen).
     const kapazitaet = routineKapazitaet();
     return (appData.spells || [])
         .filter(s => s.routine && !s.prepared)
         .slice(0, kapazitaet)
         .map(s => {
             const d = data.find(z => z.name === s.name);
-            const rohZb = s.zb != null && s.zb !== '' ? s.zb : (d ? d.zb : 0);
             const typ = s.typ || (d ? d.typ : null);
-            const text = String(rohZb).trim();
-            const rein = /^[+−-]?\d+$/.test(text.replace('−', '-'));
-            return { name: s.name, zb: rein ? parseInt(text.replace('−', '-'), 10) : 0, typ, unklar: !rein, rohZb: text };
+            return { name: s.name, typ };
         });
 }
 
@@ -545,11 +538,13 @@ function renderDerived() {
             else if (zauber.unklar) zbHinweis = `„${zauber.name}": ZB ${zauber.rohZb} — formelhaft, selbst einrechnen`;
             else zbHinweis = `inkl. ZB ${zauber.zb > 0 ? '+' : ''}${zauber.zb} von „${zauber.name}"`;
 
-            // Zauberroutine: dauerhaft aktive Zauber steuern zusätzlich ihren ZB bei
+            // Zauberroutine: weitere gebundene Sprüche, zu denen ohne Aktion und
+            // ohne Probe gewechselt werden kann. Ihr ZB zählt erst beim Wirken
+            // des jeweiligen Spruchs, nicht hier dauerhaft.
             const routine = (typeof routineSpellsInfo === 'function' ? routineSpellsInfo() : [])
-                .filter(r => !r.unklar && r.zb && (r.typ === 'ziel') === (def.key === 'zielzauber'));
+                .filter(r => (r.typ === 'ziel') === (def.key === 'zielzauber'));
             if (routine.length) {
-                zbHinweis += ' · Routine: ' + routine.map(r => `${r.zb > 0 ? '+' : ''}${r.zb} von „${r.name}"`).join(', ');
+                zbHinweis += ' · ohne Wechselprobe bereit: ' + routine.map(r => `„${r.name}"`).join(', ');
             }
         }
 

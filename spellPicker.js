@@ -50,11 +50,11 @@ function renderSpells() {
     if (!container) return;
 
     const routineMax = typeof routineKapazitaet === 'function' ? routineKapazitaet() : 0;
-    const routineAnzahl = appData.spells.filter(s => s.routine && !s.prepared).length;
+    const routineAnzahl = appData.spells.filter(s => s.routine).length;
     const kopf = `<div style="display:flex;gap:0.5rem;align-items:center;margin-bottom:0.7rem;flex-wrap:wrap">
         <span class="budget">Bekannte Zauber: <strong>${appData.spells.length}</strong></span>
-        ${routineMax ? `<span class="budget">Routine (Zauberroutine): <strong>${routineAnzahl}/${routineMax}</strong></span>` : ''}
-        <span class="hint" style="margin-left:auto">Nur ein Zauber kann vorbereitet sein${routineMax ? ` — dazu bis zu ${routineMax} als Routine dauerhaft aktiv` : ''}</span>
+        ${routineMax ? `<span class="budget">Zauberroutine: <strong>${routineAnzahl}/${routineMax}</strong> gebunden</span>` : ''}
+        <span class="hint" style="margin-left:auto">Nur ein Zauber kann vorbereitet sein${routineMax ? ` — zu den ${routineMax} gebundenen Sprüchen wechselst du ohne Aktion und ohne Probe` : ''}</span>
     </div>`;
 
     if (!appData.spells.length) {
@@ -75,13 +75,14 @@ function renderSpells() {
         return `<div class="talent-entry" ${onCooldown ? 'style="opacity:0.62"' : ''}>
             <div class="talent-entry-head">
                 <button class="btn btn-sm ${s.prepared ? 'btn-primary' : 'btn-ghost'}" data-prepare="${escapeHtml(s.name)}"
-                        title="Vorbereiteten Zauber setzen — Wechseln kostet im Kampf eine Aktion und eine GEI+VE-Probe">
+                        title="${s.routine
+                            ? 'Vorbereiteten Zauber setzen — als gebundener Zauberroutine-Spruch ohne Aktion und ohne GEI+VE-Probe'
+                            : 'Vorbereiteten Zauber setzen — Wechseln kostet im Kampf eine Aktion und eine GEI+VE-Probe'}">
                     ${s.prepared ? '★ vorbereitet' : '☆ vorbereiten'}
                 </button>
                 ${routineMax ? `<button class="btn btn-sm ${s.routine ? 'btn-primary' : 'btn-ghost'}" data-routine="${escapeHtml(s.name)}"
-                        ${s.prepared ? 'disabled style="opacity:0.4"' : ''}
-                        title="Zauberroutine: dauerhaft aktiv wie mit einem Zauberstab, kein eigener Wurf, keine Abklingzeit — ZB fließt automatisch in Zaubern/Zielzauber ein">
-                    ${s.routine ? '⚙ Routine' : '⚙ als Routine'}
+                        title="Zauberroutine: an diesen Spruch binden — dann ohne Aktion und ohne Probe hierher wechseln. Beim Wirken zählt sein eigener ZB, er addiert sich nicht dauerhaft.">
+                    ${s.routine ? '⚙ gebunden' : '⚙ binden'}
                 </button>` : ''}
                 <strong>${escapeHtml(s.name)}</strong>
                 <span class="tag">${probe}</span>
@@ -108,9 +109,8 @@ function renderSpells() {
             const war = target.prepared;
             appData.spells.forEach(s => { s.prepared = false; });
             target.prepared = !war;
-            // Als Routine aktiv UND vorbereitet waere doppelt gezaehlt - der
-            // Knopf ist dafuer zwar schon gesperrt, aber sauberer ist sauberer.
-            if (target.prepared) target.routine = false;
+            // Ein per Zauberroutine gebundener Spruch bleibt gebunden, auch
+            // wenn er gerade der aktive ist — das Wechseln kostet dann nichts.
             renderSpells();
             onDataChanged();
         });
@@ -121,9 +121,9 @@ function renderSpells() {
             const target = appData.spells.find(s => s.name === name);
             if (!target.routine) {
                 const max = typeof routineKapazitaet === 'function' ? routineKapazitaet() : 0;
-                const belegt = appData.spells.filter(s => s.routine && !s.prepared).length;
+                const belegt = appData.spells.filter(s => s.routine).length;
                 if (belegt >= max) {
-                    alert(`Zauberroutine erlaubt höchstens ${max} zusätzlich aktive${max === 1 ? 'n' : ''} Zauber gleichzeitig — erst einen anderen abwählen.`);
+                    alert(`Zauberroutine bindet höchstens ${max} Zauber${max === 1 ? '' : ' gleichzeitig'} — erst einen anderen lösen.`);
                     return;
                 }
             }

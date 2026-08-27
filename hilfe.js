@@ -225,9 +225,12 @@ const HILFE_THEMEN = {
                Ziel abhängt) sind markiert — dort rechnet der Bogen bewusst mit 0, statt still
                etwas Falsches einzusetzen.</p>
                <p>Mit dem Heldenklassen-Talent <em>Zauberroutine</em> (Erzmagier) erscheint zusätzlich
-               ein Knopf <strong>⚙ als Routine</strong> — bis zu so viele Zauber wie Talentränge lassen
-               sich damit dauerhaft aktiv halten, wie mit einem Zauberstab: kein eigener Wurf, keine
-               eigene Abklingzeit, ihr Zauberbonus zählt einfach automatisch mit dazu.</p>`
+               ein Knopf <strong>⚙ binden</strong> — bis zu so viele Zauber wie Talentränge lassen sich
+               damit an den Erzmagier binden, wie mit einem Zauberstab. Zu einem gebundenen Spruch
+               wechselst du <strong>ohne Aktion und ohne GEI+VE-Probe</strong>. Es bleibt trotzdem bei
+               einem vorbereiteten Zauber zur Zeit — der Zauberbonus zählt immer nur für den Spruch,
+               den du gerade wirkst. Die anderen gebundenen Sprüche stehen unter den Kampfwerten als
+               Erinnerung, welche ohne Wechselprobe bereit sind.</p>`
     },
     'stufenaufstieg': {
         gruppe: 'bogen',
