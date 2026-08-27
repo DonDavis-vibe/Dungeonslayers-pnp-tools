@@ -27,6 +27,10 @@ function makeNpc(preset = {}) {
         ep: preset.ep != null ? preset.ep : null,
         // normal | heroisch | episch (S.105)
         rang: 'normal',
+        // Wem gehoert dieser NSC (Beschwoerung/Vertrauter)? Rein informativ -
+        // speichert den SPIELERNAMEN (stabil ueber Reconnects), keine
+        // automatische Regelwirkung, nur Anzeige und spaetere Anknuepfung.
+        owner: preset.owner || '',
         notiz: preset.notiz || '',
         // Abwartehandlung: +2 Initiative je abgewartete Runde, höchstens +10 (S.43)
         abwarten: 0,
@@ -539,6 +543,7 @@ function renderCombat() {
                         : `<strong>${escapeHtml(c.name)}</strong>`}
                     ${down ? '<span class="tag tag-warn" title="Der schnelle Tod (S.104): Gegner unter 1 LK sollten zugunsten des Spieltempos als tot gelten — wichtige NSC ausgenommen.">besiegt</span>' : ''}
                     ${c.rang && c.rang !== 'normal' ? `<span class="tag" style="border-color:var(--accent-bright);color:var(--accent-bright)">${escapeHtml(DS4_GEGNER_RAENGE[c.rang].name)}</span>` : ''}
+                    ${c.owner ? `<span class="tag" style="border-color:${colorForPlayer(c.owner)};color:${colorForPlayer(c.owner)}" title="Beschworen/gehört zu ${escapeHtml(c.owner)}">👤 ${escapeHtml(c.owner)}</span>` : ''}
                 </div>
                 <div class="lk-bar-track" style="margin-top:0.25rem;height:10px">
                     <div class="lk-bar-fill" style="width:${lkPct}%;background:${lkColor}"></div>
@@ -560,6 +565,11 @@ function renderCombat() {
                         · <span title="Heroische und epische Gegner (S.105): LK x5 bzw. x10, Abwehr +2/+4, ein Angriff +2/+4">Rang</span>
                         <select data-rang="${c.id}" style="font-size:0.78rem;padding:0.1rem">
                             ${Object.entries(DS4_GEGNER_RAENGE).map(([key, r]) => `<option value="${key}" ${(c.rang || 'normal') === key ? 'selected' : ''}>${escapeHtml(r.name)}</option>`).join('')}
+                        </select>
+                        · <span title="Beschwörer/Besitzer — rein informativ, keine automatische Regelwirkung">Gehört</span>
+                        <select data-cf="owner" data-cid="${c.id}" style="font-size:0.78rem;padding:0.1rem">
+                            <option value="">—</option>
+                            ${Object.values(connectedPlayers).map(p => `<option value="${escapeHtml(p.name)}" ${c.owner === p.name ? 'selected' : ''}>${escapeHtml(p.name)}</option>`).join('')}
                         </select>
                         ${c.ep != null ? `· <span class="hint">${c.ep} EP</span>` : ''}
                     ` : `

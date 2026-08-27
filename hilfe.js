@@ -531,6 +531,9 @@ const HILFE_THEMEN = {
                      selbst seine Abwehr und bekommt den Restschaden angerechnet.</li>
                  <li><strong>Größenkategorien</strong> fließen automatisch ein — der Oger gegen den
                      Goblin bekommt seine −4 ohne dein Zutun.</li>
+                 <li><strong>Gehört</strong> ordnet einen NSC einem verbundenen Spieler zu — praktisch
+                     für Beschwörungen und Vertraute. Rein informativ (Namensschild in Spielerfarbe),
+                     der Bogen rechnet daraus nichts automatisch aus.</li>
                </ul>
                <p>Werte, die ein Statblock nicht nennt, setzt der Tracker als Platzhalter ein und
                sagt ausdrücklich dazu, dass sie nachgetragen gehören.</p>`

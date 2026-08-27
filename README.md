@@ -405,6 +405,9 @@ frühere Sitzung wiederherzustellen.
 - Werte, die ein Statblock gar nicht nennt oder als Ausdruck führt (Schwarmwert, „5+1"), setzt der
   Tracker als Platzhalter ein und **sagt ausdrücklich dazu**, dass sie nachgetragen gehören
 - Verbundene Spieler werden mit Live-Werten in die Reihenfolge übernommen
+- **NSC lassen sich einem Spieler zuordnen** („Gehört") — praktisch für Beschwörungen und
+  Vertraute. Rein informativ (Namensschild in Spielerfarbe an der Kampf-Zeile), keine
+  automatische Regelwirkung; die Zuordnung übersteht Sitzung speichern/laden mit
 
 ---
 
