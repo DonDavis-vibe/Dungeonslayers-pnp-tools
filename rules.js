@@ -109,15 +109,39 @@ function weaponBonus(weapon) {
     return typeof weapon.wb === 'number' ? weapon.wb : parseInt(weapon.wb, 10) || 0;
 }
 
+// Dauerhafte, bedingungslose Talent-Abzüge auf die Gegnerabwehr einer
+// bestimmten Angriffsart — je Rang −1 (Heldenklassen-Talente, PDF S.17-37).
+const DS4_TALENT_GA = { schlagen: 'Verletzen', schiessen: 'Scharfschütze', zielzauber: 'Verheerer' };
+
 // Gegnerabwehr (GA): manche Waffen senken (oder heben) die Abwehr des Ziels
 // gegen diesen Angriff — z.B. Langschwert −2, Bihänder −4, waffenlos +5.
-function gegnerabwehr(char, slot) {
-    const weapon = findWeapon(char.equipment && char.equipment[slot]);
-    const basis = weapon && weapon.gaMod ? weapon.gaMod : 0;
+// `art` ist der Kampfwert-Schlüssel ('schlagen'/'schiessen'/'zielzauber');
+// Zaubern hat keine Gegnerabwehr, weil es kein Angriff ist (S.43-44).
+function gegnerabwehr(char, art) {
+    const talents = char.talents || [];
+    const slot = art === 'schlagen' ? 'melee' : (art === 'schiessen' ? 'ranged' : null);
+    const weapon = slot ? findWeapon(char.equipment && char.equipment[slot]) : null;
+
+    let basis = 0;
+    // Waffenloser Meister (Heldenklasse Kampfmönch, S.31): Der normale +5-
+    // Abwehrbonus des Gegners gegen waffenlose Angriffe entfällt komplett,
+    // je Rang kommt zusätzlich −1 obendrauf — ersetzt also den Waffenwert,
+    // statt ihn nur zu addieren.
+    const waffenloserMeisterRang = talentRang(talents, 'Waffenloser Meister');
+    if (art === 'schlagen' && weapon && weapon.name === 'Waffenlos' && waffenloserMeisterRang) {
+        basis = -waffenloserMeisterRang;
+    } else if (weapon) {
+        basis = weapon.gaMod || 0;
+    }
+
     // Ein magischer Waffenbonus wird bei Treffern zusätzlich von der Abwehr
-    // des Gegners abgezogen (Regelwerk S.102).
-    const magisch = ((char.equipmentBoni || {})[slot] || {}).wb || 0;
-    return basis - magisch;
+    // des Gegners abgezogen (Regelwerk S.102) — gilt nur bei Waffenangriffen.
+    const magisch = slot ? (((char.equipmentBoni || {})[slot] || {}).wb || 0) : 0;
+
+    const talentName = DS4_TALENT_GA[art];
+    const talentBonus = talentName ? -talentRang(talents, talentName) : 0;
+
+    return basis - magisch + talentBonus;
 }
 
 // --- Talentboni -------------------------------------------------------------
@@ -386,6 +410,33 @@ function computeDerived(char) {
     if (melee) {
         weaponZielzauber += melee.name === 'Kampfstab' ? talentRang(talents, 'Stabbindung') : 0;
         weaponZielzauber += talentRang(talents, 'Zauberwaffe');
+    }
+
+    // Waffenloser Meister (Heldenklasse Kampfmönch, S.31): zwei Teile, beide
+    // aus vorhandenen Daten ableitbar — anders als "ist der Vertraute in der
+    // Nähe" lässt sich hier wirklich prüfen, ob unbewaffnet gekämpft wird und
+    // wie die Rüstung aussieht. Die Gegnerabwehr-Seite steckt in gegnerabwehr().
+    const waffenloserMeisterRang = talentRang(talents, 'Waffenloser Meister');
+    if (waffenloserMeisterRang) {
+        // WB waffenloser Angriffe +1 je Rang — nur mit "Waffenlos" ausgerüstet
+        if (melee && melee.name === 'Waffenlos') {
+            boni.schlagen += waffenloserMeisterRang;
+            (herkunft.schlagen = herkunft.schlagen || []).push(
+                `Waffenloser Meister ${waffenloserMeisterRang}: +${waffenloserMeisterRang} (waffenlos)`);
+        }
+        // +1 Abwehr und +1 Initiative je Rang, solange kein Schild und keine
+        // Rüstung über Stoff getragen wird
+        const koerperRuestung = findArmor(char.equipment && char.equipment.koerper);
+        const hatSchild = !!findArmor(char.equipment && char.equipment.schild);
+        const nurStoffOderNackt = !koerperRuestung || koerperRuestung.typ === 'stoff';
+        if (!hatSchild && nurStoffOderNackt) {
+            boni.abwehr += waffenloserMeisterRang;
+            boni.initiative += waffenloserMeisterRang;
+            (herkunft.abwehr = herkunft.abwehr || []).push(
+                `Waffenloser Meister ${waffenloserMeisterRang}: +${waffenloserMeisterRang} (ohne Schild/Rüstung)`);
+            (herkunft.initiative = herkunft.initiative || []).push(
+                `Waffenloser Meister ${waffenloserMeisterRang}: +${waffenloserMeisterRang} (ohne Schild/Rüstung)`);
+        }
     }
 
     return {

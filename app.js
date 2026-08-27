@@ -1332,9 +1332,9 @@ function rollKampfwert(key, label, pw) {
         extra = kampfpatzerText(key);
     } else if (result.success && istAngriff) {
         extra = `Schaden: <strong>${schaden}</strong> (Gegner würfelt Abwehr`;
-        // Gegnerabwehr der geführten Waffe fließt in die Abwehr des Ziels ein
-        const ga = key === 'schlagen' ? gegnerabwehr(charForRules(), 'melee')
-                 : (key === 'schiessen' ? gegnerabwehr(charForRules(), 'ranged') : 0);
+        // Gegnerabwehr fließt in die Abwehr des Ziels ein — aus Waffe und
+        // Talenten (Verletzen/Scharfschütze/Verheerer, Waffenloser Meister)
+        const ga = gegnerabwehr(charForRules(), key);
         extra += ga ? ` mit ${ga > 0 ? '+' : ''}${ga} Gegnerabwehr)` : ')';
         // Zurückdrängen ist bei jedem gelungenen Nahkampftreffer möglich (S.44)
         if (key === 'schlagen') hinweise.push('kann den Gegner 1m zurückdrängen (gleiche oder kleinere Größe)');
@@ -1435,8 +1435,14 @@ function startSpellCooldown(result) {
     // der Tisch — deshalb greift das nur bei einem erkennbaren Heilzauber.
     if (istHeilzauber(spell)) slayerpunktVerdienen('Heilzauber gewirkt');
 
-    const rounds = parseInt(spell.abklingzeit, 10);
+    let rounds = parseInt(spell.abklingzeit, 10);
     if (!rounds) return '';
+
+    // Erzmagier-Talent "Abklingen": senkt die Abklingzeit JEDES Zauberspruchs,
+    // nie unter Null (S.17)
+    const abklingenRang = talentRang(appData.talents, 'Abklingen');
+    if (abklingenRang) rounds = Math.max(0, rounds - abklingenRang);
+    if (!rounds) return `${escapeHtml(spell.name)}: keine Abklingzeit mehr (Abklingen)`;
 
     if (typeof currentRound === 'number' && currentRound > 0) {
         spell.cooldownUntil = currentRound + rounds;

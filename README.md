@@ -167,7 +167,12 @@ Kein Freitextfeld, sondern eine echte Auswahl mit Regelprüfung:
   *Magieresistent* bleibt ein Hinweis — ob ein Zauber gegen den Charakter gerichtet ist, weiß der
   Bogen nicht.
 - **Heldenklassen** (ab Stufe 10, alle 15 mit ihren exklusiven Talentlisten) schalten zusätzliche
-  Talente frei und heben teils den Höchstrang bereits bekannter Talente an.
+  Talente frei und heben teils den Höchstrang bereits bekannter Talente an. Einige ihrer Talente
+  rechnen automatisch mit: *Waffenloser Meister* (WB und Gegnerabwehr beim Kampf ohne Waffe, dazu
+  Abwehr/Initiative ohne Schild und ohne Rüstung über Stoff), *Verletzen*/*Scharfschütze*/
+  *Verheerer* (Gegnerabwehr −1 je Rang auf Schlagen/Schießen/Zielzauber) und *Abklingen* (senkt
+  die Abklingzeit jedes Zauberspruchs). Die meisten Heldenklassen-Talente sind eigene Mechaniken
+  ohne Kampfwert-Bonus (Verwandlungen, Beschwörungen, Handwerk) und bleiben bewusst außen vor.
 - **Volksfähigkeiten** mit exakter Spielwirkung (z.B. Zwergen-*Zäh*: Abwehr +1, wird automatisch
   in die Kampfwerte eingerechnet).
 
