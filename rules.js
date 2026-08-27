@@ -178,7 +178,56 @@ const DS4_TALENT_SITUATIV = {
     // Wirkt nur gegen Zauber, die auf den Charakter gerichtet sind — das weiß
     // der Bogen nicht, deshalb bleibt es ein Hinweis.
     'Magieresistent': { wert: 'gegnerische Zauber', proRang: -2, bedingung: 'gegen den Charakter gerichtet, nicht bei Elementarschaden' },
-    'Perfektion': { wert: 'Schlagen', proRang: 1, bedingung: 'einmal pro Kampf je Rang, nur mit einer per Waffenkenner beherrschten Waffenart' }
+    'Perfektion': { wert: 'Schlagen', proRang: 1, bedingung: 'einmal pro Kampf je Rang, nur mit einer per Waffenkenner beherrschten Waffenart' },
+
+    // --- Heldenklassen-Talente (ab Stufe 10) ---------------------------------
+    // Dieselbe Regel wie oben: bedingte Boni auf einen benannten Kampfwert,
+    // die der Bogen nicht prüfen kann (Reichweite zum Vertrauten, "ahnungsloses
+    // Ziel", freie Aktionen mitten in der Runde) — deshalb nur als Erinnerung,
+    // nicht automatisch eingerechnet.
+    'Vertrauter': {
+        wert: 'Initiative/Schießen (Späher), Zaubern/Zielzauber (Zauberwirker) oder Abwehr/Schlagen (Paladin) — bei Erwerb gewählt',
+        proRang: 1, bedingung: 'nur innerhalb AU×5 Metern vom Vertrauten; stirbt er, entfällt der Bonus'
+    },
+    'Hinterhältiger Angriff': {
+        wert: 'Schlagen', proRang: 'GE × Rang',
+        bedingung: 'einmal pro Kampf, mit Dolch/Messer/Würgewaffe gegen ein ahnungsloses Ziel, eröffnet den Kampf'
+    },
+    'Meucheln': {
+        wert: 'Gegnerabwehr (nur bei Hinterhältiger Angriff)', proRang: -5,
+        bedingung: 'nur in Kombination mit Hinterhältiger Angriff; wirkungslos gegen 2+ Größenkategorien größere Ziele'
+    },
+    'Vergeltung': {
+        wert: 'Schlagen', proRang: '4 × Rang in Diener der Dunkelheit/des Lichts',
+        bedingung: 'einmal pro Kampf je Rang; mehrere Vergeltungs-Ränge nicht in einer Probe kombinierbar, mit anderen Boni (z.B. Brutaler Hieb) schon'
+    },
+    // Diese drei opfern Lebenskraft fuer einen Bonus, dessen Grundhoehe die
+    // Talentbeschreibung selbst nicht beziffert (nur die Steigerung je Rang) -
+    // deshalb hier bewusst als Text und nicht als erfundene Zahl.
+    'Blutschild': {
+        wert: 'Abwehr', proRang: '2 je zusätzlich opferter LK',
+        bedingung: 'opfert 2 LK als freie Aktion, Wirkung W20 Runden; je Rang 1 weiterer LK opferbar'
+    },
+    'Zehrender Spurt': {
+        wert: 'Laufen', proRang: '2m je zusätzlich opferter LK',
+        bedingung: 'opfert 1 LK als freie Aktion, Wirkung W20/2 Runden; je Rang 1 weiterer LK opferbar'
+    },
+    'Zauberqual': {
+        wert: 'Zaubern oder Zielzauber', proRang: '2 je zusätzlich opferter LK',
+        bedingung: 'opfert LK als freie Aktion für 1 Runde; je Rang 1 weiterer LK Kosten'
+    },
+    'Schlachtruf': {
+        wert: 'Angriffe (eigene und Kameraden in Hörweite)', proRang: 1,
+        bedingung: 'freie Aktion, Wirkung W20/2 Runden; ein Charakter profitiert nur von einem Schlachtruf gleichzeitig; je Rang +3 betroffene Kameraden, +1 Bonus, 1 Einsatz pro Kampf'
+    },
+    'In Deckung': {
+        wert: 'Abwehr (gegen alle Angriffe)', proRang: 2,
+        bedingung: 'in jeder Kampfrunde ohne offensive Handlung, sofern er sich der Angriffe bewusst ist'
+    },
+    'Panzerung zerschmettern': {
+        wert: 'gegnerische Panzerung (getroffenes Rüstungsteil)', proRang: -1,
+        bedingung: 'bei jedem eigenen Nahkampftreffer, zufälliges Rüstungsteil; wirkungslos gegen magische und natürliche Rüstungen'
+    }
 };
 
 // Talente, die einen festen Bonus auf bestimmte typische Proben geben.
@@ -327,7 +376,13 @@ function situativeTalente(talents) {
         .filter(t => DS4_TALENT_SITUATIV[t.name] && (t.rang || 0) > 0)
         .map(t => {
             const d = DS4_TALENT_SITUATIV[t.name];
-            const bonus = typeof d.proRang === 'number' ? `+${d.proRang * (t.rang || 1)}` : `+${d.proRang}`;
+            let bonus;
+            if (typeof d.proRang === 'number') {
+                const summe = d.proRang * (t.rang || 1);
+                bonus = (summe >= 0 ? '+' : '−') + Math.abs(summe);
+            } else {
+                bonus = `+${d.proRang}`;
+            }
             return { name: t.name, rang: t.rang || 1, wert: d.wert, bonus, bedingung: d.bedingung };
         });
 }
