@@ -149,10 +149,23 @@ function heldenZauberzugang() {
 }
 
 // Zaubert dieser Charakter überhaupt? Grundlage für die Kampfwerte Zaubern und
-// Zielzauber sowie für das Zauber-Panel.
+// Zielzauber sowie für das Zauber-Panel. Der Meisterdieb mit "Zauber auslösen"
+// zaubert nicht selbst, braucht die Werte aber zum Auslösen von Schriftrollen.
 function istZauberwirker() {
     const cls = activeClass();
-    return !!((cls && cls.isCaster) || heldenZauberzugang());
+    return !!((cls && cls.isCaster) || heldenZauberzugang() || kannSchriftrollen());
+}
+
+// Meisterdieb-Talent "Zauber auslösen": liest Sprüche von Schriftrollen und aus
+// Zauberbüchern ab (Talentbeschreibung, Heldenklasse Meisterdieb).
+function kannSchriftrollen() {
+    return talentRang(appData.talents, 'Zauber auslösen') > 0;
+}
+
+// Die per "Zauber auslösen" gewählten Zauberklassen (für Anzeige und Hinweise).
+function schriftrollenKlassen() {
+    const eintrag = (appData.talents || []).find(t => t.name === 'Zauber auslösen');
+    return eintrag && Array.isArray(eintrag.wahl) ? eintrag.wahl.filter(Boolean) : [];
 }
 
 // Für Zauberwirker liegen die Rüstungsregeln beim Untertyp
@@ -533,7 +546,12 @@ function renderDerived() {
         if (def.key === 'zaubern' || def.key === 'zielzauber') {
             const zauber = preparedSpellInfo();
             const passt = zauber.typ === (def.key === 'zielzauber' ? 'ziel' : 'normal');
-            if (!zauber.name) zbHinweis = 'kein Zauber vorbereitet — ZB 0';
+            // Meisterdieb ohne eigene Zauberei: der Wert dient nur dem Auslösen
+            // von Schriftrollen, deren ZB steht auf der Rolle selbst.
+            const cls = activeClass();
+            const nurSchriftrollen = !((cls && cls.isCaster) || heldenZauberzugang()) && kannSchriftrollen();
+            if (nurSchriftrollen && !zauber.name) zbHinweis = 'für Schriftrollen — ZB der Rolle beim Wurf einrechnen';
+            else if (!zauber.name) zbHinweis = 'kein Zauber vorbereitet — ZB 0';
             else if (!passt) zbHinweis = `ZB 0 — „${zauber.name}" wird über ${def.key === 'zaubern' ? 'Zielzauber' : 'Zaubern'} gewirkt`;
             else if (zauber.unklar) zbHinweis = `„${zauber.name}": ZB ${zauber.rohZb} — formelhaft, selbst einrechnen`;
             else zbHinweis = `inkl. ZB ${zauber.zb > 0 ? '+' : ''}${zauber.zb} von „${zauber.name}"`;
@@ -920,6 +938,14 @@ function renderMeta() {
     const cls = activeClass();
     document.getElementById('field-subtype').style.display = (cls && cls.isCaster) ? '' : 'none';
     document.getElementById('panel-zauber').style.display = istZauberwirker() ? '' : 'none';
+
+    // Meisterdieb mit "Zauber auslösen" zaubert nicht selbst — er löst nur
+    // Schriftrollen aus. Kein Spruch-Lernen, kein Vorbereiten-Text.
+    const nurRollen = !((cls && cls.isCaster) || heldenZauberzugang()) && kannSchriftrollen();
+    const addBtn = document.getElementById('spell-add-btn');
+    const panelHint = document.getElementById('spell-panel-hint');
+    if (addBtn) addBtn.style.display = nurRollen ? 'none' : '';
+    if (panelHint) panelHint.style.display = nurRollen ? 'none' : '';
 
     // Heldenklassen ab Stufe 10
     const heldField = document.getElementById('field-held');

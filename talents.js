@@ -1306,7 +1306,12 @@ const DS4_TALENTS = [
             { heldenklasse: 'Waldläufer', minStufe: 10, maxRang: 5 }
         ],
         effekt: 'Ein treues Tier schließt sich an (Späher: Falke/Hund/Pferd/Wolf; Zauberwirker: Kleintier; Paladin: Schlachtross; Druide: jedes Tier bis Größenkategorie "groß"). Innerhalb von AU × 5 Metern gewährt es +1 auf einen bei Erhalt gewählten Kampfwert — Späher: Initiative oder Schießen; Zauberwirker: Zaubern oder Zielzauber; Paladin: Abwehr oder Schlagen. Stirbt der Vertraute: W20/2 nicht abwehrbarer Schaden, Bonus erlischt, temporär KÖR−1 bis ein neuer gewählt werden kann (frühestens nach W20 Wochen).',
-        proRang: '1 weiterer Vertrauter'
+        proRang: '1 weiterer Vertrauter (mit eigenem gewählten Kampfwert)',
+        wahl: {
+            label: 'gewährt +1 auf',
+            optionen: ['Initiative', 'Schießen', 'Zaubern', 'Zielzauber', 'Abwehr', 'Schlagen'],
+            proRang: true
+        }
     },
     {
         name: 'Waffenkenner',
@@ -1378,8 +1383,13 @@ const DS4_TALENTS = [
         name: 'Zauber auslösen',
         access: [],
         heldenZugang: [{ heldenklasse: 'Meisterdieb', minStufe: 12, maxRang: 3 }],
-        effekt: 'Der Meisterdieb kann wie ein Zauberwirker Zaubersprüche von Schriftrollen oder aus Zauberbüchern ablesen und auslösen (die Schrift verblasst dabei).',
-        proRang: '1 weitere Zauberklasse (Heiler, Zauberer oder Schwarzmagier) freigeschaltet — deren Zauber sind unabhängig von der eigenen Stufe auslösbar'
+        effekt: 'Der Meisterdieb kann wie ein Zauberwirker Zaubersprüche von Schriftrollen oder aus Zauberbüchern ablesen und auslösen (die Schrift verblasst dabei). Der Bogen blendet dafür die Kampfwerte Zaubern und Zielzauber ein.',
+        proRang: '1 weitere Zauberklasse (Heiler, Zauberer oder Schwarzmagier) freigeschaltet — deren Zauber sind unabhängig von der eigenen Stufe auslösbar',
+        wahl: {
+            label: 'Zauberklasse (Schriftrollen)',
+            optionen: ['Heiler', 'Zauberer', 'Schwarzmagier'],
+            proRang: true
+        }
     },
     {
         name: 'Zaubermacht',

@@ -49,6 +49,26 @@ function renderSpells() {
     const container = document.getElementById('spell-list');
     if (!container) return;
 
+    // Meisterdieb mit "Zauber auslösen": eigener, schlanker Kasten — er lernt
+    // keine Sprüche, sondern liest sie von Schriftrollen und aus Zauberbüchern.
+    const cls = typeof activeClass === 'function' ? activeClass() : null;
+    const nurRollen = !((cls && cls.isCaster) || (typeof heldenZauberzugang === 'function' && heldenZauberzugang()))
+        && typeof kannSchriftrollen === 'function' && kannSchriftrollen();
+    if (nurRollen) {
+        const klassen = (typeof schriftrollenKlassen === 'function' ? schriftrollenKlassen() : []);
+        const rang = typeof talentRang === 'function' ? talentRang(appData.talents, 'Zauber auslösen') : 0;
+        container.innerHTML = `<div class="hint-rule">
+            <p><strong>Zauber auslösen</strong> (Meisterdieb): Du wirkst Sprüche von <strong>Schriftrollen
+            und aus Zauberbüchern</strong> — unabhängig von deiner Stufe, die Schrift verblasst dabei.</p>
+            <p>Freigeschaltete Zauberklassen: <strong>${klassen.length ? escapeHtml(klassen.join(', ')) : '— noch keine gewählt —'}</strong>
+            ${klassen.length < rang ? `<span class="hint">(${rang - klassen.length} weitere bei den Talenten wählbar)</span>` : ''}</p>
+            <p>Zum Auslösen auf <strong>Zaubern</strong> bzw. <strong>Zielzauber</strong> würfeln; den
+            <strong>ZB der Rolle</strong> trägst du dabei im Würfelkasten bei <em>Bonus/Malus für den
+            nächsten Wurf</em> ein. Die Rollen selbst führst du am besten im <strong>Inventar</strong>.</p>
+        </div>`;
+        return;
+    }
+
     const routineMax = typeof routineKapazitaet === 'function' ? routineKapazitaet() : 0;
     const routineAnzahl = appData.spells.filter(s => s.routine).length;
     const kopf = `<div style="display:flex;gap:0.5rem;align-items:center;margin-bottom:0.7rem;flex-wrap:wrap">

@@ -115,6 +115,29 @@ function hoechsterRang(name) {
     return talentEintraege(name).reduce((max, t) => Math.max(max, t.rang || 1), 0);
 }
 
+// Talente mit fester Auswahl: Vertrauter (welchen Kampfwert der Vertraute +1
+// gibt), Zauber auslösen (welche Zauberklasse für Schriftrollen freigeschaltet
+// ist). Bei proRang gibt es eine Auswahl je Talentrang. Gespeichert wird als
+// Array t.wahl, Index = Rang-Slot.
+function talentWahlHtml(t, data) {
+    if (!data || !data.wahl) return '';
+    const w = data.wahl;
+    const slots = w.proRang ? (t.rang || 1) : 1;
+    const gewaehlt = Array.isArray(t.wahl) ? t.wahl : (t.wahl ? [t.wahl] : []);
+
+    let zeilen = '';
+    for (let i = 0; i < slots; i++) {
+        const opts = ['<option value="">— wählen —</option>'].concat(
+            w.optionen.map(o => `<option value="${escapeHtml(o)}"${o === (gewaehlt[i] || '') ? ' selected' : ''}>${escapeHtml(o)}</option>`)
+        ).join('');
+        zeilen += `<div style="display:flex;align-items:center;gap:0.4rem;margin-top:0.25rem">
+            <label style="font-size:0.72rem;color:var(--text-dim)">${escapeHtml(w.label)}${slots > 1 ? ` ${i + 1}` : ''}:</label>
+            <select data-twahl="${t.id}" data-slot="${i}" style="flex:1;max-width:15rem;font-size:0.8rem">${opts}</select>
+        </div>`;
+    }
+    return `<div class="talent-perrank">${zeilen}</div>`;
+}
+
 // --- Panel der gelernten Talente -------------------------------------------
 
 // Insgesamt verdiente Talentpunkte: 1 bei Erschaffung (Menschen 2) + 1 je Stufe.
@@ -194,6 +217,7 @@ function renderTalents() {
                 <input type="text" value="${escapeHtml(t.gebiet || '')}" data-tgebiet="${t.id}"
                        placeholder="z.B. Schmied" style="flex:1;max-width:14rem;font-size:0.8rem">
             </div>` : ''}
+            ${talentWahlHtml(t, data)}
             ${t.notiz ? `<div class="talent-perrank">${escapeHtml(t.notiz)}</div>` : ''}
         </div>`;
     }).join('');
@@ -210,6 +234,16 @@ function renderTalents() {
             const eintrag = appData.talents.find(t => t.id === input.dataset.tgebiet);
             if (!eintrag) return;
             eintrag.gebiet = input.value;
+            onDataChanged();
+        });
+    });
+    // Feste Auswahl setzen (Vertrauter, Zauber auslösen)
+    container.querySelectorAll('[data-twahl]').forEach(sel => {
+        sel.addEventListener('change', () => {
+            const eintrag = appData.talents.find(t => t.id === sel.dataset.twahl);
+            if (!eintrag) return;
+            if (!Array.isArray(eintrag.wahl)) eintrag.wahl = eintrag.wahl ? [eintrag.wahl] : [];
+            eintrag.wahl[parseInt(sel.dataset.slot, 10)] = sel.value;
             onDataChanged();
         });
     });
@@ -234,6 +268,8 @@ function changeTalentRank(id, delta) {
     } else {
         if ((entry.rang || 1) <= 1) { removeTalent(id); return; }
         entry.rang -= 1;
+        // Wegfallende Rang-Slots einer festen Auswahl mit abräumen
+        if (Array.isArray(entry.wahl)) entry.wahl = entry.wahl.slice(0, entry.rang);
         const zurueck = entry.topf === 'ntp' ? 'ntp' : 'tp';
         appData[zurueck] = verfuegbarePunkte(zurueck) + 1;
         addLog(`<strong>${escapeHtml(name)}</strong> auf Rang ${entry.rang} gesenkt (1 TP zurück)`, 'neutral');

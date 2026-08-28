@@ -155,7 +155,12 @@ Kein Freitextfeld, sondern eine echte Auswahl mit Regelprüfung:
   (Initiative +2), *Flink* (Laufen +1m) oder *Standhaft* (Bewusstlosigkeitsgrenze −3 LK).
   Die betroffene Karte weist den Bonus aus und nennt im Tooltip die Quelle.
 - **Situative Talente** wie *Parade* oder *Blocker* werden bewusst **nicht** automatisch
-  eingerechnet — sie stehen mit ihrer Bedingung als Erinnerung unter den Kampfwerten.
+  eingerechnet — sie stehen mit ihrer Bedingung als Erinnerung unter den Kampfwerten, und der
+  Wert lässt sich mit einem Griff ins Feld *Bonus/Malus für den nächsten Wurf* anwenden.
+- **Talente mit fester Auswahl** bekommen im Talentkasten ein Dropdown: *Vertrauter* (welchen
+  Kampfwert der Vertraute +1 gibt — je Rang ein eigener), *Zauber auslösen* (welche Zauberklassen
+  der Meisterdieb für Schriftrollen freischaltet). *Waffenkenner*, *Handwerk*, *Instrument* und
+  *Wissensgebiet* werden weiterhin je Gebiet einzeln erlernt.
 - **Zauberrelevante Talente** fließen ein: *Rüstzauberer* (ignoriert je Rang 2 Punkte
   Panzerungsmalus beim Zaubern), *Stabbindung* und *Zauberwaffe* (je Rang +1 auf Zielzauber,
   solange die gebundene Waffe geführt wird) sowie *Meister seiner Klasse* (Primärattribut der
@@ -175,8 +180,10 @@ Kein Freitextfeld, sondern eine echte Auswahl mit Regelprüfung:
   rechnen automatisch mit: *Waffenloser Meister* (WB und Gegnerabwehr beim Kampf ohne Waffe, dazu
   Abwehr/Initiative ohne Schild und ohne Rüstung über Stoff), *Verletzen*/*Scharfschütze*/
   *Verheerer* (Gegnerabwehr −1 je Rang auf Schlagen/Schießen/Zielzauber) und *Abklingen* (senkt
-  die Abklingzeit jedes Zauberspruchs). Die meisten Heldenklassen-Talente sind eigene Mechaniken
-  ohne Kampfwert-Bonus (Verwandlungen, Beschwörungen, Handwerk) und bleiben bewusst außen vor.
+  die Abklingzeit jedes Zauberspruchs). *Zauber auslösen* (Meisterdieb) blendet Zaubern und
+  Zielzauber ein, damit sich Schriftrollen auswürfeln lassen. Die meisten Heldenklassen-Talente
+  sind eigene Mechaniken ohne Kampfwert-Bonus (Verwandlungen, Beschwörungen, Handwerk) und bleiben
+  bewusst außen vor.
 - **Volksfähigkeiten** mit exakter Spielwirkung (z.B. Zwergen-*Zäh*: Abwehr +1, wird automatisch
   in die Kampfwerte eingerechnet).
 

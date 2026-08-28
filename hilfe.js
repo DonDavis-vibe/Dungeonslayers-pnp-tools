@@ -215,8 +215,13 @@ const HILFE_THEMEN = {
     'zauber': {
         gruppe: 'bogen',
         titel: 'Zaubersprüche',
-        text: `<p>Der Kasten erscheint nur bei Zauberwirkern. <strong>+ Zauber</strong> zeigt die
-               Sprüche, die dein Typ (Heiler, Zauberer, Schwarzmagier) auf deiner Stufe lernen darf.</p>
+        text: `<p>Der Kasten erscheint bei Zauberwirkern — und beim Meisterdieb mit dem Talent
+               <em>Zauber auslösen</em>. <strong>+ Zauber</strong> zeigt die Sprüche, die dein Typ
+               (Heiler, Zauberer, Schwarzmagier) auf deiner Stufe lernen darf.</p>
+               <p>Der <strong>Meisterdieb</strong> lernt keine Sprüche, sondern löst sie von
+               <strong>Schriftrollen</strong> aus: Der Kasten nennt die bei Talenterwerb gewählten
+               Zauberklassen, gewürfelt wird auf Zaubern/Zielzauber, den ZB der Rolle trägst du beim
+               Wurf im Feld <em>Bonus/Malus für den nächsten Wurf</em> ein.</p>
                <p>Es kann immer nur <strong>ein Zauber vorbereitet</strong> sein. Wechseln kostet
                eine Aktion und eine GEI+VE-Probe. Kein Mana — stattdessen gilt die
                <strong>Abklingzeit</strong>, die am Rundenzähler des Spielleiters mitläuft.</p>

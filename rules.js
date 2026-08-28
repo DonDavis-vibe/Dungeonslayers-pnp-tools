@@ -186,7 +186,11 @@ const DS4_TALENT_SITUATIV = {
     // Ziel", freie Aktionen mitten in der Runde) — deshalb nur als Erinnerung,
     // nicht automatisch eingerechnet.
     'Vertrauter': {
-        wert: 'Initiative/Schießen (Späher), Zaubern/Zielzauber (Zauberwirker) oder Abwehr/Schlagen (Paladin) — bei Erwerb gewählt',
+        // Jeder Rang ist ein eigener Vertrauter mit eigenem gewählten Kampfwert
+        // (Späher: Init/Schießen · Zauberwirker: Zaubern/Zielzauber · Paladin:
+        // Abwehr/Schlagen). Der gewählte Wert steht in t.wahl — situativeTalente()
+        // setzt ihn ein, sonst bleibt dieser allgemeine Text stehen.
+        wert: 'den bei Erwerb gewählten Kampfwert (im Talent einstellen)',
         proRang: 1, bedingung: 'nur innerhalb AU×5 Metern vom Vertrauten; stirbt er, entfällt der Bonus'
     },
     'Hinterhältiger Angriff': {
@@ -389,6 +393,20 @@ function situativeTalente(talents) {
         .filter(t => DS4_TALENT_SITUATIV[t.name] && (t.rang || 0) > 0)
         .map(t => {
             const d = DS4_TALENT_SITUATIV[t.name];
+
+            // Feste Auswahl je Rang (Vertrauter): jeder Vertraute gibt +1 auf
+            // SEINEN gewählten Wert — nicht +Rang auf einen Wert.
+            const talentData = (typeof DS4_TALENTS !== 'undefined' ? DS4_TALENTS : [])
+                .find(x => x.name === t.name);
+            if (talentData && talentData.wahl && talentData.wahl.proRang) {
+                const wahl = (Array.isArray(t.wahl) ? t.wahl : []).filter(Boolean);
+                return {
+                    name: t.name, rang: t.rang || 1,
+                    wert: wahl.length ? wahl.join(', ') : d.wert,
+                    bonus: '+1', bedingung: d.bedingung
+                };
+            }
+
             let bonus;
             if (typeof d.proRang === 'number') {
                 const summe = d.proRang * (t.rang || 1);
