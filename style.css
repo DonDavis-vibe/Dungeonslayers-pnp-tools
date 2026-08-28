@@ -132,6 +132,14 @@ select option { background: #1c1712; }
 .field { display: flex; flex-direction: column; gap: 0.25rem; }
 .field label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-dim); }
 
+/* Einmaliger Wurf-Bonus: fällt auf, solange er scharf ist */
+#f-wurfbonus.wurfbonus-aktiv {
+    border-color: var(--accent-bright);
+    box-shadow: 0 0 0 2px rgba(200, 143, 56, 0.35);
+    color: var(--accent-bright);
+    font-weight: 600;
+}
+
 /* ---------- Attribute & Eigenschaften ---------- */
 
 .attr-block {

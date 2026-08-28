@@ -585,7 +585,8 @@ function renderSituativeTalente() {
 
     const liste = situativeTalente(appData.talents);
     if (liste.length) {
-        bloecke.push('<strong>Situative Talente</strong> (nicht automatisch eingerechnet):<br>' +
+        bloecke.push('<strong>Situative Talente</strong> (nicht automatisch eingerechnet — ' +
+            'greift die Bedingung, den Wert im Würfelkasten bei <em>Bonus/Malus für den nächsten Wurf</em> eintragen):<br>' +
             liste.map(t =>
                 `• <strong>${escapeHtml(t.name)} ${t.rang}</strong>: ${escapeHtml(t.bonus)} auf ${escapeHtml(t.wert)} — ${escapeHtml(t.bedingung)}`
             ).join('<br>'));
@@ -597,7 +598,7 @@ function renderSituativeTalente() {
     if (zauber.unklar) {
         bloecke.push(`<strong>Zauberbonus formelhaft:</strong> <em>${escapeHtml(zauber.name)}</em> hat ZB ` +
             `<strong>${escapeHtml(zauber.rohZb)}</strong>. Der Bogen rechnet mit <strong>0</strong> — ` +
-            `den tatsächlichen Wert am Ziel ausrechnen und als Modifikator eintragen.`);
+            `den tatsächlichen Wert am Ziel ausrechnen und im Würfelkasten bei <em>Bonus/Malus für den nächsten Wurf</em> eintragen.`);
     }
 
     box.innerHTML = bloecke.join('<hr style="border:0;border-top:1px solid var(--border);margin:0.5rem 0">');
@@ -987,7 +988,47 @@ function addItem() { appData.inventory.push({ id: uid(), name: '', menge: 1, not
 // --- Würfeln ----------------------------------------------------------------
 
 function currentModifier() {
-    return parseInt(document.getElementById('f-difficulty').value, 10) || 0;
+    const schwierigkeit = parseInt(document.getElementById('f-difficulty').value, 10) || 0;
+    return schwierigkeit + wurfBonus();
+}
+
+// Einmaliger, vom Spieler eingetippter Bonus/Malus für genau den nächsten Wurf:
+// aktives Parade, ein Vertrauter in Reichweite, ein Gegenstand mit begrenztem
+// Effekt, eine Ansage des Spielleiters. Anders als die Schwierigkeit stellt er
+// sich nach jedem Wurf auf 0 zurück, damit er sich nicht still über alle
+// folgenden Würfe schleppt (genau der Fehler, den es bei der Zauberroutine gab).
+function wurfBonus() {
+    const feld = document.getElementById('f-wurfbonus');
+    return feld ? (parseInt(feld.value, 10) || 0) : 0;
+}
+
+function wurfBonusAendern(delta) {
+    const feld = document.getElementById('f-wurfbonus');
+    if (!feld) return;
+    feld.value = (parseInt(feld.value, 10) || 0) + delta;
+    renderWurfBonusHinweis();
+}
+
+function wurfBonusVerbrauchen() {
+    const feld = document.getElementById('f-wurfbonus');
+    if (feld && (parseInt(feld.value, 10) || 0) !== 0) {
+        feld.value = 0;
+        renderWurfBonusHinweis();
+    }
+}
+
+// Macht sichtbar, dass gerade ein einmaliger Modifikator scharf ist — sonst
+// vergisst man ihn und wundert sich über den Wurf.
+function renderWurfBonusHinweis() {
+    const feld = document.getElementById('f-wurfbonus');
+    const hinweis = document.getElementById('f-wurfbonus-hinweis');
+    if (!feld || !hinweis) return;
+    const wert = parseInt(feld.value, 10) || 0;
+    feld.classList.toggle('wurfbonus-aktiv', wert !== 0);
+    hinweis.textContent = wert === 0
+        ? 'wird nach dem Wurf geleert'
+        : `${wert > 0 ? '+' : ''}${wert} auf den nächsten Wurf`;
+    hinweis.style.color = wert === 0 ? '' : 'var(--accent-bright)';
 }
 
 // --- Kampfmodifikatoren -----------------------------------------------------
@@ -1064,6 +1105,12 @@ function wireCombatModifiers() {
     ['mod-distanz', 'mod-zielen', 'mod-groesse', 'mod-getuemmel', 'mod-hindernisse'].forEach(id => {
         document.getElementById(id).addEventListener('input', renderCombatModifiers);
     });
+
+    const wurfbonus = document.getElementById('f-wurfbonus');
+    if (wurfbonus) {
+        wurfbonus.addEventListener('input', renderWurfBonusHinweis);
+        renderWurfBonusHinweis();
+    }
 }
 
 function showProbeResult(result, targetPrefix = '', modDetail = '') {
@@ -1093,13 +1140,20 @@ function showProbeResult(result, targetPrefix = '', modDetail = '') {
 }
 
 function logProbe(result, extra = '') {
-    let msg = `<strong>${escapeHtml(result.label)}</strong> (PW ${result.pw}) — ${DS4_STATUS_TEXT[result.status]}`;
+    // Steckt ein Modifikator drin (Schwierigkeit + einmaliger Wurf-Bonus), die
+    // Rechnung offenlegen — sonst ist am Tisch nicht nachvollziehbar, wogegen
+    // wirklich gewürfelt wurde.
+    const pwText = result.modifier
+        ? `PW ${result.basePw} ${result.modifier > 0 ? '+' : '−'}${Math.abs(result.modifier)} = ${result.pw}`
+        : `PW ${result.pw}`;
+    let msg = `<strong>${escapeHtml(result.label)}</strong> (${pwText}) — ${DS4_STATUS_TEXT[result.status]}`;
     msg += ` · Wurf ${result.rolls.map(r => r.die).join('+')}`;
     if (result.success) msg += ` · Ergebnis <strong>${result.total}</strong>`;
     if (extra) msg += ` · ${extra}`;
     addLog(msg, result.status);
     sendMultiplayerRoll(result, extra);
     if (typeof discordPostProbe === 'function') discordPostProbe(result, extra);
+    wurfBonusVerbrauchen();
 }
 
 // --- Slayerpunkte (optionale Regel, Regelwerk S.45) -------------------------
@@ -1268,6 +1322,9 @@ function renderMehrereGegner() {
 
 function rollMehrereGegner(teilwerte) {
     const mod = currentCombatModifier('schlagen');
+    // Einmal ablesen, nicht je Teilangriff — sonst würde ihn wurfBonusVerbrauchen()
+    // nach dem ersten Gegner wegnehmen.
+    const wurfMod = currentModifier();
     const slayend = typeof slayendeWuerfelAktiv === 'function' && slayendeWuerfelAktiv();
     const zeilen = [];
     let trefferSchaden = 0;
@@ -1275,7 +1332,7 @@ function rollMehrereGegner(teilwerte) {
     teilwerte.forEach((pw, i) => {
         const result = rollProbe(pw, {
             label: `Schlagen — Gegner ${i + 1}`,
-            modifier: currentModifier() + mod.summe,
+            modifier: wurfMod + mod.summe,
             slayend
         });
         if (i === 0) showProbeResult(result, '', mod.text);
@@ -1300,6 +1357,7 @@ function rollMehrereGegner(teilwerte) {
     if (trefferSchaden > 0) slayerpunktVerdienen('mehrere Gegner getroffen');
     addLog(msg, trefferSchaden > 0 ? 'erfolg' : 'fehlschlag');
     sendMultiplayerLog(msg, trefferSchaden > 0 ? 'erfolg' : 'fehlschlag');
+    wurfBonusVerbrauchen();
     closeModal('mehrere-modal');
 }
 
@@ -1653,6 +1711,7 @@ function rollOpposedProbe() {
 
     addLog(msg, status);
     sendMultiplayerLog(msg, status);
+    wurfBonusVerbrauchen();
 }
 
 function rollPlainD20() {

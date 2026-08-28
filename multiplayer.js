@@ -863,7 +863,12 @@ function sendMultiplayerLog(message, status = 'neutral', alsEreignis = true) {
 }
 
 function sendMultiplayerRoll(result, extra) {
-    let msg = `<strong>${escapeHtml(result.label)}</strong> (PW ${result.pw}) — ${DS4_STATUS_TEXT[result.status]}`;
+    // Modifikator (Schwierigkeit + einmaliger Wurf-Bonus) offenlegen, damit der
+    // Spielleiter im Live-Log sieht, wogegen wirklich gewuerfelt wurde.
+    const pwText = result.modifier
+        ? `PW ${result.basePw} ${result.modifier > 0 ? '+' : '−'}${Math.abs(result.modifier)} = ${result.pw}`
+        : `PW ${result.pw}`;
+    let msg = `<strong>${escapeHtml(result.label)}</strong> (${pwText}) — ${DS4_STATUS_TEXT[result.status]}`;
     msg += ` · Wurf ${result.rolls.map(r => r.die).join('+')}`;
     if (result.success) msg += ` · Ergebnis <strong>${result.total}</strong>`;
     if (extra) msg += ` · ${extra}`;

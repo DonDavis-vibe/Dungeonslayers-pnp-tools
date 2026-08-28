@@ -193,7 +193,13 @@ Vollständig nach Regelwerk S.38–40 umgesetzt:
   beste Verteilung, ein Immersieg zählt nur für seinen eigenen Teilwurf. Das Beispiel aus dem Buch
   (PW 44, Würfe 2/1/17) ergibt damit die dort genannten **39** Punkte.
 - **Angriffe:** das Wurfergebnis *ist* der Schaden — wird direkt so ausgewiesen.
-- Schwierigkeitsmodifikatoren von Routine (+8) bis Äußerst schwer (−8).
+- Schwierigkeitsmodifikatoren von Routine (+8) bis Äußerst schwer (−8) — bleiben eingestellt,
+  bis man sie zurücknimmt.
+- **Bonus/Malus für den nächsten Wurf** — ein einmaliges Feld für alles Situative, das der Bogen
+  nicht selbst kennt: aktives *Parade*, ein Vertrauter in Reichweite, ein Gegenstand mit
+  begrenztem Effekt oder eine Ansage der Spielleitung. Zählt zusätzlich in den nächsten Wurf,
+  steht im Log und stellt sich danach wieder auf 0. Macht die *situativen Talente* unter den
+  Kampfwerten erstmals mit einem Klick anwendbar.
 - **Vergleichende Proben** — beide Seiten würfeln, die höhere gelungene Probe gewinnt;
   misslingen beide, gibt es kein Ergebnis.
 - **Kampfmodifikatoren** als aufklappbares Feld: Entfernung (−1 je 10m, bei Schleuder und

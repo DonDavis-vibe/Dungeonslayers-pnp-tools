@@ -301,8 +301,28 @@ const HILFE_THEMEN = {
         titel: 'Schwierigkeit',
         text: `<p>Der Modifikator des Spielleiters auf den Probenwert, von <strong>Routine
                (+8)</strong> bis <strong>Äußerst schwer (−8)</strong>.</p>
-               <p>Er gilt für den nächsten Wurf aus diesem Kasten und wird im Log mit ausgewiesen,
-               damit am Tisch nachvollziehbar bleibt, wogegen gewürfelt wurde.</p>`
+               <p>Er <strong>bleibt eingestellt</strong>, bis du ihn selbst wieder auf 0 setzt, und
+               wird bei jedem Wurf im Log ausgewiesen — damit am Tisch nachvollziehbar bleibt,
+               wogegen gewürfelt wurde. Für einen einmaligen Zuschlag ist das Feld
+               <em>Bonus/Malus für den nächsten Wurf</em> darunter gedacht.</p>`
+    },
+    'wurfbonus': {
+        gruppe: 'wuerfe',
+        titel: 'Bonus/Malus für den nächsten Wurf',
+        text: `<p>Ein Zuschlag oder Abzug, den der Bogen <strong>nicht selbst kennt</strong> —
+               für alles Situative:</p>
+               <ul>
+                 <li>aktives <em>Parade</em>, <em>Blocker</em>, <em>Raserei</em> und andere
+                     Talente, die nur unter Bedingungen greifen (sie stehen als Erinnerung unter
+                     den Kampfwerten)</li>
+                 <li>ein <em>Vertrauter</em> in Reichweite</li>
+                 <li>ein Gegenstand mit begrenztem Effekt („1× Feuerstrahl pro Kampf")</li>
+                 <li>eine Ansage des Spielleiters („+2, du stehst höher")</li>
+               </ul>
+               <p>Er zählt zusätzlich zur Schwierigkeit in den nächsten Wurf, erscheint im Log und
+               <strong>stellt sich danach wieder auf 0</strong>. Solange er scharf ist, ist das
+               Feld hervorgehoben. Die <strong>+</strong>/<strong>−</strong>-Knöpfe gehen in
+               Einerschritten, größere Werte tippst du direkt ein.</p>`
     },
     'proben': {
         gruppe: 'wuerfe',
