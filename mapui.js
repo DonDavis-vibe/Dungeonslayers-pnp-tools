@@ -170,9 +170,15 @@ function renderKartenWerkzeuge() {
         </span>
         <label class="radio-pill ${r.rasterSichtbar ? 'selected' : ''}" onclick="rasterUmschalten()">Raster</label>
         <label class="radio-pill ${r.einrasten ? 'selected' : ''}" onclick="einrastenUmschalten()">Einrasten</label>
-        <input type="number" id="map-gridsize" value="${r.rasterGroesse}" min="4" max="400" style="width:4rem" title="Feldgröße in Pixeln">
-        <input type="number" id="map-offx" value="${r.rasterVersatzX}" style="width:3.4rem" title="Versatz waagerecht">
-        <input type="number" id="map-offy" value="${r.rasterVersatzY}" style="width:3.4rem" title="Versatz senkrecht">
+        <span class="num-stepper" title="Feldgröße in Pixeln"><button type="button" data-dir="-1">−</button>
+            <input type="number" id="map-gridsize" value="${r.rasterGroesse}" min="4" max="400" style="width:2.8rem">
+            <button type="button" data-dir="1">+</button></span>
+        <span class="num-stepper" title="Raster waagerecht verschieben"><button type="button" data-dir="-1">−</button>
+            <input type="number" id="map-offx" value="${r.rasterVersatzX}" style="width:2.6rem">
+            <button type="button" data-dir="1">+</button></span>
+        <span class="num-stepper" title="Raster senkrecht verschieben"><button type="button" data-dir="-1">−</button>
+            <input type="number" id="map-offy" value="${r.rasterVersatzY}" style="width:2.6rem">
+            <button type="button" data-dir="1">+</button></span>
         <button class="btn btn-sm btn-ghost" onclick="figurGroesseDialog()" title="Größe einer Figur ändern (Drache, Riese ...)">📏 Größe</button>
         <button class="btn btn-sm btn-ghost" onclick="figurEntfernenDialog()" title="Eine einzelne Figur von der Karte nehmen">🗑️ Figur</button>
         <label class="radio-pill ${zuegeFrei ? 'selected' : ''}" onclick="zugFreigabeUmschalten()"

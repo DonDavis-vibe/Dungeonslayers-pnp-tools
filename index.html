@@ -53,7 +53,7 @@
 <!-- W20 als Favicon, direkt eingebettet (kein zusätzlicher Netzwerkabruf) -->
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%2314100c'/%3E%3Cpath d='M16 3 29 10.5v11L16 29 3 21.5v-11z' fill='none' stroke='%23d4a24c' stroke-width='2' stroke-linejoin='round'/%3E%3Cpath d='M16 3 16 29M3 10.5 29 21.5M29 10.5 3 21.5' stroke='%23d4a24c' stroke-width='1' opacity='.45'/%3E%3Ctext x='16' y='20' font-family='Georgia,serif' font-size='11' font-weight='bold' fill='%23f0c069' text-anchor='middle'%3E20%3C/text%3E%3C/svg%3E">
 
-<link rel="stylesheet" href="style.css?v=20260828b">
+<link rel="stylesheet" href="style.css?v=20260828c">
 </head>
 <body>
 
@@ -143,8 +143,16 @@
                     <select id="f-heldenklasse" data-bind="heldenklasse"><option value="">—</option></select>
                 </div>
                 <div class="field"><label>Erfahrungspunkte</label><input type="number" id="f-ep" data-bind="ep" min="0"></div>
-                <div class="field"><label>Lernpunkte (offen)</label><input type="number" id="f-lp" data-bind="lp" min="0"></div>
-                <div class="field"><label>Talentpunkte (offen)</label><input type="number" id="f-tp" data-bind="tp" min="0"></div>
+                <div class="field"><label>Lernpunkte (offen)</label>
+                    <span class="num-stepper"><button type="button" data-dir="-1" title="−1">−</button>
+                        <input type="number" id="f-lp" data-bind="lp" min="0">
+                        <button type="button" data-dir="1" title="+1">+</button></span>
+                </div>
+                <div class="field"><label>Talentpunkte (offen)</label>
+                    <span class="num-stepper"><button type="button" data-dir="-1" title="−1">−</button>
+                        <input type="number" id="f-tp" data-bind="tp" min="0">
+                        <button type="button" data-dir="1" title="+1">+</button></span>
+                </div>
             </div>
             <div style="margin-top:0.7rem">
                 <button class="btn btn-sm btn-primary" onclick="openLevelUp()">⬆️ Stufenaufstieg / Punkte ausgeben</button>
@@ -337,11 +345,13 @@
 
             <div class="field" style="margin-top:0.5rem">
                 <label>Bonus/Malus für den nächsten Wurf <button class="help-btn" type="button" data-hilfe="wurfbonus" aria-label="Hilfe: Bonus/Malus für den nächsten Wurf" title="Hilfe: Bonus/Malus für den nächsten Wurf">?</button></label>
-                <div style="display:flex;gap:0.4rem;align-items:center;flex-wrap:wrap">
-                    <button class="btn btn-sm btn-ghost" type="button" onclick="wurfBonusAendern(-1)" title="−1">−</button>
-                    <input type="number" id="f-wurfbonus" value="0" step="1" style="width:4rem;text-align:center"
-                           title="Zählt einmalig zum nächsten Wurf und stellt sich danach zurück — für aktives Parade, einen Vertrauten in Reichweite, Gegenstände mit begrenztem Effekt oder eine Ansage des Spielleiters.">
-                    <button class="btn btn-sm btn-ghost" type="button" onclick="wurfBonusAendern(1)" title="+1">+</button>
+                <div style="display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap">
+                    <span class="num-stepper">
+                        <button type="button" data-dir="-1" title="−1">−</button>
+                        <input type="number" id="f-wurfbonus" value="0" step="1" style="width:3.2rem"
+                               title="Zählt einmalig zum nächsten Wurf und stellt sich danach zurück — für aktives Parade, einen Vertrauten in Reichweite, Gegenstände mit begrenztem Effekt oder eine Ansage des Spielleiters.">
+                        <button type="button" data-dir="1" title="+1">+</button>
+                    </span>
                     <span class="hint" id="f-wurfbonus-hinweis"></span>
                 </div>
             </div>
@@ -374,14 +384,18 @@
 
             <div class="quick-probe" style="margin-top:0.5rem">
                 <div class="field"><label>Freier Probenwert</label>
-                    <input type="number" id="f-free-pw" value="10" min="0">
+                    <span class="num-stepper"><button type="button" data-dir="-1" title="−1">−</button>
+                        <input type="number" id="f-free-pw" value="10" min="0">
+                        <button type="button" data-dir="1" title="+1">+</button></span>
                 </div>
                 <button class="btn" onclick="rollFreeProbe()">Würfeln</button>
             </div>
 
             <div class="quick-probe" style="margin-top:0.5rem">
                 <div class="field"><label>Vergleichende Probe — Gegner-PW</label>
-                    <input type="number" id="f-opposed-pw" value="10" min="0">
+                    <span class="num-stepper"><button type="button" data-dir="-1" title="−1">−</button>
+                        <input type="number" id="f-opposed-pw" value="10" min="0">
+                        <button type="button" data-dir="1" title="+1">+</button></span>
                 </div>
                 <button class="btn" onclick="rollOpposedProbe()" title="Beide Seiten würfeln; die höhere gelungene Probe gewinnt">Vergleichen</button>
             </div>
@@ -391,20 +405,28 @@
                 <div style="margin-top:0.5rem;display:flex;flex-direction:column;gap:0.4rem">
                     <div style="display:flex;gap:0.5rem;align-items:end">
                         <div class="field" style="flex:1"><label>Distanz (m)</label>
-                            <input type="number" id="mod-distanz" value="0" min="0" step="5" title="−1 je volle 10m">
+                            <span class="num-stepper"><button type="button" data-dir="-1" title="−5 m">−</button>
+                                <input type="number" id="mod-distanz" value="0" min="0" step="5" title="−1 je volle 10m">
+                                <button type="button" data-dir="1" title="+5 m">+</button></span>
                         </div>
                         <div class="field" style="flex:1"><label>Runden gezielt</label>
-                            <input type="number" id="mod-zielen" value="0" min="0" max="5" title="+2 je Runde, höchstens +10">
+                            <span class="num-stepper"><button type="button" data-dir="-1" title="−1">−</button>
+                                <input type="number" id="mod-zielen" value="0" min="0" max="5" title="+2 je Runde, höchstens +10">
+                                <button type="button" data-dir="1" title="+1">+</button></span>
                         </div>
                     </div>
                     <div style="display:flex;gap:0.5rem;align-items:end">
                         <div class="field" style="flex:1"><label>Getümmel (Individuen)</label>
-                            <input type="number" id="mod-getuemmel" value="0" min="0" max="20"
+                            <span class="num-stepper"><button type="button" data-dir="-1" title="−1">−</button>
+                                <input type="number" id="mod-getuemmel" value="0" min="0" max="20"
                                    title="Blindlings in eine Menge schießen: +1 je Individuum (max. +20). Das Ziel bestimmt der Zufall, der Schaden wird auf den normalen Höchstschaden gedeckelt.">
+                                <button type="button" data-dir="1" title="+1">+</button></span>
                         </div>
                         <div class="field" style="flex:1"><label>Hindernisse dazwischen</label>
-                            <input type="number" id="mod-hindernisse" value="0" min="0" max="10"
+                            <span class="num-stepper"><button type="button" data-dir="-1" title="−1">−</button>
+                                <input type="number" id="mod-hindernisse" value="0" min="0" max="10"
                                    title="−1 je Baum, Gegner, Kamerad oder Wandstück, an dem vorbeigeschossen wird">
+                                <button type="button" data-dir="1" title="+1">+</button></span>
                         </div>
                     </div>
                     <div class="radio-row" id="mod-toggles">
@@ -602,7 +624,9 @@
                     </div>
                     <div class="quick-probe" style="margin-top:0.7rem">
                         <div class="field"><label>Probenwert (NSC/Monster)</label>
-                            <input type="number" id="gm-pw" value="10" min="0">
+                            <span class="num-stepper"><button type="button" data-dir="-1" title="−1">−</button>
+                                <input type="number" id="gm-pw" value="10" min="0">
+                                <button type="button" data-dir="1" title="+1">+</button></span>
                         </div>
                         <button class="btn btn-primary" onclick="rollGmProbe()">Probe</button>
                     </div>
@@ -819,23 +843,23 @@
     </div>
 </div>
 
-<script src="data.js?v=20260828b"></script>
-<script src="talents.js?v=20260828b"></script>
-<script src="zauber.js?v=20260828b"></script>
-<script src="bestiarium.js?v=20260828b"></script>
-<script src="sounds.js?v=20260828b"></script>
-<script src="hausregeln.js?v=20260828b"></script>
-<script src="rules.js?v=20260828b"></script>
-<script src="app.js?v=20260828b"></script>
-<script src="talentPicker.js?v=20260828b"></script>
-<script src="spellPicker.js?v=20260828b"></script>
-<script src="wizard.js?v=20260828b"></script>
-<script src="combat.js?v=20260828b"></script>
-<script src="battlemap.js?v=20260828b"></script>
-<script src="multiplayer.js?v=20260828b"></script>
-<script src="mapui.js?v=20260828b"></script>
-<script src="session.js?v=20260828b"></script>
-<script src="discord.js?v=20260828b"></script>
-<script src="hilfe.js?v=20260828b"></script>
+<script src="data.js?v=20260828c"></script>
+<script src="talents.js?v=20260828c"></script>
+<script src="zauber.js?v=20260828c"></script>
+<script src="bestiarium.js?v=20260828c"></script>
+<script src="sounds.js?v=20260828c"></script>
+<script src="hausregeln.js?v=20260828c"></script>
+<script src="rules.js?v=20260828c"></script>
+<script src="app.js?v=20260828c"></script>
+<script src="talentPicker.js?v=20260828c"></script>
+<script src="spellPicker.js?v=20260828c"></script>
+<script src="wizard.js?v=20260828c"></script>
+<script src="combat.js?v=20260828c"></script>
+<script src="battlemap.js?v=20260828c"></script>
+<script src="multiplayer.js?v=20260828c"></script>
+<script src="mapui.js?v=20260828c"></script>
+<script src="session.js?v=20260828c"></script>
+<script src="discord.js?v=20260828c"></script>
+<script src="hilfe.js?v=20260828c"></script>
 </body>
 </html>

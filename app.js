@@ -863,8 +863,10 @@ function renderEquipmentBoni() {
             <span style="flex:1;min-width:7rem">${def.label}
                 <span class="eig-abbr">${getragen ? escapeHtml(getragen) : 'nichts angelegt'}</span></span>
             <span class="row-sub">${def.einheit}</span>
-            <input type="number" value="${b[def.feld] || 0}" step="1" style="width:3.5rem"
+            <span class="num-stepper"><button type="button" data-dir="-1" title="−1" ${getragen ? '' : 'disabled'}>−</button>
+                <input type="number" value="${b[def.feld] || 0}" step="1" style="width:2.6rem"
                    data-eqbonus="${def.slot}" data-feld="${def.feld}" ${getragen ? '' : 'disabled'}>
+                <button type="button" data-dir="1" title="+1" ${getragen ? '' : 'disabled'}>+</button></span>
             <input type="text" value="${escapeHtml(b.notiz || '')}" placeholder="z.B. Flammenklinge, 1× Feuerstrahl pro Kampf"
                    style="flex:2;min-width:9rem" data-eqbonus="${def.slot}" data-feld="notiz" ${getragen ? '' : 'disabled'}>
         </div>`;
@@ -978,7 +980,9 @@ function renderInventory() {
         <div class="list-row">
             <input type="text" value="${escapeHtml(i.name)}" placeholder="Gegenstand" data-list="inventory" data-id="${i.id}" data-field="name">
             <span class="row-sub">×</span>
-            <input type="number" value="${i.menge || 1}" min="0" style="width:3.5rem" data-list="inventory" data-id="${i.id}" data-field="menge">
+            <span class="num-stepper"><button type="button" data-dir="-1" title="−1">−</button>
+                <input type="number" value="${i.menge || 1}" min="0" style="width:2.6rem" data-list="inventory" data-id="${i.id}" data-field="menge">
+                <button type="button" data-dir="1" title="+1">+</button></span>
             <input type="text" value="${escapeHtml(i.notiz || '')}" placeholder="Notiz" style="flex:2" data-list="inventory" data-id="${i.id}" data-field="notiz">
             <button class="icon-btn" data-remove="inventory" data-id="${i.id}" title="Entfernen">✕</button>
         </div>`).join('');
@@ -1026,13 +1030,6 @@ function currentModifier() {
 function wurfBonus() {
     const feld = document.getElementById('f-wurfbonus');
     return feld ? (parseInt(feld.value, 10) || 0) : 0;
-}
-
-function wurfBonusAendern(delta) {
-    const feld = document.getElementById('f-wurfbonus');
-    if (!feld) return;
-    feld.value = (parseInt(feld.value, 10) || 0) + delta;
-    renderWurfBonusHinweis();
 }
 
 function wurfBonusVerbrauchen() {
@@ -1317,7 +1314,9 @@ function renderMehrereGegner() {
         ${vorschlag.map((wert, i) => `
             <div class="list-row">
                 <span style="flex:1">Gegner ${i + 1}</span>
-                <input type="number" class="mg-wert" value="${wert}" min="0" max="${gesamt}" style="width:4rem">
+                <span class="num-stepper"><button type="button" data-dir="-1" title="−1">−</button>
+                    <input type="number" class="mg-wert" value="${wert}" min="0" max="${gesamt}" style="width:2.6rem">
+                    <button type="button" data-dir="1" title="+1">+</button></span>
                 <span class="row-sub">Schlagen</span>
             </div>`).join('')}
         <div class="hint" id="mg-summe" style="margin-top:0.5rem"></div>
@@ -2223,6 +2222,25 @@ document.addEventListener('keydown', e => {
     if (e.key !== 'Escape') return;
     const offen = Array.from(document.querySelectorAll('.modal-overlay.active'));
     if (offen.length) closeModal(offen[offen.length - 1].id);
+});
+
+// − / + an jedem .num-stepper: verändert das eingeschlossene Zahlenfeld um
+// seinen step (Standard 1), respektiert min/max und stößt input/change an,
+// damit die vorhandenen Feld-Listener ganz normal greifen.
+document.addEventListener('click', e => {
+    const btn = e.target.closest('.num-stepper button[data-dir]');
+    if (!btn) return;
+    const input = btn.closest('.num-stepper').querySelector('input[type=number]');
+    if (!input || input.disabled) return;
+    const schritt = (parseFloat(input.getAttribute('step')) || 1) * parseFloat(btn.dataset.dir);
+    let wert = (parseFloat(input.value) || 0) + schritt;
+    const min = input.getAttribute('min');
+    const max = input.getAttribute('max');
+    if (min !== null && wert < parseFloat(min)) wert = parseFloat(min);
+    if (max !== null && wert > parseFloat(max)) wert = parseFloat(max);
+    input.value = String(wert);
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    input.dispatchEvent(new Event('change', { bubbles: true }));
 });
 
 // --- Initialisierung --------------------------------------------------------
