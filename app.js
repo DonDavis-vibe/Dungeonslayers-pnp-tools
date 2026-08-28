@@ -2125,6 +2125,21 @@ function closeModal(id) {
     setTimeout(() => { modal.style.display = 'none'; }, 250);
 }
 
+// Klick auf den dunklen Rand schließt das Modal — das erwarten die meisten,
+// und bei der langen Anleitung muss man sonst erst zum ✕ hochscrollen.
+document.addEventListener('click', e => {
+    if (e.target.classList.contains('modal-overlay') && e.target.classList.contains('active')) {
+        closeModal(e.target.id);
+    }
+});
+
+// Esc schließt das oberste offene Modal.
+document.addEventListener('keydown', e => {
+    if (e.key !== 'Escape') return;
+    const offen = Array.from(document.querySelectorAll('.modal-overlay.active'));
+    if (offen.length) closeModal(offen[offen.length - 1].id);
+});
+
 // --- Initialisierung --------------------------------------------------------
 
 function renderAll() {

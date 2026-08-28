@@ -311,6 +311,15 @@ select option { background: #1c1712; }
     max-width: 640px; width: 100%; max-height: 88vh; overflow-y: auto;
 }
 .modal-lg { max-width: 900px; }
+/* Die Kopfzeile mit dem ✕ bleibt beim Scrollen langer Modale (Anleitung,
+   Bestiarium, Talent-/Zauberauswahl) oben stehen — sonst muss man durch die
+   ganze Liste scrollen, um das Fenster wieder schliessen zu koennen. */
+.modal > .panel-head {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background-color: var(--bg-alt);
+}
 
 /* ---------- GM Dashboard ---------- */
 

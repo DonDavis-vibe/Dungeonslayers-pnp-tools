@@ -419,19 +419,30 @@ const HILFE_THEMEN = {
     'karte': {
         gruppe: 'runde',
         titel: 'Die Karte',
-        text: `<p>Ein Feld = <strong>1 Meter</strong> (Anhang B). Die Karte lässt sich einklappen
-               oder im <strong>⛶ Vollbild</strong> öffnen; Spieleransicht, Dashboard und Vollbild
-               teilen sich dieselbe Leinwand.</p>
+        text: `<p><strong>Die Karte ist der Kampfplan des Spielleiters.</strong> Er lädt ein
+               Hintergrundbild und stellt Figuren darauf — alle verbundenen Spieler sehen dasselbe
+               Bild live mit. Ein Feld = <strong>1 Meter</strong> (Anhang B).</p>
+               <p><strong>Allein am Charakterbogen bleibt die Karte leer</strong>, denn Bild, Figuren
+               und Nebel kommen vom Spielleiter. Sinn ergibt sie im Zusammenspiel: Als Spieler
+               siehst du sie und schlägst Züge vor. Als <strong>Spielleiter</strong> baust du sie im
+               <strong>Dashboard</strong> auf — auch schon vor der Sitzung, ganz ohne verbundene
+               Spieler, zum Vorbereiten. Die Werkzeugleiste dazu ist ein eigenes Hilfethema
+               (<em>Karten-Werkzeuge</em>).</p>
                <ul>
-                 <li><strong>Figuren</strong> tragen das Charakterbild und die Spielerfarbe.
-                     Ziehst du deine Figur, bleibt sie stehen und meldet den Zug als
-                     <strong>Vorschlag</strong> mit Entfernung an den Spielleiter — der entscheidet.</li>
-                 <li><strong>Messen</strong> per Werkzeug oder <em>Umschalt+Ziehen</em>, in Feldern
-                     und Metern.</li>
-                 <li><strong>Markierungen</strong> als Freihand, Linie, Kreis oder Rechteck.
-                     Der Kreis beschriftet sich mit seinem Radius — praktisch für Zauberwirkungen.</li>
-                 <li><strong>Nebel des Krieges</strong>: Der Spielleiter deckt Bereiche auf; Gegner
-                     im ungedeckten Nebel werden gar nicht erst übertragen.</li>
+                 <li><strong>Ansehen und bewegen</strong>: Mausrad zoomt, <strong>✋ Bewegen</strong>
+                     schiebt die Karte, <strong>Einpassen</strong> rückt alles wieder ins Bild.</li>
+                 <li><strong>Deine Figur</strong> trägt dein Charakterbild in deiner Spielerfarbe.
+                     Ziehst du sie, bleibt sie zunächst stehen und meldet den Zug mit Entfernung als
+                     <strong>Vorschlag</strong> an den Spielleiter — er gibt ihn frei. Außerhalb des
+                     Kampfes kann er die Züge auch generell freigeben, dann ziehst du direkt.</li>
+                 <li><strong>Messen</strong> per <strong>📏 Messen</strong> oder <em>Umschalt+Ziehen</em>,
+                     angezeigt in Feldern und Metern.</li>
+                 <li><strong>⛶ Vollbild</strong> für den großen Blick; Spieleransicht, Dashboard und
+                     Vollbild teilen sich dieselbe Leinwand. <strong>Einklappen</strong> schafft Platz,
+                     ohne die Karte zu schließen.</li>
+                 <li><strong>Markierungen</strong> (Freihand, Linie, Kreis, Rechteck) und den
+                     <strong>Nebel des Krieges</strong> setzt der Spielleiter. Gegner im noch
+                     verdeckten Nebel werden gar nicht erst an die Spieler übertragen.</li>
                </ul>`
     },
     'karte-werkzeuge': {
