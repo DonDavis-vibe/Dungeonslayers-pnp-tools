@@ -316,6 +316,9 @@ Nach Anhang B des Regelwerks gilt: **ein Feld = 1 Meter**.
 - **Messen** per Werkzeug oder Umschalt+Ziehen, in Feldern und Metern.
 - **Markierungen** als Freihand, Linie, Kreis oder Rechteck in fünf Farben. Der Kreis beschriftet
   sich mit seinem Radius in Metern — praktisch für Zauberwirkungen.
+- **↶ Rückgängig** (auch Strg+Z) nimmt die letzte Markierungs- oder Nebel-Aktion zurück, bis zu
+  40 Schritte weit. Figuren-Positionen bleiben außen vor — die wandern auch über Spieler-Vorschläge
+  und die Synchronisation.
 - **Nebel des Krieges** mit rechteckigen oder runden Bereichen. Aufgedeckte Bereiche werden erst
   **vorgemerkt** (grün gestrichelt, für Spieler unsichtbar) und auf Knopfdruck freigegeben, damit
   man Fehlgriffe korrigieren kann. Der Spielleiter sieht den Nebel halbdurchsichtig, die Spieler

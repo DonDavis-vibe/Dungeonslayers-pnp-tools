@@ -499,6 +499,9 @@ const HILFE_THEMEN = {
                  <li><strong>✋</strong> bewegt Karte und Figuren, <strong>📏</strong> misst
                      (geht auch jederzeit mit <em>Umschalt+Ziehen</em>), <strong>✏️</strong> malt,
                      <strong>🧽</strong> radiert Markierungen weg.</li>
+                 <li><strong>↶</strong> nimmt die letzte Markierungs- oder Nebel-Aktion zurück
+                     (auch <em>Strg+Z</em>) — bis zu 40 Schritte weit. Figuren-Positionen bleiben
+                     unberührt, die wandern ja auch über Spieler-Vorschläge.</li>
                  <li>Bei ✏️ erscheint eine zweite Reihe: Freihand, Linie, Kreis, Rechteck und fünf
                      Farben. Der <strong>Kreis beschriftet sich mit seinem Radius in Metern</strong> —
                      gedacht für Zauberwirkungen.</li>

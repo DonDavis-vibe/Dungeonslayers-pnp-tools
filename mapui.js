@@ -152,6 +152,8 @@ function renderKartenWerkzeuge() {
             <label class="radio-pill ${aktiv('messen')}" onclick="werkzeugWaehlen('messen')" title="Entfernung messen">📏</label>
             <label class="radio-pill ${aktiv('malen')}" onclick="werkzeugWaehlen('malen')" title="Markierung zeichnen">✏️</label>
             <label class="radio-pill ${aktiv('radieren')}" onclick="werkzeugWaehlen('radieren')" title="Markierung entfernen">🧽</label>
+            <button class="btn btn-sm btn-ghost" id="map-undo" onclick="karteRueckgaengig()" ${karte.kannRueckgaengig() ? '' : 'disabled style="opacity:0.4"'}
+                    title="Letzte Markierung oder Nebel-Aktion zurücknehmen (Strg+Z)">↶</button>
         </span>
         ${malAktiv ? `
         <span class="werkzeug-gruppe">
@@ -230,6 +232,36 @@ function werkzeugWaehlen(name) {
 function malArtWaehlen(art) { karte.setMalArt(art); renderKartenWerkzeuge(); }
 function malFarbeWaehlen(farbe) { karte.setMalFarbe(farbe); renderKartenWerkzeuge(); }
 function nebelFormWaehlen(form) { karte.setNebelForm(form); renderKartenWerkzeuge(); }
+
+// Letzte Markierungs- oder Nebel-Aktion zurücknehmen (Knopf oder Strg+Z).
+function karteRueckgaengig() {
+    if (!isGmMode || typeof karte === 'undefined' || !karte.kannRueckgaengig) return;
+    if (karte.rueckgaengig()) {
+        renderKartenWerkzeuge();
+        renderNebelFreigabe();
+    }
+}
+
+// Nur den Zustand des ↶-Knopfs nachziehen — ohne die ganze Leiste neu zu
+// bauen, damit ein fokussiertes Rasterfeld nicht den Fokus verliert.
+function aktualisiereRueckgaengigKnopf() {
+    const btn = document.getElementById('map-undo');
+    if (!btn || typeof karte === 'undefined' || !karte.kannRueckgaengig) return;
+    const geht = karte.kannRueckgaengig();
+    btn.disabled = !geht;
+    btn.style.opacity = geht ? '' : '0.4';
+}
+
+document.addEventListener('keydown', e => {
+    if ((e.key === 'z' || e.key === 'Z') && (e.ctrlKey || e.metaKey) && !e.shiftKey && !e.altKey) {
+        const el = document.activeElement;
+        if (el && /^(input|textarea|select)$/i.test(el.tagName)) return;
+        if (isGmMode && typeof karte !== 'undefined' && karte.kannRueckgaengig && karte.kannRueckgaengig()) {
+            e.preventDefault();
+            karteRueckgaengig();
+        }
+    }
+});
 
 function nebelFreigeben() {
     const anzahl = karte.nebelFreigeben();
@@ -626,6 +658,7 @@ function sendeKartenZustand(zustand) {
         broadcastToPlayers({ type: 'mapState', zustand: karte.getStateFuerSpieler() });
         renderZugVorschlaege();
         renderNebelFreigabe();
+        aktualisiereRueckgaengigKnopf();
         if (typeof sitzungSichern === 'function') sitzungSichern();
     }
     // Spieler schicken nur ihre eigene Figur, siehe sendeEigeneFigur

@@ -581,12 +581,13 @@ const BattleMap = (() => {
                 const gross = entwurf.art === 'freihand'
                     ? p.length > 2
                     : Math.hypot(p[1].x - p[0].x, p[1].y - p[0].y) > 0.25;
-                if (gross) zustand.formen.push(entwurf);
+                if (gross) { verlaufSichern(); zustand.formen.push(entwurf); }
                 entwurf = null;
                 melden();
             } else if ((ziehen.art === 'nebel-auf' || ziehen.art === 'nebel-zu') && entwurf) {
                 const bereich = bereichAusEntwurf(entwurf);
                 if (bereich) {
+                    verlaufSichern();
                     if (ziehen.art === 'nebel-auf') {
                         // Erst vormerken — freigegeben wird auf Knopfdruck
                         zustand.nebel.aktiv = true;
@@ -670,6 +671,7 @@ const BattleMap = (() => {
                 const p = zustand.formen[i].punkte || [];
                 const nah = p.some(punkt => Math.hypot(punkt.x - fx, punkt.y - fy) < toleranz);
                 if (nah) {
+                    verlaufSichern();
                     zustand.formen.splice(i, 1);
                     zeichnen();
                     melden();
@@ -714,6 +716,9 @@ const BattleMap = (() => {
 
         // Zustand von außen übernehmen, ohne dadurch erneut zu melden
         function applyState(neu, mitBild) {
+            // Ein von außen gesetzter Zustand (Sitzung geladen, Netz-Sync)
+            // macht den bisherigen Rückgängig-Verlauf gegenstandslos.
+            verlauf.length = 0;
             meldeSperre = true;
             if (neu.raster) Object.assign(zustand.raster, neu.raster);
             if (neu.figuren) zustand.figuren = JSON.parse(JSON.stringify(neu.figuren));
@@ -897,7 +902,33 @@ const BattleMap = (() => {
         function setMalFarbe(farbe) { malFarbe = farbe; }
         function getMalFarbe() { return malFarbe; }
 
+        // --- Rückgängig ----------------------------------------------------
+        // Nur für Markierungen und Nebel — nicht für Figuren-Positionen, die
+        // auch über Spieler-Vorschläge und die Netzsynchronisation wandern.
+        // Vor jeder solchen Änderung wird der Stand hier abgelegt.
+        const verlauf = [];
+        const VERLAUF_MAX = 40;
+
+        function verlaufSichern() {
+            verlauf.push(JSON.stringify({ formen: zustand.formen, nebel: zustand.nebel }));
+            if (verlauf.length > VERLAUF_MAX) verlauf.shift();
+        }
+
+        function kannRueckgaengig() { return verlauf.length > 0; }
+
+        function rueckgaengig() {
+            if (!verlauf.length) return false;
+            const vorher = JSON.parse(verlauf.pop());
+            zustand.formen = vorher.formen;
+            zustand.nebel = vorher.nebel;
+            zeichnen();
+            melden();
+            return true;
+        }
+
         function formenLoeschen() {
+            if (!zustand.formen.length) return;
+            verlaufSichern();
             zustand.formen = [];
             zeichnen();
             melden();
@@ -908,6 +939,8 @@ const BattleMap = (() => {
         function setNebelDeckend(an) { nebelDeckend = !!an; zeichnen(); }
 
         function nebelAktiv(an) {
+            if (zustand.nebel.aktiv === !!an) return;
+            verlaufSichern();
             zustand.nebel.aktiv = !!an;
             zeichnen();
             melden();
@@ -915,6 +948,7 @@ const BattleMap = (() => {
         function istNebelAktiv() { return zustand.nebel.aktiv; }
 
         function nebelAllesZudecken() {
+            verlaufSichern();
             zustand.nebel.aktiv = true;
             zustand.nebel.aufgedeckt = [];
             zustand.nebel.entwurf = [];
@@ -923,6 +957,8 @@ const BattleMap = (() => {
         }
 
         function nebelAllesAufdecken() {
+            if (!zustand.nebel.aktiv && !zustand.nebel.aufgedeckt.length && !(zustand.nebel.entwurf || []).length) return;
+            verlaufSichern();
             zustand.nebel.aktiv = false;
             zustand.nebel.aufgedeckt = [];
             zustand.nebel.entwurf = [];
@@ -937,6 +973,7 @@ const BattleMap = (() => {
         function nebelFreigeben() {
             const anzahl = (zustand.nebel.entwurf || []).length;
             if (!anzahl) return 0;
+            verlaufSichern();
             zustand.nebel.aufgedeckt = zustand.nebel.aufgedeckt.concat(zustand.nebel.entwurf);
             zustand.nebel.entwurf = [];
             zeichnen();
@@ -947,6 +984,8 @@ const BattleMap = (() => {
         // Vormerkung verwerfen, ohne dass die Spieler je etwas gesehen haben
         function nebelEntwurfVerwerfen() {
             const anzahl = (zustand.nebel.entwurf || []).length;
+            if (!anzahl) return 0;
+            verlaufSichern();
             zustand.nebel.entwurf = [];
             zeichnen();
             melden();
@@ -964,6 +1003,7 @@ const BattleMap = (() => {
             setBestaetigung, zugBestaetigen, zugVerwerfen, offeneZuege,
             setMessModus, istMessModus, setVerdeckt, getStateFuerSpieler,
             setWerkzeug, getWerkzeug, setMalArt, getMalArt, setMalFarbe, getMalFarbe, formenLoeschen,
+            rueckgaengig, kannRueckgaengig,
             setNebelDeckend, nebelAktiv, istNebelAktiv, nebelAllesZudecken, nebelAllesAufdecken,
             setNebelForm, getNebelForm, nebelFreigeben, nebelEntwurfVerwerfen, offeneNebelBereiche,
             getState, applyState, einpassen, setBesitzer, zeichnen,
