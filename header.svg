@@ -1,8 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 120" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Dungeongewölbe mit Fackeln und einem W20">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 120" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Torchlit stone armoury with a weapon rack, shields and a d20">
   <!--
-    Dekoratives Kopfbild für den Dungeonslayers-Charakterbogen.
-    Bewusst kontrastarm gehalten: Darüber steht der Titel, der lesbar bleiben muss.
-    Die Farben stammen aus der Palette in style.css (Grundton, Akzentgold, Blutrot).
+    Dekoratives Kopfbild für das Slayer-Arsenal.
+    Motiv: die Wand einer Rüstkammer im Fackelschein — Waffenständer, Schilde,
+    W20 als Mittelpunkt. Bewusst kontrastarm: darüber liegt in style.css ein
+    dunkler Verlauf, der Titel und Knöpfe lesbar hält. Farben aus der Palette
+    (Grundton, Akzentgold, Blutrot).
   -->
   <defs>
     <linearGradient id="grund" x1="0" y1="0" x2="0" y2="1">
@@ -11,14 +13,12 @@
       <stop offset="1" stop-color="#120e0a"/>
     </linearGradient>
 
-    <!-- Warmer Lichtschein der Fackeln -->
     <radialGradient id="fackelschein" cx="0.5" cy="0.5" r="0.5">
       <stop offset="0" stop-color="#f0c069" stop-opacity="0.55"/>
       <stop offset="0.45" stop-color="#d4a24c" stop-opacity="0.18"/>
       <stop offset="1" stop-color="#d4a24c" stop-opacity="0"/>
     </radialGradient>
 
-    <!-- Tiefe des Gewölbes: mittig heller, zu den Rändern hin dunkel -->
     <radialGradient id="tiefe" cx="0.5" cy="0.62" r="0.62">
       <stop offset="0" stop-color="#000000" stop-opacity="0"/>
       <stop offset="1" stop-color="#000000" stop-opacity="0.72"/>
@@ -38,6 +38,28 @@
         <path d="M20 0.75V20.75M60 0.75V20.75M40 20.75V39.25M0 20.75V39.25M80 20.75V39.25"/>
       </g>
     </pattern>
+
+    <!-- Ein Schwert, das in den Waffenständer gestellt wird (Spitze oben) -->
+    <g id="schwert" stroke-linecap="round" fill="none">
+      <path d="M0 -46V20" stroke="#9c8c74" stroke-width="3.4"/>
+      <path d="M0 -46 4 -38 0 20 -4 -38z" fill="#9c8c74" stroke="none" opacity="0.5"/>
+      <path d="M-9 20H9" stroke="#8a6a3e" stroke-width="4.5"/>
+      <path d="M0 20V33" stroke="#8a6a3e" stroke-width="3.4"/>
+      <circle cx="0" cy="35" r="2.6" fill="#8a6a3e"/>
+    </g>
+
+    <!-- Runder Schild mit Buckel und Nieten -->
+    <g id="schild">
+      <circle r="30" fill="#1c1610" stroke="#8a6a3e" stroke-width="3"/>
+      <circle r="30" fill="none" stroke="#d4a24c" stroke-width="1" stroke-opacity="0.4"/>
+      <circle r="7" fill="#8a6a3e"/>
+      <g fill="#8a6a3e">
+        <circle cx="0" cy="-22" r="2"/><circle cx="0" cy="22" r="2"/>
+        <circle cx="-22" cy="0" r="2"/><circle cx="22" cy="0" r="2"/>
+        <circle cx="-15.5" cy="-15.5" r="2"/><circle cx="15.5" cy="-15.5" r="2"/>
+        <circle cx="-15.5" cy="15.5" r="2"/><circle cx="15.5" cy="15.5" r="2"/>
+      </g>
+    </g>
   </defs>
 
   <!-- Grundfläche und Mauerwerk -->
@@ -46,48 +68,79 @@
 
   <!-- Gewölbebögen, nach hinten kleiner werdend -->
   <g fill="none" stroke="#8a6a3e" stroke-linecap="round">
-    <path d="M150 120V64a90 90 0 0 1 180 0v56" stroke-opacity="0.28" stroke-width="3"/>
-    <path d="M1270 120V64a90 90 0 0 1 180 0v56" stroke-opacity="0.28" stroke-width="3"/>
-    <path d="M600 120V52a200 200 0 0 1 400 0v68" stroke-opacity="0.20" stroke-width="3.5"/>
-    <path d="M672 120V60a128 128 0 0 1 256 0v60" stroke-opacity="0.13" stroke-width="3"/>
+    <path d="M150 120V64a90 90 0 0 1 180 0v56" stroke-opacity="0.26" stroke-width="3"/>
+    <path d="M1270 120V64a90 90 0 0 1 180 0v56" stroke-opacity="0.26" stroke-width="3"/>
+    <path d="M600 120V52a200 200 0 0 1 400 0v68" stroke-opacity="0.18" stroke-width="3.5"/>
+    <path d="M672 120V60a128 128 0 0 1 256 0v60" stroke-opacity="0.12" stroke-width="3"/>
   </g>
 
-  <!-- W20 im Torbogen — dasselbe Motiv wie im Favicon -->
-  <g transform="translate(800 74) scale(2.15)" fill="none" stroke="#d4a24c" stroke-linejoin="round">
-    <path d="M0 -26 22.5 -13v26L0 26 -22.5 13v-26z" stroke-opacity="0.5" stroke-width="2"/>
-    <path d="M0 -26V26M-22.5 -13 22.5 13M22.5 -13-22.5 13" stroke-opacity="0.22" stroke-width="1.2"/>
-    <path d="M0 -26-22.5 13 22.5 13z" stroke-opacity="0.34" stroke-width="1.4"/>
+  <!-- Schilde an der Wand, links und rechts der Mitte -->
+  <g opacity="0.30">
+    <use href="#schild" transform="translate(560 58)"/>
+    <use href="#schild" transform="translate(1040 58)"/>
+  </g>
+
+  <!-- Waffenständer quer über die ganze Breite -->
+  <g opacity="0.22">
+    <rect x="120" y="99" width="1360" height="9" rx="3" fill="#5a452a"/>
+    <rect x="120" y="99" width="1360" height="3" rx="1.5" fill="#8a6a3e"/>
+  </g>
+
+  <!-- Waffen im Ständer, leicht gefächert -->
+  <g opacity="0.24">
+    <use href="#schwert" transform="translate(300 92) rotate(-9)"/>
+    <use href="#schwert" transform="translate(360 92) rotate(-3)"/>
+    <use href="#schwert" transform="translate(1240 92) rotate(4)"/>
+    <use href="#schwert" transform="translate(1300 92) rotate(10)"/>
+
+    <!-- Speer -->
+    <g stroke-linecap="round">
+      <path d="M250 96V-2" stroke="#8a6a3e" stroke-width="3" transform="rotate(-13 250 96)"/>
+      <path d="M250 -2 244 12 250 6 256 12z" fill="#9c8c74" transform="rotate(-13 250 96)"/>
+    </g>
+    <!-- Streitkolben -->
+    <g stroke-linecap="round" transform="rotate(12 1350 96)">
+      <path d="M1350 96V14" stroke="#8a6a3e" stroke-width="3.4"/>
+      <circle cx="1350" cy="8" r="9" fill="none" stroke="#9c8c74" stroke-width="3"/>
+    </g>
   </g>
 
   <!-- Gekreuzte Waffen hinter dem Würfel: Schwert und Streitaxt -->
-  <g stroke-linecap="round" opacity="0.34">
-    <g transform="translate(800 74) rotate(-32)">
-      <path d="M-96 0H70" stroke="#9c8c74" stroke-width="4"/>
-      <path d="M70 0 96 0" stroke="#9c8c74" stroke-width="2.5"/>
-      <path d="M-96 -9V9" stroke="#8a6a3e" stroke-width="6"/>
-      <path d="M-78 -12V12" stroke="#8a6a3e" stroke-width="5"/>
+  <g stroke-linecap="round" opacity="0.32">
+    <g transform="translate(800 70) rotate(-32)">
+      <path d="M-102 0H72" stroke="#9c8c74" stroke-width="4"/>
+      <path d="M72 0 100 0" stroke="#9c8c74" stroke-width="2.5"/>
+      <path d="M-102 -9V9" stroke="#8a6a3e" stroke-width="6"/>
+      <path d="M-82 -12V12" stroke="#8a6a3e" stroke-width="5"/>
     </g>
-    <g transform="translate(800 74) rotate(32)">
-      <path d="M-96 0H84" stroke="#8a6a3e" stroke-width="5"/>
-      <path d="M60 -26a34 34 0 0 1 0 52a54 54 0 0 0 0-52z" fill="#9c8c74" stroke="none"/>
+    <g transform="translate(800 70) rotate(32)">
+      <path d="M-102 0H86" stroke="#8a6a3e" stroke-width="5"/>
+      <path d="M62 -27a35 35 0 0 1 0 54a56 56 0 0 0 0-54z" fill="#9c8c74" stroke="none"/>
     </g>
+  </g>
+
+  <!-- W20 als Mittelpunkt — dasselbe Motiv wie im Favicon -->
+  <g transform="translate(800 70) scale(2.2)" fill="none" stroke="#d4a24c" stroke-linejoin="round">
+    <path d="M0 -26 22.5 -13v26L0 26 -22.5 13v-26z" stroke-opacity="0.6" stroke-width="2"/>
+    <path d="M0 -26V26M-22.5 -13 22.5 13M22.5 -13-22.5 13" stroke-opacity="0.26" stroke-width="1.2"/>
+    <path d="M0 -26-22.5 13 22.5 13z" stroke-opacity="0.4" stroke-width="1.4"/>
   </g>
 
   <!-- Fackeln links und rechts -->
   <g>
-    <circle cx="255" cy="52" r="66" fill="url(#fackelschein)"/>
-    <circle cx="1345" cy="52" r="66" fill="url(#fackelschein)"/>
+    <circle cx="200" cy="50" r="70" fill="url(#fackelschein)"/>
+    <circle cx="1400" cy="50" r="70" fill="url(#fackelschein)"/>
     <g fill="#f0c069">
-      <path d="M255 30c7 9 11 15 11 22a11 11 0 0 1-22 0c0-7 4-13 11-22z" opacity="0.85"/>
-      <path d="M1345 30c7 9 11 15 11 22a11 11 0 0 1-22 0c0-7 4-13 11-22z" opacity="0.85"/>
+      <path d="M200 28c7 9 11 15 11 22a11 11 0 0 1-22 0c0-7 4-13 11-22z" opacity="0.85"/>
+      <path d="M1400 28c7 9 11 15 11 22a11 11 0 0 1-22 0c0-7 4-13 11-22z" opacity="0.85"/>
     </g>
     <g fill="#a8342c" opacity="0.55">
-      <path d="M255 40c4 5 6 9 6 13a6 6 0 0 1-12 0c0-4 2-8 6-13z"/>
-      <path d="M1345 40c4 5 6 9 6 13a6 6 0 0 1-12 0c0-4 2-8 6-13z"/>
+      <path d="M200 38c4 5 6 9 6 13a6 6 0 0 1-12 0c0-4 2-8 6-13z"/>
+      <path d="M1400 38c4 5 6 9 6 13a6 6 0 0 1-12 0c0-4 2-8 6-13z"/>
     </g>
     <g fill="#5a452a">
-      <rect x="251" y="62" width="8" height="34" rx="3"/>
-      <rect x="1341" y="62" width="8" height="34" rx="3"/>
+      <rect x="196" y="60" width="8" height="36" rx="3"/>
+      <rect x="1396" y="60" width="8" height="36" rx="3"/>
     </g>
   </g>
 

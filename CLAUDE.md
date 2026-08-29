@@ -4,9 +4,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Was das hier ist
 
-Digitaler Charakterbogen und Spielleiter-Dashboard für das deutsche Pen-&-Paper-Rollenspiel
-**Dungeonslayers 4**. Reines HTML/CSS/JavaScript, kein Build-Schritt, keine Abhängigkeiten, kein
-`package.json`. Läuft direkt im Browser, deployed via GitHub Pages von `main`.
+**Slayer-Arsenal** — digitaler Charakterbogen und Spielleiter-Dashboard für das deutsche
+Pen-&-Paper-Rollenspiel **Dungeonslayers 4**. Reines HTML/CSS/JavaScript, kein Build-Schritt, keine
+Abhängigkeiten, kein `package.json`. Läuft direkt im Browser, deployed via GitHub Pages von `main`.
+(Das GitHub-Repo heißt weiter `Dungeonslayers-pnp-tools` — die Pages-URL soll stabil bleiben.)
 
 ## Entwickeln und testen
 

@@ -85,7 +85,7 @@ select option { background: #1c1712; }
        Knöpfe lesbar bleiben. Die Leiste wird dadurch nicht höher. */
     background:
         linear-gradient(180deg, rgba(28, 21, 13, 0.82), rgba(20, 16, 11, 0.88)),
-        url('header.svg?v=20260825i') center / cover no-repeat,
+        url('header.svg?v=20260828u') center / cover no-repeat,
         linear-gradient(180deg, rgba(40, 30, 18, 0.95), rgba(24, 19, 13, 0.9));
     border-bottom: 1px solid var(--panel-border-strong);
     position: sticky;
@@ -735,8 +735,9 @@ select option { background: #1c1712; }
     vertical-align: super;
 }
 
-/* Fanwerk-Banner im Fußbereich */
-.fanwerk-banner {
+/* Fanwerk-Hinweisbild im Fußbereich (Klasse ohne "banner", weil Brave & Co.
+   Elemente mit diesem Wort im Klassennamen kosmetisch ausblenden) */
+.fanwerk-marke {
     display: block;
     width: 100px;
     margin: 0 auto 0.9rem;
@@ -744,8 +745,8 @@ select option { background: #1c1712; }
     opacity: 0.85;
     transition: opacity 0.15s;
 }
-.fanwerk-banner:hover { opacity: 1; }
-.fanwerk-banner img {
+.fanwerk-marke:hover { opacity: 1; }
+.fanwerk-marke img {
     display: block;
     width: 100px;
     height: 46px;

@@ -1,8 +1,8 @@
 <div align="center">
-  <h1>⚔️ Dungeonslayers 4 — Charakterbogen &amp; Spielleiter-Dashboard</h1>
+  <h1>⚔️ Slayer-Arsenal</h1>
   <p>
-    <strong>Ein interaktiver, regelkonformer Charakterbogen mit Live-Multiplayer und Kampf-Tracker
-    für das kostenlose Pen-&amp;-Paper-Rollenspiel <em>Dungeonslayers 4</em>.</strong><br>
+    <strong>Charakterbogen, Kampf-Tracker, Battlemap und Live-Multiplayer für das kostenlose
+    Pen-&amp;-Paper-Rollenspiel <em>Dungeonslayers 4</em> — alles in einem Browser-Tab.</strong><br>
     <em>Kein Server, keine Accounts, kein Build-Schritt.</em>
   </p>
 
@@ -509,7 +509,7 @@ Im Ordner [`beispiele/`](beispiele/) liegen zwei fertige Helden zum Ausprobieren
 | `multiplayer.js` | WebRTC-Verbindung und SL-Dashboard |
 | `discord.js` | Optionale Discord-Webhook-Anbindung |
 | `hilfe.js` | Hilfetexte hinter den „?"-Symbolen und die Kurzanleitung |
-| `header.svg` | Kopfbild der Seite — von Hand gezeichnetes SVG in der Farbpalette des Bogens |
+| `header.svg` | Kopfbild der Seite — von Hand gezeichnete Rüstkammer (SVG) in der Farbpalette des Bogens |
 | `regeln/` | Die offiziellen PDFs plus aufbereitete Regel-Referenzen |
 | `beispiele/` | Fertige Charaktere als JSON |
 

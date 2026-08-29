@@ -3,17 +3,17 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dungeonslayers Charakterbogen online — kostenloses Spielleiter-Tool für DS4</title>
-<meta name="description" content="Kostenloser digitaler Charakterbogen für das Pen-&amp;-Paper-Rollenspiel Dungeonslayers 4: Charaktererschaffung, Würfeln mit Immersieg und Patzer, Talente, Zauber, Bestiarium sowie ein Live-Spielleiter-Dashboard mit Kampf-Tracker. Läuft im Browser, ohne Anmeldung.">
+<title>Slayer-Arsenal — kostenloser Charakterbogen & Spielleiter-Tool für Dungeonslayers 4</title>
+<meta name="description" content="Das Slayer-Arsenal ist ein kostenloses Tool für das Pen-&amp;-Paper-Rollenspiel Dungeonslayers 4: digitaler Charakterbogen mit Charaktererschaffung, Würfeln mit Immersieg und Patzer, Talente, Zauber und Bestiarium — dazu ein Live-Spielleiter-Dashboard mit Kampf-Tracker und Battlemap. Läuft im Browser, ohne Anmeldung.">
 <meta name="keywords" content="Dungeonslayers, DS4, Pen &amp; Paper, PnP, Rollenspiel, Charakterbogen, Charakterbogen online, Charaktergenerator, OSR, Spielleiter, GM Tool, Kampf-Tracker, Bestiarium, Multiplayer, kostenlos, deutsch">
 <meta name="author" content="DonDavis — German Redneck Engineering">
 <link rel="canonical" href="https://dondavis-vibe.github.io/Dungeonslayers-pnp-tools/">
 
 <!-- Vorschau beim Teilen in Forum, Discord & Co. -->
 <meta property="og:type" content="website">
-<meta property="og:site_name" content="Dungeonslayers Online-Tool">
-<meta property="og:title" content="Dungeonslayers Charakterbogen online — kostenloses Spielleiter-Tool für DS4">
-<meta property="og:description" content="Charakterbogen, Kampf-Tracker und Live-Multiplayer für Dungeonslayers 4 — im Browser, ohne Anmeldung und ohne Server.">
+<meta property="og:site_name" content="Slayer-Arsenal">
+<meta property="og:title" content="Slayer-Arsenal — Charakterbogen & Spielleiter-Tool für Dungeonslayers 4">
+<meta property="og:description" content="Charakterbogen, Kampf-Tracker, Battlemap und Live-Multiplayer für Dungeonslayers 4 — im Browser, ohne Anmeldung und ohne Server.">
 <meta property="og:url" content="https://dondavis-vibe.github.io/Dungeonslayers-pnp-tools/">
 <meta property="og:locale" content="de_DE">
 <meta name="twitter:card" content="summary">
@@ -24,7 +24,8 @@
 {
   "@context": "https://schema.org",
   "@type": "WebApplication",
-  "name": "Dungeonslayers Charakterbogen & Spielleiter-Tool",
+  "name": "Slayer-Arsenal — Charakterbogen & Spielleiter-Tool für Dungeonslayers",
+  "alternateName": "Slayer-Arsenal",
   "url": "https://dondavis-vibe.github.io/Dungeonslayers-pnp-tools/",
   "applicationCategory": "GameApplication",
   "operatingSystem": "Webbrowser",
@@ -35,7 +36,7 @@
   "creator": { "@type": "Organization", "name": "German Redneck Engineering" },
   "license": "https://creativecommons.org/licenses/by-nc-sa/4.0/deed.de",
   "offers": { "@type": "Offer", "price": "0", "priceCurrency": "EUR" },
-  "description": "Digitaler Charakterbogen und Live-Spielleiter-Dashboard für das kostenlose deutsche Pen-&-Paper-Rollenspiel Dungeonslayers 4.",
+  "description": "Slayer-Arsenal: digitaler Charakterbogen, Kampf-Tracker, Battlemap und Live-Spielleiter-Dashboard für das kostenlose deutsche Pen-&-Paper-Rollenspiel Dungeonslayers 4.",
   "about": { "@type": "Game", "name": "Dungeonslayers", "author": { "@type": "Person", "name": "Christian Kennig" } },
   "featureList": [
     "Charaktererschaffung nach Regelwerk",
@@ -53,7 +54,7 @@
 <!-- W20 als Favicon, direkt eingebettet (kein zusätzlicher Netzwerkabruf) -->
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%2314100c'/%3E%3Cpath d='M16 3 29 10.5v11L16 29 3 21.5v-11z' fill='none' stroke='%23d4a24c' stroke-width='2' stroke-linejoin='round'/%3E%3Cpath d='M16 3 16 29M3 10.5 29 21.5M29 10.5 3 21.5' stroke='%23d4a24c' stroke-width='1' opacity='.45'/%3E%3Ctext x='16' y='20' font-family='Georgia,serif' font-size='11' font-weight='bold' fill='%23f0c069' text-anchor='middle'%3E20%3C/text%3E%3C/svg%3E">
 
-<link rel="stylesheet" href="style.css?v=20260828s">
+<link rel="stylesheet" href="style.css?v=20260828u">
 </head>
 <body>
 
@@ -61,7 +62,7 @@
 <div id="player-view">
 
 <div class="topbar">
-    <h1>⚔️ Dungeonslayers<small>Digitaler Charakterbogen</small></h1>
+    <h1>⚔️ Slayer-Arsenal<small>Charakterbogen für Dungeonslayers 4</small></h1>
 
     <!-- Verbindungsanzeige: nur sichtbar, sobald Multiplayer genutzt wird -->
     <div id="mp-badge" class="mp-badge" onclick="openMultiplayerModal()" role="status" tabindex="0">
@@ -490,12 +491,12 @@
 <footer class="site-footer">
     <div class="footer-inner">
         <section>
-            <h2>Digitaler Charakterbogen für Dungeonslayers</h2>
+            <h2>Slayer-Arsenal — das Werkzeug für Dungeonslayers 4</h2>
             <p>
-                Dieses kostenlose Online-Tool bildet den Charakterbogen des deutschen
-                Pen-&amp;-Paper-Rollenspiels <strong>Dungeonslayers 4</strong> im Browser ab. Es führt
-                durch die Charaktererschaffung, berechnet alle Kampfwerte automatisch und würfelt
-                Proben regelkonform mit 1W20 — inklusive Immersieg, Patzer und der Aufteilung in
+                Das <strong>Slayer-Arsenal</strong> ist ein kostenloses Online-Werkzeug für das
+                deutsche Pen-&amp;-Paper-Rollenspiel <strong>Dungeonslayers 4</strong>. Es führt durch
+                die Charaktererschaffung, berechnet alle Kampfwerte automatisch und würfelt Proben
+                regelkonform mit 1W20 — inklusive Immersieg, Patzer und der Aufteilung in
                 Kettenwürfe bei Probenwerten über 20.
             </p>
             <p>
@@ -532,7 +533,7 @@
         <!-- Der Fanwerk-Banner wird von immersieg.de eingebunden statt hier abgelegt:
              Die DS-Lizenz stellt ausdrücklich nur Texte und Regelmechaniken unter
              CC BY-NC-SA, nicht aber Grafiken und Logos. -->
-        <a class="fanwerk-banner" href="https://www.dungeonslayers.net/fanwerk-richtlinien/"
+        <a class="fanwerk-marke" href="https://www.dungeonslayers.net/fanwerk-richtlinien/"
            target="_blank" rel="noopener" title="Ein Fanwerk zu Dungeonslayers — zu den Fanwerk-Richtlinien">
             <img src="https://immersieg.de/images/DS4Fanwerkbanner.gif"
                  alt="Dungeonslayers-Fanwerk" width="100" height="46" loading="lazy">
@@ -556,7 +557,7 @@
 <!-- ============ GM DASHBOARD ============ -->
 <div id="gm-dashboard">
     <div class="topbar" style="margin:-1.2rem -1.2rem 1.2rem">
-        <h1>👑 Spielleiter-Dashboard<small>Dungeonslayers 4</small></h1>
+        <h1>👑 Slayer-Arsenal<small>Spielleiter-Dashboard · Dungeonslayers 4</small></h1>
         <div style="display:flex;align-items:center;gap:0.8rem;flex-wrap:wrap">
             <span class="hint">Raum-Code:</span>
             <span class="room-code" id="gm-room-code">----</span>
@@ -909,23 +910,23 @@
     </div>
 </div>
 
-<script src="data.js?v=20260828s"></script>
-<script src="talents.js?v=20260828s"></script>
-<script src="zauber.js?v=20260828s"></script>
-<script src="bestiarium.js?v=20260828s"></script>
-<script src="sounds.js?v=20260828s"></script>
-<script src="hausregeln.js?v=20260828s"></script>
-<script src="rules.js?v=20260828s"></script>
-<script src="app.js?v=20260828s"></script>
-<script src="talentPicker.js?v=20260828s"></script>
-<script src="spellPicker.js?v=20260828s"></script>
-<script src="wizard.js?v=20260828s"></script>
-<script src="combat.js?v=20260828s"></script>
-<script src="battlemap.js?v=20260828s"></script>
-<script src="multiplayer.js?v=20260828s"></script>
-<script src="mapui.js?v=20260828s"></script>
-<script src="session.js?v=20260828s"></script>
-<script src="discord.js?v=20260828s"></script>
-<script src="hilfe.js?v=20260828s"></script>
+<script src="data.js?v=20260828u"></script>
+<script src="talents.js?v=20260828u"></script>
+<script src="zauber.js?v=20260828u"></script>
+<script src="bestiarium.js?v=20260828u"></script>
+<script src="sounds.js?v=20260828u"></script>
+<script src="hausregeln.js?v=20260828u"></script>
+<script src="rules.js?v=20260828u"></script>
+<script src="app.js?v=20260828u"></script>
+<script src="talentPicker.js?v=20260828u"></script>
+<script src="spellPicker.js?v=20260828u"></script>
+<script src="wizard.js?v=20260828u"></script>
+<script src="combat.js?v=20260828u"></script>
+<script src="battlemap.js?v=20260828u"></script>
+<script src="multiplayer.js?v=20260828u"></script>
+<script src="mapui.js?v=20260828u"></script>
+<script src="session.js?v=20260828u"></script>
+<script src="discord.js?v=20260828u"></script>
+<script src="hilfe.js?v=20260828u"></script>
 </body>
 </html>
