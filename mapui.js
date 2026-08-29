@@ -499,7 +499,9 @@ function verteileKartenBild(nurAn) {
 
     senden({ type: 'mapImageStart', kennung, anzahl: stuecke.length });
     stuecke.forEach((teil, index) => senden({ type: 'mapImageChunk', kennung, index, teil }));
-    senden({ type: 'mapImageEnd', kennung, zustand: karte.getState() });
+    // Empfänger sind immer Spieler — verdeckte Figuren und vorgemerkter Nebel
+    // dürfen nicht mitgehen, auch nicht beim Nachreichen an einen Neuzugang.
+    senden({ type: 'mapImageEnd', kennung, zustand: karte.getStateFuerSpieler() });
 
     const status = document.getElementById('map-status');
     if (status) status.textContent += ` · an ${nurAn ? 'einen Spieler' : Object.keys(clientConnections).length + ' Spieler'} gesendet`;
@@ -862,14 +864,19 @@ function handleKartenNachricht(payload, vonPeer) {
             figur.x = payload.x;
             figur.y = payload.y;
             karte.zeichnen();
-            broadcastToPlayers({ type: 'mapState', zustand: karte.getState() });
+            broadcastToPlayers({ type: 'mapState', zustand: karte.getStateFuerSpieler() });
             return true;
         }
 
         // Ein neu beigetretener Spieler bekommt die Karte nachgereicht
         case 'mapAnfordern':
-            if (!isGmMode) return true;
+            if (!isGmMode || !karte) return true;
+            // Mit Hintergrundbild trägt mapImageEnd den Zustand mit. Ohne Bild —
+            // reine Rasterkarte oder Bild nach einem Reload noch nicht wieder
+            // geladen — bekäme der Neuzugang sonst gar nichts und seine Karte
+            // bliebe leer, während alle anderen Figuren und Nebel sehen.
             if (karteBildDatenUrl) verteileKartenBild(vonPeer);
+            else sendToPlayer(vonPeer, { type: 'mapState', zustand: karte.getStateFuerSpieler() });
             verteileFigurenBilder(vonPeer);
             // Wer spaeter dazukommt, muss den Stand der Zug-Freigabe kennen
             if (zuegeFrei) sendToPlayer(vonPeer, { type: 'mapZugFreigabe', frei: true });

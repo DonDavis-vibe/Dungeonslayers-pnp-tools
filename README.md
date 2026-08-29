@@ -356,6 +356,9 @@ Nach Anhang B des Regelwerks gilt: **ein Feld = 1 Meter**.
   **vorgemerkt** (grün gestrichelt, für Spieler unsichtbar) und auf Knopfdruck freigegeben, damit
   man Fehlgriffe korrigieren kann. Der Spielleiter sieht den Nebel halbdurchsichtig, die Spieler
   deckend; Gegner in ungedecktem Nebel werden gar nicht erst übertragen.
+- **Wer mitten in der Runde beitritt**, bekommt den aktuellen Kartenstand nachgereicht – auch
+  eine reine Rasterkarte ohne Hintergrundbild oder eine Karte, deren Bild nach einem Reload des
+  Spielleiters noch fehlt.
 
 ### ⚙️ Hausregeln
 Dungeonslayers lebt von Fanwerken und Hausregeln — deshalb sind die wichtigsten Stellschrauben
