@@ -85,6 +85,9 @@ const HILFE_THEMEN = {
                  <li><strong>🗑️ Löschen</strong> — leert den Bogen vollständig; nach dem Bild
                      wird getrennt gefragt.</li>
                </ul>
+               <p>Wenn du seit dem letzten <em>💾 Speichern</em> etwas geändert hast, fragt der
+               Browser beim Schließen des Tabs nach — als Erinnerung, eine Datei-Sicherung
+               anzulegen (der Browser-Speicher allein kann verloren gehen).</p>
                <p>Die Discord-Webhook-URL wird bewusst <strong>nicht</strong> mitgespeichert —
                geteilte Charakterdateien verraten deinen Kanal also nicht.</p>`
     },

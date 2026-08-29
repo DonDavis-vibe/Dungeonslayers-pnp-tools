@@ -219,6 +219,8 @@ function exportCharacter() {
     a.click();
     a.remove();
     URL.revokeObjectURL(a.href);
+    ungespeicherteAenderungen = false;
+    addLog('Charakter als Datei gespeichert.', 'neutral');
 }
 
 // Übernimmt einen eingelesenen Charakter in den Bogen. Fehlende Felder bekommen
@@ -233,6 +235,7 @@ function applyCharacterData(parsed) {
     renderAll();
     scheduleSave();
     syncMultiplayerState();
+    ungespeicherteAenderungen = false;
     addLog('Charakter geladen: ' + characterName(), 'neutral');
 }
 
@@ -376,12 +379,29 @@ function refreshBoundInputs() {
     });
 }
 
+// Alles wandert laufend in den localStorage — aber die exportierte Datei ist
+// die eigentliche Sicherung (localStorage kann geleert werden, ein anderer
+// Browser hat nichts). Deshalb vor dem Schliessen erinnern, wenn seit dem
+// letzten Export noch etwas geaendert wurde.
+let ungespeicherteAenderungen = false;
+
 function onDataChanged() {
     renderDerived();
     renderMeta();
     scheduleSave();
     syncMultiplayerState();
+    if (appData.name || appData.klasse) ungespeicherteAenderungen = true;
 }
+
+window.addEventListener('beforeunload', e => {
+    const alsSpielleiter = typeof isGmMode !== 'undefined' && isGmMode;
+    const alsSpieler = ungespeicherteAenderungen && (appData.name || appData.klasse);
+    if (alsSpielleiter || alsSpieler) {
+        // Browser zeigen dazu ihren eigenen, festen Text ("Seite verlassen?").
+        e.preventDefault();
+        e.returnValue = '';
+    }
+});
 
 // --- Rendering: Attribute & Eigenschaften -----------------------------------
 
