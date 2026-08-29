@@ -325,6 +325,11 @@ select option { background: #1c1712; }
 .hint { font-size: 0.78rem; color: var(--text-dim); }
 .hint-rule { font-size: 0.75rem; color: var(--text-dim); font-style: italic; border-left: 2px solid var(--panel-border); padding-left: 0.5rem; }
 
+.sl-eigene-sounds { display: flex; flex-direction: column; gap: 0.25rem; margin-top: 0.4rem; }
+.sl-eigene-sounds:empty { margin-top: 0; }
+.eigen-sound-zeile { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; font-size: 0.82rem; }
+.eigen-sound-zeile span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
 /* ---------- Modal ---------- */
 
 .modal-overlay {

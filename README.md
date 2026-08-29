@@ -291,6 +291,11 @@ eigenen Regler in der Kopfzeile. Die kurzen Effekte sind **CC0 von Kenney** und 
 selbst; die langen Kulissen- und Musikstücke kommen (aus Platzgründen) von der Seite des
 Schwesterprojekts *How to be a Hero*.
 
+Über **➕ Eigener Sound** legt der Spielleiter eigene Audiodateien (lizenzierte Musik, selbst
+aufgenommene Atmo, Jingles) ins Soundboard. Die bleiben **ausschließlich lokal im Browser**
+(IndexedDB) und werden beim Abspielen nur direkt per WebRTC an die verbundenen Spieler geschickt —
+nichts davon landet im Repo oder auf der gehosteten Seite. Grenze: 20 MB je Datei.
+
 **Verbindungsanzeige:** Sobald ein Spieler Multiplayer nutzt, erscheint in der Kopfzeile eine
 dauerhafte Statusanzeige — grün bei bestehender Verbindung (mit Raum-Code), pulsierend gelb beim
 Verbinden, rot bei Abbruch. Ohne Multiplayer bleibt sie unsichtbar. Ein Klick öffnet das Menü mit

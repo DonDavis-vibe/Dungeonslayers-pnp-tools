@@ -103,6 +103,66 @@ function soundboardEintrag(id) {
     return null;
 }
 
+// --- Eigene Sounds des Spielleiters ---------------------------------------
+//
+// Der SL kann eigene Dateien ins Soundboard legen — lizenzierte Musik, selbst
+// aufgenommene Atmo, ein Jingle aus der letzten Sitzung. Die bleiben
+// AUSSCHLIESSLICH lokal im Browser des SL (IndexedDB) und werden bei „Für alle"
+// nur direkt per WebRTC an die gerade verbundenen Spieler geschickt — nichts
+// davon landet im Repo oder auf der öffentlich gehosteten Seite. IDs tragen das
+// Präfix `eigen:`, damit die übrige Soundboard-Logik sie auseinanderhält.
+const EIGENE_SOUND_DB = 'ds4_soundboard';
+const EIGENE_SOUND_STORE = 'eigene';
+const EIGENE_SOUND_MAX = 20 * 1024 * 1024; // 20 MB — hält die Übertragung an die Spieler kurz
+
+let eigeneSounds = [];   // [{ id, name, blob }] — für die Sitzung im Speicher
+
+function eigeneSoundDbOeffnen() {
+    return new Promise((erfuellen, ablehnen) => {
+        if (!window.indexedDB) { ablehnen(new Error('IndexedDB nicht verfügbar')); return; }
+        const anfrage = indexedDB.open(EIGENE_SOUND_DB, 1);
+        anfrage.onupgradeneeded = () => {
+            const db = anfrage.result;
+            if (!db.objectStoreNames.contains(EIGENE_SOUND_STORE)) {
+                db.createObjectStore(EIGENE_SOUND_STORE, { keyPath: 'id' });
+            }
+        };
+        anfrage.onsuccess = () => erfuellen(anfrage.result);
+        anfrage.onerror = () => ablehnen(anfrage.error);
+    });
+}
+
+function eigeneSoundsLaden() {
+    return eigeneSoundDbOeffnen().then(db => new Promise(erfuellen => {
+        const t = db.transaction(EIGENE_SOUND_STORE, 'readonly');
+        const anfrage = t.objectStore(EIGENE_SOUND_STORE).getAll();
+        anfrage.onsuccess = () => { db.close(); erfuellen(anfrage.result || []); };
+        anfrage.onerror = () => { db.close(); erfuellen([]); };
+    })).catch(() => []);
+}
+
+function eigenenSoundSichern(eintrag) {
+    return eigeneSoundDbOeffnen().then(db => new Promise((erfuellen, ablehnen) => {
+        const t = db.transaction(EIGENE_SOUND_STORE, 'readwrite');
+        t.objectStore(EIGENE_SOUND_STORE).put(eintrag);
+        t.oncomplete = () => { db.close(); erfuellen(true); };
+        t.onerror = () => { db.close(); ablehnen(t.error); };
+    }));
+}
+
+function eigenenSoundLoeschen(id) {
+    return eigeneSoundDbOeffnen().then(db => new Promise(erfuellen => {
+        const t = db.transaction(EIGENE_SOUND_STORE, 'readwrite');
+        t.objectStore(EIGENE_SOUND_STORE).delete(id);
+        t.oncomplete = () => { db.close(); erfuellen(true); };
+        t.onerror = () => { db.close(); erfuellen(false); };
+    })).catch(() => false);
+}
+
+function eigenerSound(id) {
+    return eigeneSounds.find(s => s.id === id) || null;
+}
+
 // Volle URL zu einem Soundboard-Eintrag: lokale Dateien liegen unter
 // sounds/soundboard/, alles mit http(s) davor kommt von der externen Seite.
 function soundboardUrl(s) {
@@ -113,6 +173,8 @@ function soundboardUrl(s) {
 }
 
 function soundboardName(id) {
+    const e = eigenerSound(id);
+    if (e) return e.name;
     const s = soundboardEintrag(id);
     return s ? s.name : id;
 }
@@ -149,14 +211,38 @@ function pegelAnwenden(audio, slPegel) {
 // Spieler auf Ansage des SL). slPegel ist der Wert des SL-Reglers.
 function soundboardAbspielen(id, slPegel) {
     if (soundStumm) return;
-    const url = soundboardUrl(soundboardEintrag(id));
+    let url, freigeben = false;
+    const eigen = eigenerSound(id);
+    if (eigen) { url = URL.createObjectURL(eigen.blob); freigeben = true; }
+    else url = soundboardUrl(soundboardEintrag(id));
     if (!url) return;
     try {
         const audio = new Audio(url);
         pegelAnwenden(audio, typeof slPegel === 'number' ? slPegel : 0.7);
         audio.play().catch(() => {});
         laufendeSounds.push(audio);
-        audio.addEventListener('ended', () => { laufendeSounds = laufendeSounds.filter(a => a !== audio); });
+        audio.addEventListener('ended', () => {
+            laufendeSounds = laufendeSounds.filter(a => a !== audio);
+            if (freigeben) URL.revokeObjectURL(url);
+        });
+    } catch (e) { if (freigeben) URL.revokeObjectURL(url); }
+}
+
+// Ein vom Spielleiter direkt per WebRTC empfangener eigener Sound. Kommt als
+// ArrayBuffer (oder Blob) an, wird nur abgespielt und nirgends gespeichert.
+function eigenenSoundAbspielen(daten, slPegel, typ) {
+    if (soundStumm) return;
+    try {
+        const blob = daten instanceof Blob ? daten : new Blob([daten], typ ? { type: typ } : undefined);
+        const url = URL.createObjectURL(blob);
+        const audio = new Audio(url);
+        pegelAnwenden(audio, typeof slPegel === 'number' ? slPegel : 0.7);
+        audio.play().catch(() => {});
+        laufendeSounds.push(audio);
+        audio.addEventListener('ended', () => {
+            laufendeSounds = laufendeSounds.filter(a => a !== audio);
+            URL.revokeObjectURL(url);
+        });
     } catch (e) { /* kein Ton, kein Drama */ }
 }
 
@@ -189,16 +275,33 @@ function soundboardPegelSetzen(slPegel) {
 function renderSoundboardAuswahl() {
     const sel = document.getElementById('sl-sound-auswahl');
     if (!sel) return;
-    sel.innerHTML = Object.entries(SOUNDBOARD).map(([gruppe, sounds]) =>
+    const vorher = sel.value;
+    let html = Object.entries(SOUNDBOARD).map(([gruppe, sounds]) =>
         `<optgroup label="${gruppe}">` +
         sounds.map(s => `<option value="${s.id}">${s.name}</option>`).join('') +
         `</optgroup>`
     ).join('');
+    if (eigeneSounds.length) {
+        const esc = typeof escapeHtml === 'function' ? escapeHtml : (t => t);
+        html += `<optgroup label="Eigene">` +
+            eigeneSounds.map(s => `<option value="${esc(s.id)}">${esc(s.name)}</option>`).join('') +
+            `</optgroup>`;
+    }
+    sel.innerHTML = html;
+    if (vorher && sel.querySelector(`option[value="${CSS.escape(vorher)}"]`)) sel.value = vorher;
 }
 
 document.addEventListener('DOMContentLoaded', () => {
     renderSoundboardAuswahl();
     document.querySelectorAll('[data-lautstaerke-slider]').forEach(s => { s.value = geraetLautstaerke; });
+    // Früher hochgeladene eigene Sounds aus IndexedDB zurückholen
+    eigeneSoundsLaden().then(liste => {
+        eigeneSounds = liste.map(e => ({ id: e.id, name: e.name, blob: e.blob }));
+        if (eigeneSounds.length) {
+            renderSoundboardAuswahl();
+            if (typeof renderEigeneSoundListe === 'function') renderEigeneSoundListe();
+        }
+    });
 });
 
 function soundStummUmschalten() {

@@ -60,6 +60,13 @@ const HILFE_THEMEN = {
                </ul>
                <p>Sounds stoppen sich <strong>nicht</strong> gegenseitig — so läuft Regen als
                Endlos-Kulisse, während du einen Gong oder einen Schrei darüberlegst.</p>
+               <p><strong>➕ Eigener Sound</strong> legt eine Datei von deiner Festplatte ins
+               Soundboard — lizenzierte Musik, selbst aufgenommene Atmo, ein Jingle. Sie
+               erscheint unter <em>Eigene</em> in der Liste und lässt sich wie jeder andere
+               Klang vorhören oder für alle abspielen. Solche Dateien bleiben
+               <strong>ausschließlich auf diesem Gerät</strong> (im Browser gespeichert) und
+               gehen beim Abspielen direkt an die verbundenen Spieler — nichts davon wird
+               veröffentlicht. Grenze: 20 MB je Datei.</p>
                <p class="hint-rule">Die kurzen Effekte (Türen, Münzen, Klingen …) liegen als
                CC0-Dateien von <em>Kenney</em> im Tool selbst. Die langen Kulissen- und
                Musikstücke wären zu groß fürs Repo und kommen von der Seite des

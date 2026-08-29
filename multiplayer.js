@@ -1082,8 +1082,17 @@ function slSoundVorhoeren(id) {
 function slSoundAbspielen(id) {
     const pegel = slSoundPegel();
     if (typeof soundboardAbspielen === 'function') soundboardAbspielen(id, pegel);
-    broadcastToPlayers({ type: 'soundboard', soundId: id, pegel });
     const name = typeof soundboardName === 'function' ? soundboardName(id) : id;
+    const eigen = typeof eigenerSound === 'function' ? eigenerSound(id) : null;
+    if (eigen) {
+        // Eigene Datei hat keine für die Spieler erreichbare URL — der Inhalt geht
+        // direkt per WebRTC mit, einmal pro Auslösung.
+        eigen.blob.arrayBuffer().then(buffer => {
+            broadcastToPlayers({ type: 'soundboard-eigen', name: eigen.name, typ: eigen.blob.type, buffer, pegel });
+        });
+    } else {
+        broadcastToPlayers({ type: 'soundboard', soundId: id, pegel });
+    }
     addGmLog('Spielleiter', `🎵 <strong>${escapeHtml(name)}</strong> — für alle abgespielt`, 'neutral');
 }
 
@@ -1102,6 +1111,69 @@ function slSoundPegelAendern(wert) {
     if (typeof soundboardPegelSetzen === 'function') soundboardPegelSetzen(pegel);
     broadcastToPlayers({ type: 'soundboard-vol', pegel });
 }
+
+// --- Eigene Sounds: hochladen, auflisten, entfernen ----------------------
+//
+// Bleiben nur auf dem SL-Gerät (IndexedDB, siehe sounds.js). Beim Abspielen für
+// alle wandert der Dateiinhalt direkt per WebRTC an die verbundenen Spieler.
+
+function setSlSoundHinweis(text) {
+    const el = document.getElementById('sl-sound-hinweis');
+    if (el) el.textContent = text || '';
+}
+
+function slEigenenSoundHochladen(event) {
+    const datei = event.target.files && event.target.files[0];
+    event.target.value = '';
+    if (!datei) return;
+    if (!/^audio\//.test(datei.type) && !/\.(mp3|ogg|oga|wav|webm|weba|m4a|opus|flac|aac)$/i.test(datei.name)) {
+        setSlSoundHinweis('Das sieht nicht nach einer Audiodatei aus (mp3, ogg, wav, webm …).');
+        return;
+    }
+    if (datei.size > EIGENE_SOUND_MAX) {
+        setSlSoundHinweis(`„${datei.name}" ist größer als 20 MB — das dauert beim Übertragen an die Spieler zu lange. Bitte kürzen oder stärker komprimieren.`);
+        return;
+    }
+    const eintrag = {
+        id: 'eigen:' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+        name: datei.name.replace(/\.[^.]+$/, ''),
+        blob: datei
+    };
+    eigenenSoundSichern(eintrag).then(() => {
+        eigeneSounds.push({ id: eintrag.id, name: eintrag.name, blob: datei });
+        renderSoundboardAuswahl();
+        renderEigeneSoundListe();
+        const sel = document.getElementById('sl-sound-auswahl');
+        if (sel) sel.value = eintrag.id;
+        setSlSoundHinweis(`„${eintrag.name}" liegt im Soundboard — nur auf diesem Gerät gespeichert.`);
+    }).catch(e => {
+        setSlSoundHinweis('Speichern fehlgeschlagen: ' + ((e && e.message) || e));
+    });
+}
+
+function slEigenenSoundEntfernen(id) {
+    eigenenSoundLoeschen(id).then(() => {
+        eigeneSounds = eigeneSounds.filter(s => s.id !== id);
+        renderSoundboardAuswahl();
+        renderEigeneSoundListe();
+        setSlSoundHinweis('');
+    });
+}
+
+function renderEigeneSoundListe() {
+    const box = document.getElementById('sl-eigene-sounds');
+    if (!box) return;
+    box.innerHTML = eigeneSounds.map(s =>
+        `<div class="eigen-sound-zeile">` +
+        `<span title="${escapeHtml(s.name)}">${escapeHtml(s.name)}</span>` +
+        `<button class="btn btn-sm btn-ghost" type="button" onclick="slEigenenSoundEntfernen('${s.id}')" title="Aus dem Soundboard entfernen">✕</button>` +
+        `</div>`
+    ).join('');
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    if (typeof renderEigeneSoundListe === 'function') renderEigeneSoundListe();
+});
 
 // Anstupsen: kurze Einblendung samt "Du bist am Zug"-Ton beim Spieler, ohne
 // den Kampf weiterzuschalten — für "du bist dran" oder "jetzt bist DU gemeint".
@@ -1183,6 +1255,11 @@ function handleGmCommand(payload) {
         }
         case 'soundboard':
             if (typeof soundboardAbspielen === 'function') soundboardAbspielen(payload.soundId, payload.pegel);
+            break;
+        case 'soundboard-eigen':
+            if (typeof eigenenSoundAbspielen === 'function') {
+                eigenenSoundAbspielen(payload.buffer || payload.blob, payload.pegel, payload.typ);
+            }
             break;
         case 'soundboard-stop':
             if (typeof soundboardStop === 'function') soundboardStop();
