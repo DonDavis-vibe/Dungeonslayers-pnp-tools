@@ -266,6 +266,12 @@ SL-Notizen (lokal gespeichert).
   Beim Weiterschalten der Runde passiert das ohnehin automatisch für den, der jetzt dran ist.
 - die **aktuelle Kampfrunde**, an der die Abklingzeiten der Zauber hängen
 
+**Der Spieler sieht während des Kampfes** die vollständige Initiative-Reihenfolge — 🛡️ Helden und
+👹 Gegner gemischt nach Initiative, mit Markierung, wer dran ist. Mitspieler stehen mit
+Lebenskraft-Balken darunter; **Gegner-Werte bleiben verborgen**, in der Reihenfolge stehen sie nur
+mit Namen. Ist Discord eingerichtet, nennt der Kampfbeginn-Post die Teilnehmer getrennt nach
+*🛡️ Helden* und *👹 Gegner* (ebenfalls ohne Gegner-LK).
+
 **Verbindungsanzeige:** Sobald ein Spieler Multiplayer nutzt, erscheint in der Kopfzeile eine
 dauerhafte Statusanzeige — grün bei bestehender Verbindung (mit Raum-Code), pulsierend gelb beim
 Verbinden, rot bei Abbruch. Ohne Multiplayer bleibt sie unsichtbar. Ein Klick öffnet das Menü mit

@@ -1183,7 +1183,9 @@ function renderGruppe() {
             if (e.name === characterName()) klassen.push('ich');
             const lk = (e.lkCurrent !== null && e.lkCurrent !== undefined)
                 ? ` <span class="hint">${e.lkCurrent}/${e.lkMax}</span>` : '';
-            return `<div class="${klassen.join(' ')}">${e.amZug ? '▶ ' : ''}${escapeHtml(e.name)}${lk}</div>`;
+            // Freund/Feind auf einen Blick — die Initiative-Reihenfolge bleibt gemischt
+            const symbol = e.istSpieler ? '🛡️' : '👹';
+            return `<div class="${klassen.join(' ')}">${e.amZug ? '▶ ' : ''}${symbol} ${escapeHtml(e.name)}${lk}</div>`;
         }).join('');
 
         kampfBox.innerHTML = `

@@ -85,9 +85,10 @@ const HILFE_THEMEN = {
                  <li><strong>🗑️ Löschen</strong> — leert den Bogen vollständig; nach dem Bild
                      wird getrennt gefragt.</li>
                </ul>
-               <p>Wenn du seit dem letzten <em>💾 Speichern</em> etwas geändert hast, fragt der
-               Browser beim Schließen des Tabs nach — als Erinnerung, eine Datei-Sicherung
-               anzulegen (der Browser-Speicher allein kann verloren gehen).</p>
+               <p>Solange du den Bogen in dieser Sitzung noch nicht als Datei gespeichert hast —
+               oder seither etwas geändert hast — fragt der Browser beim Schließen des Tabs nach.
+               Eine Erinnerung, <em>💾 Speichern</em> zu drücken: Der Browser-Speicher allein kann
+               verloren gehen (Verlauf gelöscht, anderes Gerät).</p>
                <p>Die Discord-Webhook-URL wird bewusst <strong>nicht</strong> mitgespeichert —
                geteilte Charakterdateien verraten deinen Kanal also nicht.</p>`
     },
@@ -401,13 +402,14 @@ const HILFE_THEMEN = {
         titel: 'Gruppe & Kampf',
         text: `<p>Der Kasten erscheint nur, solange du mit einem Spielleiter verbunden bist.</p>
                <p><strong>Läuft ein Kampf</strong>, steht hier die Runde und die vollständige
-               Initiative-Reihenfolge. Wer gerade dran ist, ist markiert — bist du es selbst,
-               wird der Kasten hervorgehoben und du bekommst zusätzlich eine Einblendung.
+               Initiative-Reihenfolge — <strong>🛡️ Helden</strong> und <strong>👹 Gegner</strong>
+               gemischt nach Initiative. Wer gerade dran ist, ist markiert; bist du es selbst,
+               wird der Kasten hervorgehoben und du bekommst zusätzlich eine Einblendung samt Ton.
                Ohne Kampf steht dort schlicht, dass gerade keiner läuft.</p>
                <p><strong>Deine Mitspieler</strong> stehen darunter mit Klasse, Stufe und ihrem
                Lebenskraft-Balken — praktisch, um zu sehen, wer dringend Heilung braucht.
-               Bewusstlose und Tote sind ausgewiesen. Gegner-Werte siehst du bewusst nicht;
-               in der Reihenfolge stehen sie nur mit Namen.</p>
+               Bewusstlose und Tote sind ausgewiesen. Gegner-<strong>Werte</strong> siehst du
+               bewusst nicht; in der Reihenfolge stehen sie nur mit Namen.</p>
                <p><strong>🤫 Flüstern</strong> schickt eine Nachricht, die nur der Spielleiter
                sieht — die Gegenrichtung zu seinem Flüstern an dich.</p>
                <p><strong>Heilzauber wirken auf Mitspieler:</strong> Wirkst du erfolgreich einen

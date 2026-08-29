@@ -343,7 +343,16 @@ function startCombat() {
     const reihenfolge = combatants.map(c => escapeHtml(c.name)).join(' → ');
     addGmLog('System', `<strong>Kampf beginnt</strong> — Runde 1. Reihenfolge: ${reihenfolge}`, 'erfolg');
     if (typeof discordPostEreignis === 'function') {
-        discordPostEreignis(`⚔️ **Kampf beginnt** — Runde 1\nReihenfolge: ${combatants.map(c => c.name).join(' → ')}`, 'neutral');
+        const helden = combatants.filter(c => c.type === 'player').map(c => c.name);
+        const gegner = combatants.filter(c => c.type === 'npc').map(c => c.name);
+        const zeilen = [
+            `⚔️ **Kampf beginnt** — Runde 1`,
+            `Reihenfolge: ${combatants.map(c => c.name).join(' → ')}`
+        ];
+        if (helden.length) zeilen.push(`🛡️ Helden: ${helden.join(', ')}`);
+        // Bewusst nur Namen, keine Gegner-LK — die sehen die Spieler auch im Tool nicht
+        if (gegner.length) zeilen.push(`👹 Gegner: ${gegner.join(', ')}`);
+        discordPostEreignis(zeilen.join('\n'), 'neutral');
     }
     renderCombat();
 }

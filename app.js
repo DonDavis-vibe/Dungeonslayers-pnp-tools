@@ -186,12 +186,32 @@ function characterName() {
 // --- Persistenz -------------------------------------------------------------
 
 let saveTimer = null;
+// Alles wandert laufend in den localStorage — aber die exportierte Datei ist die
+// eigentliche Sicherung (localStorage kann geleert werden, ein anderer Browser
+// hat nichts). Diese beiden Marker steuern die Rückfrage beim Tab-Schließen.
+let ungespeichertSeitExport = false;  // seit dem letzten „💾 Speichern" geändert
+let jemalsExportiert = false;         // in dieser Sitzung schon mal als Datei gesichert
+
 function scheduleSave() {
     clearTimeout(saveTimer);
     saveTimer = setTimeout(() => {
         try { localStorage.setItem(STORAGE_KEY, JSON.stringify(appData)); } catch (e) { /* Speicher evtl. voll/blockiert */ }
     }, 300);
+    if (appData.name || appData.klasse) ungespeichertSeitExport = true;
 }
+
+window.addEventListener('beforeunload', e => {
+    const alsSpielleiter = typeof isGmMode !== 'undefined' && isGmMode;
+    const hatCharakter = !!(appData.name || appData.klasse);
+    // Warnen, wenn seit dem letzten Export etwas geändert wurde ODER der Bogen
+    // in dieser Sitzung noch nie als Datei gesichert wurde (frisch aus dem
+    // localStorage geladen). Browser zeigen dazu ihren eigenen, festen Text.
+    const spielerNichtGesichert = hatCharakter && (ungespeichertSeitExport || !jemalsExportiert);
+    if (alsSpielleiter || spielerNichtGesichert) {
+        e.preventDefault();
+        e.returnValue = '';
+    }
+});
 
 function loadFromStorage() {
     try {
@@ -219,7 +239,8 @@ function exportCharacter() {
     a.click();
     a.remove();
     URL.revokeObjectURL(a.href);
-    ungespeicherteAenderungen = false;
+    ungespeichertSeitExport = false;
+    jemalsExportiert = true;
     addLog('Charakter als Datei gespeichert.', 'neutral');
 }
 
@@ -235,7 +256,9 @@ function applyCharacterData(parsed) {
     renderAll();
     scheduleSave();
     syncMultiplayerState();
-    ungespeicherteAenderungen = false;
+    // Kam gerade aus einer Datei — gilt als gesichert.
+    ungespeichertSeitExport = false;
+    jemalsExportiert = true;
     addLog('Charakter geladen: ' + characterName(), 'neutral');
 }
 
@@ -379,29 +402,12 @@ function refreshBoundInputs() {
     });
 }
 
-// Alles wandert laufend in den localStorage — aber die exportierte Datei ist
-// die eigentliche Sicherung (localStorage kann geleert werden, ein anderer
-// Browser hat nichts). Deshalb vor dem Schliessen erinnern, wenn seit dem
-// letzten Export noch etwas geaendert wurde.
-let ungespeicherteAenderungen = false;
-
 function onDataChanged() {
     renderDerived();
     renderMeta();
     scheduleSave();
     syncMultiplayerState();
-    if (appData.name || appData.klasse) ungespeicherteAenderungen = true;
 }
-
-window.addEventListener('beforeunload', e => {
-    const alsSpielleiter = typeof isGmMode !== 'undefined' && isGmMode;
-    const alsSpieler = ungespeicherteAenderungen && (appData.name || appData.klasse);
-    if (alsSpielleiter || alsSpieler) {
-        // Browser zeigen dazu ihren eigenen, festen Text ("Seite verlassen?").
-        e.preventDefault();
-        e.returnValue = '';
-    }
-});
 
 // --- Rendering: Attribute & Eigenschaften -----------------------------------
 
