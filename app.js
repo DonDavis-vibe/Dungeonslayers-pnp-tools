@@ -2227,21 +2227,55 @@ document.addEventListener('keydown', e => {
 // − / + an jedem .num-stepper: verändert das eingeschlossene Zahlenfeld um
 // seinen step (Standard 1), respektiert min/max und stößt input/change an,
 // damit die vorhandenen Feld-Listener ganz normal greifen.
-document.addEventListener('click', e => {
-    const btn = e.target.closest('.num-stepper button[data-dir]');
-    if (!btn) return;
-    const input = btn.closest('.num-stepper').querySelector('input[type=number]');
-    if (!input || input.disabled) return;
+function numStepperTick(btn) {
+    const stepper = btn.closest('.num-stepper');
+    const input = stepper && stepper.querySelector('input[type=number]');
+    if (!input || input.disabled || btn.disabled) return false;
     const schritt = (parseFloat(input.getAttribute('step')) || 1) * parseFloat(btn.dataset.dir);
     let wert = (parseFloat(input.value) || 0) + schritt;
     const min = input.getAttribute('min');
     const max = input.getAttribute('max');
     if (min !== null && wert < parseFloat(min)) wert = parseFloat(min);
     if (max !== null && wert > parseFloat(max)) wert = parseFloat(max);
+    // Gerundet vergleichen — Fließkomma-step (z.B. 0.5) sonst nie „gleich"
+    if (Math.abs(wert - (parseFloat(input.value) || 0)) < 1e-9) return false;
     input.value = String(wert);
     input.dispatchEvent(new Event('input', { bubbles: true }));
     input.dispatchEvent(new Event('change', { bubbles: true }));
+    return true;
+}
+
+// Klick zählt einen Schritt (auch Tastatur: Enter/Leertaste auf dem Knopf).
+document.addEventListener('click', e => {
+    const btn = e.target.closest('.num-stepper button[data-dir]');
+    if (btn) numStepperTick(btn);
 });
+
+// Gedrückt halten zählt automatisch weiter: kurze Startverzögerung, dann Wdh.
+let numStepperHold = null;
+let numStepperBtn = null;
+function numStepperHaltStop() {
+    if (numStepperHold) { clearTimeout(numStepperHold); clearInterval(numStepperHold); numStepperHold = null; }
+    numStepperBtn = null;
+}
+document.addEventListener('pointerdown', e => {
+    const btn = e.target.closest('.num-stepper button[data-dir]');
+    if (!btn || btn.disabled) return;
+    numStepperHaltStop();
+    numStepperBtn = btn;
+    numStepperHold = setTimeout(() => {
+        numStepperHold = setInterval(() => {
+            if (btn.disabled || !numStepperTick(btn)) numStepperHaltStop();
+        }, 70);
+    }, 350);
+});
+// Zeiger vom gehaltenen Knopf weggezogen → aufhören
+document.addEventListener('pointermove', e => {
+    if (numStepperBtn && e.target.closest('.num-stepper button[data-dir]') !== numStepperBtn) numStepperHaltStop();
+});
+['pointerup', 'pointercancel', 'pointerleave'].forEach(ev =>
+    document.addEventListener(ev, numStepperHaltStop));
+window.addEventListener('blur', numStepperHaltStop);
 
 // --- Initialisierung --------------------------------------------------------
 

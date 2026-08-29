@@ -327,7 +327,7 @@ const HILFE_THEMEN = {
                <p>Er zählt zusätzlich zur Schwierigkeit in den nächsten Wurf, erscheint im Log und
                <strong>stellt sich danach wieder auf 0</strong>. Solange er scharf ist, ist das
                Feld hervorgehoben. Die <strong>+</strong>/<strong>−</strong>-Knöpfe gehen in
-               Einerschritten, größere Werte tippst du direkt ein.</p>`
+               Einerschritten (gedrückt halten zählt weiter), größere Werte tippst du direkt ein.</p>`
     },
     'proben': {
         gruppe: 'wuerfe',
@@ -519,7 +519,9 @@ const HILFE_THEMEN = {
                <p><strong>Raster</strong> — Ein Feld = 1 Meter. <em>Raster</em> blendet es ein,
                <em>Einrasten</em> lässt Figuren auf Feldmitten springen, die drei Zahlenfelder
                setzen Feldgröße (in Pixeln) und den Versatz waagerecht/senkrecht, damit das Raster
-               auf das Bild passt. Das Mausrad zoomt.</p>`
+               auf das Bild passt — die <strong>−/+-Knöpfe kann man gedrückt halten</strong>. Die
+               sechs Farbpunkte daneben stellen die <strong>Rasterfarbe</strong> um, falls Gold auf
+               dem Kartenbild schlecht zu sehen ist. Das Mausrad zoomt.</p>`
     },
     'wizard': {
         gruppe: 'runde',

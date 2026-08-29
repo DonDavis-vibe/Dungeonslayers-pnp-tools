@@ -302,7 +302,8 @@ Direkt in Bogen und Dashboard eingebettet, ein- und ausklappbar, dazu ein Vollbi
 Nach Anhang B des Regelwerks gilt: **ein Feld = 1 Meter**.
 
 - **Karte laden** — ein beliebiges Bild; es wird verkleinert und in Stücken an alle Spieler
-  übertragen. Raster, Feldgröße und Versatz sind frei einstellbar.
+  übertragen. Raster, Feldgröße, Versatz und **Rasterfarbe** (sechs Voreinstellungen) sind frei
+  einstellbar; die −/+-Knöpfe der Zahlenfelder lassen sich gedrückt halten.
 - **Figuren** kommen per Klick aus dem Kampf-Tracker oder werden einzeln gesetzt. Spieler
   erscheinen mit ihrem **Charakterbild**, umrandet in ihrer Farbe.
 - **Figurengröße nach Größenkategorie.** Weil ein Feld einem Meter entspricht, lassen sich die

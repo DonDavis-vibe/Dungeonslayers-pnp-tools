@@ -140,6 +140,15 @@ function renderKartenWerkzeuge() {
     const malArt = karte.getMalArt();
     const malAktiv = wz === 'malen';
     const farben = ['#f0c069', '#6fa84a', '#4a90d4', '#c4569e', '#b8462f'];
+    // Rasterfarben: Anzeige-Punkt kräftig, gezeichnet wird die halbdurchsichtige Variante
+    const rasterFarben = [
+        { punkt: '#d4a24c', linie: 'rgba(212,162,76,0.32)', name: 'Gold' },
+        { punkt: '#ffffff', linie: 'rgba(255,255,255,0.42)', name: 'Weiß' },
+        { punkt: '#111111', linie: 'rgba(0,0,0,0.55)', name: 'Schwarz' },
+        { punkt: '#5aa0ff', linie: 'rgba(90,160,255,0.48)', name: 'Blau' },
+        { punkt: '#5fcf5f', linie: 'rgba(95,207,95,0.46)', name: 'Grün' },
+        { punkt: '#e65a5a', linie: 'rgba(230,90,90,0.46)', name: 'Rot' }
+    ];
 
     leiste.innerHTML = `
         <button class="help-btn" type="button" data-hilfe="karte-werkzeuge" aria-label="Hilfe: Karten-Werkzeuge" title="Hilfe: Karten-Werkzeuge">?</button>
@@ -172,6 +181,9 @@ function renderKartenWerkzeuge() {
         </span>
         <label class="radio-pill ${r.rasterSichtbar ? 'selected' : ''}" onclick="rasterUmschalten()">Raster</label>
         <label class="radio-pill ${r.einrasten ? 'selected' : ''}" onclick="einrastenUmschalten()">Einrasten</label>
+        ${r.rasterSichtbar ? `<span class="werkzeug-gruppe" title="Rasterfarbe">
+            ${rasterFarben.map(rf => `<span class="mal-farbe ${(r.rasterFarbe || rasterFarben[0].linie) === rf.linie ? 'aktiv' : ''}" style="background:${rf.punkt}" title="Raster: ${rf.name}" onclick="rasterFarbeWaehlen('${rf.linie}')"></span>`).join('')}
+        </span>` : ''}
         <span class="num-stepper" title="Feldgröße in Pixeln"><button type="button" data-dir="-1">−</button>
             <input type="number" id="map-gridsize" value="${r.rasterGroesse}" min="4" max="400" style="width:2.8rem">
             <button type="button" data-dir="1">+</button></span>
@@ -232,6 +244,7 @@ function werkzeugWaehlen(name) {
 function malArtWaehlen(art) { karte.setMalArt(art); renderKartenWerkzeuge(); }
 function malFarbeWaehlen(farbe) { karte.setMalFarbe(farbe); renderKartenWerkzeuge(); }
 function nebelFormWaehlen(form) { karte.setNebelForm(form); renderKartenWerkzeuge(); }
+function rasterFarbeWaehlen(farbe) { karte.setRaster({ rasterFarbe: farbe }); renderKartenWerkzeuge(); }
 
 // Letzte Markierungs- oder Nebel-Aktion zurücknehmen (Knopf oder Strg+Z).
 function karteRueckgaengig() {

@@ -27,6 +27,7 @@ const BattleMap = (() => {
         rasterVersatzX: 0,
         rasterVersatzY: 0,
         rasterSichtbar: true,
+        rasterFarbe: 'rgba(212,162,76,0.30)',  // Rasterlinien — vom SL umstellbar
         einheit: 1,             // wie viele Einheiten ein Feld entspricht
         einheitName: 'm',
         einrasten: true
@@ -351,7 +352,7 @@ const BattleMap = (() => {
             if (schritt < 6) return;   // zu fein, würde nur flimmern
 
             ctx.save();
-            ctx.strokeStyle = 'rgba(212,162,76,0.28)';
+            ctx.strokeStyle = r.rasterFarbe || 'rgba(212,162,76,0.30)';
             ctx.lineWidth = 1;
             ctx.beginPath();
 
