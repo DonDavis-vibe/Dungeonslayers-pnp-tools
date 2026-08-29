@@ -57,7 +57,7 @@
 <!-- W20 als Favicon, direkt eingebettet (kein zusätzlicher Netzwerkabruf) -->
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%2314100c'/%3E%3Cpath d='M16 3 29 10.5v11L16 29 3 21.5v-11z' fill='none' stroke='%23d4a24c' stroke-width='2' stroke-linejoin='round'/%3E%3Cpath d='M16 3 16 29M3 10.5 29 21.5M29 10.5 3 21.5' stroke='%23d4a24c' stroke-width='1' opacity='.45'/%3E%3Ctext x='16' y='20' font-family='Georgia,serif' font-size='11' font-weight='bold' fill='%23f0c069' text-anchor='middle'%3E20%3C/text%3E%3C/svg%3E">
 
-<link rel="stylesheet" href="style.css?v=20260828x">
+<link rel="stylesheet" href="style.css?v=20260828y">
 </head>
 <body>
 
@@ -815,6 +815,50 @@
     </div>
 </div>
 
+<!-- Begrüßung beim ersten Besuch -->
+<div class="modal-overlay" id="welcome-modal">
+    <div class="modal">
+        <div class="panel-head"><h3>👋 Willkommen im Slayer-Arsenal</h3>
+            <div class="panel-actions"><button class="btn btn-sm btn-ghost" onclick="welcomeSchliessen()">✕</button></div>
+        </div>
+        <div class="panel-body">
+            <p>Das <strong>Slayer-Arsenal</strong> ist ein kostenloses Werkzeug für
+            <strong>Dungeonslayers 4</strong> — ein digitaler Charakterbogen und ein
+            Spielleiter-Dashboard in einem. Kein Konto, keine Installation. Alles, was du eingibst,
+            bleibt <strong>in deinem Browser</strong>; erst <em>💾 Speichern</em> macht eine Datei
+            zum Mitnehmen oder Weitergeben.</p>
+
+            <div class="welcome-rollen">
+                <div>
+                    <h4>🛡️ Als Spieler</h4>
+                    <p>Leg mit dem Assistenten einen Helden an, lade eine Datei oder schau dir über
+                    <em>👤 Beispiel</em> einen fertigen Charakter an. Kampfwerte, Proben und
+                    Stufenaufstieg rechnet der Bogen regelkonform mit.</p>
+                </div>
+                <div>
+                    <h4>👑 Als Spielleiter</h4>
+                    <p>Über <em>📡 Multiplayer → Raum eröffnen</em> kommst du ins Dashboard: alle
+                    Helden live, Initiative- und Kampf-Tracker, Battlemap mit Nebel des Krieges,
+                    Soundboard und optionale Discord-Anbindung. Die Spieler treten mit einem
+                    4-stelligen Code bei.</p>
+                </div>
+            </div>
+
+            <p class="hint">Neben jeder Funktion sitzt ein <strong>?</strong>, das eine Kurzhilfe
+            öffnet — die komplette Anleitung steckt hinter <em>❓ Hilfe</em> oben.</p>
+            <p class="hint">Ein inoffizielles Fan-Projekt. <em>Dungeonslayers</em> stammt von
+            Christian Kennig; das Regelwerk gibt es kostenlos auf
+            <a href="https://www.dungeonslayers.net/" target="_blank" rel="noopener">dungeonslayers.net</a>.</p>
+
+            <div class="welcome-aktionen">
+                <button class="btn btn-primary" onclick="welcomeSchliessen('wizard')">🧙 Charakter erschaffen</button>
+                <button class="btn" onclick="welcomeSchliessen('beispiel')">👤 Beispiel ansehen</button>
+                <button class="btn btn-ghost" onclick="welcomeSchliessen()">Erstmal umschauen</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Charakter-Wizard -->
 <div class="modal-overlay" id="wizard-modal">
     <div class="modal modal-lg">
@@ -921,23 +965,23 @@
     </div>
 </div>
 
-<script src="data.js?v=20260828x"></script>
-<script src="talents.js?v=20260828x"></script>
-<script src="zauber.js?v=20260828x"></script>
-<script src="bestiarium.js?v=20260828x"></script>
-<script src="sounds.js?v=20260828x"></script>
-<script src="hausregeln.js?v=20260828x"></script>
-<script src="rules.js?v=20260828x"></script>
-<script src="app.js?v=20260828x"></script>
-<script src="talentPicker.js?v=20260828x"></script>
-<script src="spellPicker.js?v=20260828x"></script>
-<script src="wizard.js?v=20260828x"></script>
-<script src="combat.js?v=20260828x"></script>
-<script src="battlemap.js?v=20260828x"></script>
-<script src="multiplayer.js?v=20260828x"></script>
-<script src="mapui.js?v=20260828x"></script>
-<script src="session.js?v=20260828x"></script>
-<script src="discord.js?v=20260828x"></script>
-<script src="hilfe.js?v=20260828x"></script>
+<script src="data.js?v=20260828y"></script>
+<script src="talents.js?v=20260828y"></script>
+<script src="zauber.js?v=20260828y"></script>
+<script src="bestiarium.js?v=20260828y"></script>
+<script src="sounds.js?v=20260828y"></script>
+<script src="hausregeln.js?v=20260828y"></script>
+<script src="rules.js?v=20260828y"></script>
+<script src="app.js?v=20260828y"></script>
+<script src="talentPicker.js?v=20260828y"></script>
+<script src="spellPicker.js?v=20260828y"></script>
+<script src="wizard.js?v=20260828y"></script>
+<script src="combat.js?v=20260828y"></script>
+<script src="battlemap.js?v=20260828y"></script>
+<script src="multiplayer.js?v=20260828y"></script>
+<script src="mapui.js?v=20260828y"></script>
+<script src="session.js?v=20260828y"></script>
+<script src="discord.js?v=20260828y"></script>
+<script src="hilfe.js?v=20260828y"></script>
 </body>
 </html>

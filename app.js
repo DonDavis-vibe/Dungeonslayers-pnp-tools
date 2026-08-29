@@ -2258,6 +2258,16 @@ function openModal(id) {
     setTimeout(() => modal.classList.add('active'), 10);
 }
 
+// Begrüßungsfenster beim ersten Besuch (siehe DOMContentLoaded weiter oben)
+const WELCOME_KEY = 'ds4_willkommen_gesehen';
+function welcomeSchliessen(danach) {
+    try { localStorage.setItem(WELCOME_KEY, '1'); } catch (e) { /* Speicher evtl. blockiert */ }
+    closeModal('welcome-modal');
+    if (danach === 'wizard') setTimeout(openWizard, 260);
+    else if (danach === 'beispiel') setTimeout(openBeispiele, 260);
+}
+function openWillkommen() { openModal('welcome-modal'); }
+
 function closeModal(id) {
     const modal = document.getElementById(id);
     modal.classList.remove('active');
@@ -2380,8 +2390,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     renderAll();
 
-    // Erstbesuch ohne Charakter: direkt in den Wizard
-    if (!appData.volk && !appData.klasse && !appData.name) {
+    // Allererster Besuch: kurz erklären, worum es geht. Danach (Flag gesetzt)
+    // fällt ein leerer Bogen wie gehabt direkt in den Erschaffungs-Assistenten.
+    if (!localStorage.getItem(WELCOME_KEY)) {
+        openModal('welcome-modal');
+        try { localStorage.setItem(WELCOME_KEY, '1'); } catch (e) { /* Speicher evtl. blockiert */ }
+    } else if (!appData.volk && !appData.klasse && !appData.name) {
         openWizard();
     }
 });
