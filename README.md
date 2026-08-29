@@ -283,8 +283,9 @@ Schwertkampf, Bosskampf-Musik …), nach Gruppen sortiert. *Vorhören* spielt nu
 *Für alle* zusätzlich bei jedem verbundenen Spieler — samt *Fade* und *Stop*. Die Sounds stoppen
 sich nicht gegenseitig, laufen also als Mixer: Regen als Kulisse, Gong darüber. Ein
 Gesamtlautstärke-Regler beim Spielleiter mischt und wird gesynct; jeder Spieler hat daneben seinen
-eigenen Regler in der Kopfzeile. Die Klangdateien werden vom Schwesterprojekt *How to be a Hero*
-geladen (spart Platz, braucht Internet).
+eigenen Regler in der Kopfzeile. Die kurzen Effekte sind **CC0 von Kenney** und liegen im Tool
+selbst; die langen Kulissen- und Musikstücke kommen (aus Platzgründen) von der Seite des
+Schwesterprojekts *How to be a Hero*.
 
 **Verbindungsanzeige:** Sobald ein Spieler Multiplayer nutzt, erscheint in der Kopfzeile eine
 dauerhafte Statusanzeige — grün bei bestehender Verbindung (mit Raum-Code), pulsierend gelb beim

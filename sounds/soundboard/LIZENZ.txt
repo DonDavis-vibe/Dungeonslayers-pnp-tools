@@ -1,0 +1,21 @@
+Soundboard-Effekte
+==================
+
+Alle Dateien in diesem Verzeichnis stammen aus den frei verfügbaren
+Asset-Paketen von Kenney (kenney.nl) und stehen unter
+
+    Creative Commons Zero (CC0 1.0)
+    https://creativecommons.org/publicdomain/zero/1.0/
+
+Sie dürfen ohne Einschränkung und ohne Namensnennung verwendet werden;
+ein Hinweis auf Kenney ist trotzdem gern gesehen.
+
+Herkunft:
+- muenzen, tuer-auf, tuer-zu, knarren, klinge-ziehen, hieb,
+  klinge-zischt, riegel, buch       -> Kenney "RPG Audio"
+- stich-dramatisch, fanfare-kurz     -> Kenney "Music Jingles" (Hit / Steel)
+- pizzicato-heimlich                 -> Kenney "Music Jingles" (Pizzicato)
+
+Die längeren Kulissen- und Musikstücke im Soundboard (Regen, Taverne,
+Bosskampf …) liegen NICHT hier, sondern werden vom Schwesterprojekt
+"How to be a Hero" geladen — siehe sounds.js (SOUNDBOARD).

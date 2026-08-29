@@ -20,3 +20,12 @@ gleiche Lautstärke normalisiert (`ffmpeg -af loudnorm`), Inhalt unverändert.
 | `heilung.mp3` | Video game health recharge | Eingehende Heilung |
 | `fluestern.mp3` | Message pop alert | Private Nachricht (Flüstern) |
 | `ansage.mp3` | Clear announce tones | Ansage an alle |
+
+## `soundboard/`
+
+Kurze Effekte fürs Spielleiter-Soundboard (Türen, Münzen, Klingen, Stiche).
+Alle **CC0** von [Kenney](https://kenney.nl/) — siehe [`soundboard/LIZENZ.txt`](soundboard/LIZENZ.txt).
+Die langen Kulissen- und Musikstücke (Regen, Taverne, Bosskampf …) liegen aus
+Platzgründen nicht im Repo, sondern werden vom Schwesterprojekt *How to be a
+Hero* geladen; welcher Eintrag lokal und welcher extern ist, steht in
+`SOUNDBOARD` in [`sounds.js`](../sounds.js).

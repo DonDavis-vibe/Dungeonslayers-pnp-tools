@@ -60,9 +60,11 @@ const HILFE_THEMEN = {
                </ul>
                <p>Sounds stoppen sich <strong>nicht</strong> gegenseitig — so läuft Regen als
                Endlos-Kulisse, während du einen Gong oder einen Schrei darüberlegst.</p>
-               <p class="hint-rule">Die Klangdateien liegen im Schwesterprojekt
-               <em>How to be a Hero</em> (gleicher Autor) und werden von dort geladen — das braucht
-               eine Internetverbindung, hält aber das DS4-Tool klein.</p>`
+               <p class="hint-rule">Die kurzen Effekte (Türen, Münzen, Klingen …) liegen als
+               CC0-Dateien von <em>Kenney</em> im Tool selbst. Die langen Kulissen- und
+               Musikstücke wären zu groß fürs Repo und kommen von der Seite des
+               Schwesterprojekts <em>How to be a Hero</em> — dafür braucht es eine
+               Internetverbindung.</p>`
     },
 
     'ueberblick': {
