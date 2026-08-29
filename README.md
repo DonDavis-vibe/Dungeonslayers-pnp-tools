@@ -283,11 +283,13 @@ Für harte NAT-Fälle lässt sich ein eigener TURN-Server hinterlegen.
 > diese Pen-&-Paper-Tools entwickelt und getestet — dort ist der richtige Ort dafür.
 
 Damit die ganze Gruppe die Würfe mitliest und nicht nur der Spielleiter: Im Discord-Kanal unter
-*Kanal bearbeiten → Integrationen → Webhooks* einen Webhook anlegen und die URL im Multiplayer-Menü
-eintragen. Danach landen Würfe (mit Probenwert, Wurf, Ergebnis und farbcodiert nach Immersieg /
+*Kanal bearbeiten → Integrationen → Webhooks* einen Webhook anlegen und die URL eintragen — über
+**📡 Verbindung** im Dashboard oder **📡 Multiplayer** auf dem Spielerbogen, jederzeit auch bei
+laufendem Raum. Danach landen Würfe (mit Probenwert, Wurf, Ergebnis und farbcodiert nach Immersieg /
 Erfolg / Fehlschlag / Patzer) und Ereignisse (Schaden, Heilung, Bewusstlosigkeit, Stufenaufstieg,
 Kampfbeginn, EP-Vergabe, Ansagen des Spielleiters) als Discord-Nachricht im Kanal — mit dem
-Charakternamen als Absender.
+Charakternamen bzw. *Spielleiter* als Absender. Auch die **Kampfwürfe des Spielleiters** (Angriffe
+und Abwehr der Gegner) werden gepostet.
 
 Würfe und Ereignisse lassen sich getrennt an- und abschalten, ein Testknopf prüft die Einrichtung.
 Die Anfragen sind gedrosselt, damit Discord nichts verwirft, und ein Netzwerkausfall blockiert

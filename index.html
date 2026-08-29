@@ -53,7 +53,7 @@
 <!-- W20 als Favicon, direkt eingebettet (kein zusätzlicher Netzwerkabruf) -->
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%2314100c'/%3E%3Cpath d='M16 3 29 10.5v11L16 29 3 21.5v-11z' fill='none' stroke='%23d4a24c' stroke-width='2' stroke-linejoin='round'/%3E%3Cpath d='M16 3 16 29M3 10.5 29 21.5M29 10.5 3 21.5' stroke='%23d4a24c' stroke-width='1' opacity='.45'/%3E%3Ctext x='16' y='20' font-family='Georgia,serif' font-size='11' font-weight='bold' fill='%23f0c069' text-anchor='middle'%3E20%3C/text%3E%3C/svg%3E">
 
-<link rel="stylesheet" href="style.css?v=20260828f">
+<link rel="stylesheet" href="style.css?v=20260828g">
 </head>
 <body>
 
@@ -552,6 +552,7 @@
         </div>
         <div class="topbar-actions">
             <button class="btn" onclick="openKarte()">🗺️ Karte</button>
+            <button class="btn" onclick="openMultiplayerModal()" title="Raum-Code, Verbindung und Discord-Anbindung">📡 Verbindung</button>
             <button class="btn" onclick="openHausregeln()" title="Regeln der Runde festlegen und verteilen">⚙️ Hausregeln</button>
             <button class="btn" onclick="sitzungExportieren()" title="Notizen, Kampf und Karte als Datei sichern">💾 Sitzung speichern</button>
             <button class="btn" onclick="document.getElementById('gm-sitzung-datei').click()">📂 Sitzung laden</button>
@@ -680,14 +681,25 @@
             </p>
             <div id="multiplayer-status" style="min-height:1.4rem;margin-bottom:0.7rem;font-size:0.88rem"></div>
 
-            <h4 style="color:var(--accent);font-size:0.9rem;margin-bottom:0.4rem">Als Spielleiter hosten</h4>
-            <button class="btn btn-primary" style="width:100%" onclick="hostMultiplayerSession()">Raum eröffnen</button>
+            <div id="mp-modal-vor-session">
+                <h4 style="color:var(--accent);font-size:0.9rem;margin-bottom:0.4rem">Als Spielleiter hosten</h4>
+                <button class="btn btn-primary" style="width:100%" onclick="hostMultiplayerSession()">Raum eröffnen</button>
 
-            <h4 style="color:var(--accent);font-size:0.9rem;margin:1rem 0 0.4rem">Als Spieler beitreten</h4>
-            <div style="display:flex;gap:0.5rem">
-                <input type="text" id="multiplayer-join-code" maxlength="4" placeholder="CODE"
-                       style="flex:1;text-transform:uppercase;letter-spacing:0.3em;text-align:center;font-size:1.1rem">
-                <button class="btn btn-primary" onclick="joinMultiplayerSession()">Beitreten</button>
+                <h4 style="color:var(--accent);font-size:0.9rem;margin:1rem 0 0.4rem">Als Spieler beitreten</h4>
+                <div style="display:flex;gap:0.5rem">
+                    <input type="text" id="multiplayer-join-code" maxlength="4" placeholder="CODE"
+                           style="flex:1;text-transform:uppercase;letter-spacing:0.3em;text-align:center;font-size:1.1rem">
+                    <button class="btn btn-primary" onclick="joinMultiplayerSession()">Beitreten</button>
+                </div>
+            </div>
+
+            <div id="mp-modal-in-session" style="display:none">
+                <h4 style="color:var(--accent);font-size:0.9rem;margin-bottom:0.4rem">Dein Raum läuft</h4>
+                <p class="hint" style="margin-bottom:0.4rem">
+                    Raum-Code: <strong style="letter-spacing:0.2em;color:var(--accent-bright)" id="mp-modal-room">----</strong>
+                    — die Spieler geben ihn unter <em>📡 Multiplayer → Beitreten</em> ein.
+                </p>
+                <p class="hint">Den Raum schließt du über <em>Dashboard verlassen</em>.</p>
             </div>
 
             <hr style="margin:1.2rem 0;border:none;border-top:1px solid var(--panel-border)">
@@ -843,23 +855,23 @@
     </div>
 </div>
 
-<script src="data.js?v=20260828f"></script>
-<script src="talents.js?v=20260828f"></script>
-<script src="zauber.js?v=20260828f"></script>
-<script src="bestiarium.js?v=20260828f"></script>
-<script src="sounds.js?v=20260828f"></script>
-<script src="hausregeln.js?v=20260828f"></script>
-<script src="rules.js?v=20260828f"></script>
-<script src="app.js?v=20260828f"></script>
-<script src="talentPicker.js?v=20260828f"></script>
-<script src="spellPicker.js?v=20260828f"></script>
-<script src="wizard.js?v=20260828f"></script>
-<script src="combat.js?v=20260828f"></script>
-<script src="battlemap.js?v=20260828f"></script>
-<script src="multiplayer.js?v=20260828f"></script>
-<script src="mapui.js?v=20260828f"></script>
-<script src="session.js?v=20260828f"></script>
-<script src="discord.js?v=20260828f"></script>
-<script src="hilfe.js?v=20260828f"></script>
+<script src="data.js?v=20260828g"></script>
+<script src="talents.js?v=20260828g"></script>
+<script src="zauber.js?v=20260828g"></script>
+<script src="bestiarium.js?v=20260828g"></script>
+<script src="sounds.js?v=20260828g"></script>
+<script src="hausregeln.js?v=20260828g"></script>
+<script src="rules.js?v=20260828g"></script>
+<script src="app.js?v=20260828g"></script>
+<script src="talentPicker.js?v=20260828g"></script>
+<script src="spellPicker.js?v=20260828g"></script>
+<script src="wizard.js?v=20260828g"></script>
+<script src="combat.js?v=20260828g"></script>
+<script src="battlemap.js?v=20260828g"></script>
+<script src="multiplayer.js?v=20260828g"></script>
+<script src="mapui.js?v=20260828g"></script>
+<script src="session.js?v=20260828g"></script>
+<script src="discord.js?v=20260828g"></script>
+<script src="hilfe.js?v=20260828g"></script>
 </body>
 </html>

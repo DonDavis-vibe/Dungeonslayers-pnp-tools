@@ -89,6 +89,21 @@ function openMultiplayerModal() {
     const feld = document.getElementById('multiplayer-join-code');
     if (feld && letzterRaumCode && !feld.value) feld.value = letzterRaumCode;
 
+    // Läuft schon ein Raum, führt "Raum eröffnen" nur zu Verwirrung (es würde
+    // die Verbindung neu aufbauen). Dann zeigen wir stattdessen den Code —
+    // wichtig, damit man von hier aus überhaupt an die Discord-Anbindung kommt.
+    const vor = document.getElementById('mp-modal-vor-session');
+    const drin = document.getElementById('mp-modal-in-session');
+    if (vor && drin) {
+        vor.style.display = isGmMode ? 'none' : '';
+        drin.style.display = isGmMode ? '' : 'none';
+        if (isGmMode) {
+            const code = document.getElementById('gm-room-code');
+            const ziel = document.getElementById('mp-modal-room');
+            if (code && ziel) ziel.textContent = code.textContent;
+        }
+    }
+
     openModal('multiplayer-modal');
 }
 function closeMultiplayerModal() { closeModal('multiplayer-modal'); }

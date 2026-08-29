@@ -401,6 +401,9 @@ function npcAttack(npcId, targetId) {
         : '';
     const result = rollProbe(npc.schlagen, { label: `${npc.name}: Schlagen`, modifier: groessenMod, slayend });
     showProbeResult(result, 'gm-');
+    if (typeof discordPostProbe === 'function') {
+        discordPostProbe(result, `gegen ${target.name}`);
+    }
 
     if (!result.success) {
         const extra = result.patzer ? ` · ${DS4_KAMPFPATZER.schlagen}` : '';
@@ -417,6 +420,7 @@ function npcAttack(npcId, targetId) {
     } else {
         // NSC gegen NSC: Abwehr direkt hier auswürfeln
         const def = rollProbe(target.abwehr, { label: `${target.name}: Abwehr`, modifier: ga, slayend });
+        if (typeof discordPostProbe === 'function') discordPostProbe(def, `gegen ${npc.name}`);
         const reduced = def.success ? def.total : 0;
         const final = Math.max(0, damage - reduced);
         target.lkCurrent -= final;
@@ -436,6 +440,9 @@ function npcDefend(npcId, damage, gaMod = 0) {
     const reduced = result.success ? result.total : 0;
     const final = Math.max(0, damage - reduced);
     npc.lkCurrent -= final;
+    if (typeof discordPostProbe === 'function') {
+        discordPostProbe(result, `${damage} Schaden − ${reduced} Abwehr = ${final}`);
+    }
 
     const gaText = gaMod ? ` (inkl. ${gaMod > 0 ? '+' : ''}${gaMod} Gegnerabwehr)` : '';
     let msg = `<strong>${escapeHtml(npc.name)}</strong> wehrt ab (PW ${result.pw}${gaText}) — ${DS4_STATUS_TEXT[result.status]}: ${damage} − ${reduced} = <strong>${final}</strong> Schaden · LK ${npc.lkCurrent}/${npc.lkMax}`;
@@ -475,6 +482,7 @@ function parseAngriffsEingabe(text) {
     const slayend = typeof slayendeWuerfelAktiv === 'function' && slayendeWuerfelAktiv();
     const result = rollProbe(basis.schaden, { label: 'Spielleiter: Angriff', slayend });
     showProbeResult(result, 'gm-');
+    if (typeof discordPostProbe === 'function') discordPostProbe(result, '');
 
     if (!result.success) {
         const extra = result.patzer ? ` · ${DS4_KAMPFPATZER.schlagen}` : '';

@@ -434,9 +434,13 @@ const HILFE_THEMEN = {
         gruppe: 'runde',
         titel: 'Discord-Anbindung',
         text: `<p>Optional: Würfe und Ereignisse werden zusätzlich in einen Discord-Kanal gepostet,
-               damit die ganze Gruppe mitliest und nicht nur der Spielleiter.</p>
-               <p>In Discord unter <em>Kanal bearbeiten → Integrationen → Webhooks</em> einen
-               Webhook anlegen und die URL hier einfügen. <strong>Test senden</strong> prüft die
+               damit die ganze Gruppe mitliest und nicht nur der Spielleiter. Auch die
+               <strong>Kampfwürfe des Spielleiters</strong> (Angriffe und Abwehr der Gegner) landen
+               dort.</p>
+               <p>Einzurichten unter <strong>📡 Verbindung</strong> (Dashboard) bzw.
+               <strong>📡 Multiplayer</strong> (Spielerbogen) — geht jederzeit, auch bei laufendem
+               Raum. In Discord unter <em>Kanal bearbeiten → Integrationen → Webhooks</em> einen
+               Webhook anlegen und die URL einfügen. <strong>Test senden</strong> prüft die
                Einrichtung. Würfe und Ereignisse lassen sich getrennt abschalten.</p>
                <p>Die URL ist ein <strong>Zugangsschlüssel für den Kanal</strong>. Sie bleibt nur
                in diesem Browser und landet nicht in der exportierten Charakterdatei.</p>`
