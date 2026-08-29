@@ -57,7 +57,7 @@
 <!-- W20 als Favicon, direkt eingebettet (kein zusätzlicher Netzwerkabruf) -->
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%2314100c'/%3E%3Cpath d='M16 3 29 10.5v11L16 29 3 21.5v-11z' fill='none' stroke='%23d4a24c' stroke-width='2' stroke-linejoin='round'/%3E%3Cpath d='M16 3 16 29M3 10.5 29 21.5M29 10.5 3 21.5' stroke='%23d4a24c' stroke-width='1' opacity='.45'/%3E%3Ctext x='16' y='20' font-family='Georgia,serif' font-size='11' font-weight='bold' fill='%23f0c069' text-anchor='middle'%3E20%3C/text%3E%3C/svg%3E">
 
-<link rel="stylesheet" href="style.css?v=20260828v">
+<link rel="stylesheet" href="style.css?v=20260828x">
 </head>
 <body>
 
@@ -495,73 +495,6 @@
 
 </div><!-- /col-side -->
 </div><!-- /app -->
-
-<!-- Beschreibender Fußbereich: hilft Besuchern beim Einordnen und gibt
-     Suchmaschinen echten Text, da der Bogen selbst per JavaScript entsteht. -->
-<footer class="site-footer">
-    <div class="footer-inner">
-        <section>
-            <h2>Slayer-Arsenal — das Werkzeug für Dungeonslayers 4</h2>
-            <p>
-                Das <strong>Slayer-Arsenal</strong> ist ein kostenloses Online-Werkzeug für das
-                deutsche Pen-&amp;-Paper-Rollenspiel <strong>Dungeonslayers 4</strong>. Es führt durch
-                die Charaktererschaffung, berechnet alle Kampfwerte automatisch und würfelt Proben
-                regelkonform mit 1W20 — inklusive Immersieg, Patzer und der Aufteilung in
-                Kettenwürfe bei Probenwerten über 20.
-            </p>
-            <p>
-                Enthalten sind die vollständigen Talent- und Zauberlisten sowie das Bestiarium aus
-                dem Regelwerk. Charaktere lassen sich als Datei speichern und weitergeben.
-                Es braucht keine Anmeldung, keinen Server und keine Installation.
-            </p>
-        </section>
-        <section>
-            <h2>Für Spielleiter</h2>
-            <p>
-                Spieler verbinden sich per vierstelligem Raum-Code direkt mit dem Spielleiter. Dessen
-                Dashboard zeigt Lebenskraft, Werte, Ausrüstung und Inventar aller Helden live, dazu
-                jeden Würfelwurf. Ein Initiative- und Kampf-Tracker verwaltet die Zugreihenfolge und
-                setzt Gegner per Klick aus dem Bestiarium ein. Auf Wunsch landen alle Würfe zusätzlich
-                per Webhook in einem Discord-Kanal.
-            </p>
-        </section>
-        <section>
-            <h2>Mitreden &amp; Fehler melden</h2>
-            <p>
-                Auf dem Discord-Server werden die Pen-&amp;-Paper-Tools entwickelt und getestet.
-                Dort ist der richtige Ort für Bug-Reports, Wünsche und Fragen zum Bogen.
-            </p>
-            <p>
-                <a class="footer-discord" href="https://discord.gg/DPk8QRSZ5W" target="_blank" rel="noopener">
-                    💬 Discord-Server beitreten
-                </a>
-            </p>
-        </section>
-    </div>
-
-    <div class="footer-disclaimer">
-        <!-- Der Fanwerk-Banner wird von immersieg.de eingebunden statt hier abgelegt:
-             Die DS-Lizenz stellt ausdrücklich nur Texte und Regelmechaniken unter
-             CC BY-NC-SA, nicht aber Grafiken und Logos. -->
-        <a class="fanwerk-marke" href="https://www.dungeonslayers.net/fanwerk-richtlinien/"
-           target="_blank" rel="noopener" title="Ein Fanwerk zu Dungeonslayers — zu den Fanwerk-Richtlinien">
-            <img src="https://immersieg.de/images/DS4Fanwerkbanner.gif"
-                 alt="Dungeonslayers-Fanwerk" width="100" height="46" loading="lazy">
-        </a>
-        Dies ist ein inoffizielles Fan-Projekt von <strong>German Redneck Engineering</strong>
-        und steht in keiner Verbindung zu Christian Kennig oder dem Burning Books Verlag.<br>
-        Entwickelt von
-        <a href="https://github.com/DonDavis-vibe" target="_blank" rel="noopener">DonDavis</a> |
-        <a href="https://github.com/DonDavis-vibe/Dungeonslayers-pnp-tools" target="_blank" rel="noopener">Repository auf GitHub</a> |
-        <a href="https://discord.gg/DPk8QRSZ5W" target="_blank" rel="noopener">Discord</a><br>
-        <span class="footer-tester">Am Tisch getestet von <strong>StCuthbert</strong></span><br>
-        Das Pen-&amp;-Paper-Regelsystem <em>Dungeonslayers</em> wurde geschaffen von
-        <strong>Christian Kennig</strong>; seine Texte und Regelmechaniken unterliegen der
-        <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.de" target="_blank" rel="noopener">CC BY-NC-SA 4.0</a>
-        Lizenz. Das Regelwerk gibt es kostenlos unter
-        <a href="https://www.dungeonslayers.net/" target="_blank" rel="noopener">dungeonslayers.net</a>.
-    </div>
-</footer>
 </div><!-- /player-view -->
 
 <!-- ============ GM DASHBOARD ============ -->
@@ -709,7 +642,75 @@
             </div>
         </div>
     </div>
-</div>
+</div><!-- /gm-dashboard -->
+
+<!-- Beschreibender Fußbereich: hilft Besuchern beim Einordnen und gibt
+     Suchmaschinen echten Text, da der Bogen selbst per JavaScript entsteht.
+     Steht außerhalb beider Ansichten, damit er auch im Dashboard sichtbar ist. -->
+<footer class="site-footer">
+    <div class="footer-inner">
+        <section>
+            <h2>Slayer-Arsenal — das Werkzeug für Dungeonslayers 4</h2>
+            <p>
+                Das <strong>Slayer-Arsenal</strong> ist ein kostenloses Online-Werkzeug für das
+                deutsche Pen-&amp;-Paper-Rollenspiel <strong>Dungeonslayers 4</strong>. Es führt durch
+                die Charaktererschaffung, berechnet alle Kampfwerte automatisch und würfelt Proben
+                regelkonform mit 1W20 — inklusive Immersieg, Patzer und der Aufteilung in
+                Kettenwürfe bei Probenwerten über 20.
+            </p>
+            <p>
+                Enthalten sind die vollständigen Talent- und Zauberlisten sowie das Bestiarium aus
+                dem Regelwerk. Charaktere lassen sich als Datei speichern und weitergeben.
+                Es braucht keine Anmeldung, keinen Server und keine Installation.
+            </p>
+        </section>
+        <section>
+            <h2>Für Spielleiter</h2>
+            <p>
+                Spieler verbinden sich per vierstelligem Raum-Code direkt mit dem Spielleiter. Dessen
+                Dashboard zeigt Lebenskraft, Werte, Ausrüstung und Inventar aller Helden live, dazu
+                jeden Würfelwurf. Ein Initiative- und Kampf-Tracker verwaltet die Zugreihenfolge und
+                setzt Gegner per Klick aus dem Bestiarium ein. Auf Wunsch landen alle Würfe zusätzlich
+                per Webhook in einem Discord-Kanal.
+            </p>
+        </section>
+        <section>
+            <h2>Mitreden &amp; Fehler melden</h2>
+            <p>
+                Auf dem Discord-Server werden die Pen-&amp;-Paper-Tools entwickelt und getestet.
+                Dort ist der richtige Ort für Bug-Reports, Wünsche und Fragen zum Bogen.
+            </p>
+            <p>
+                <a class="footer-discord" href="https://discord.gg/DPk8QRSZ5W" target="_blank" rel="noopener">
+                    💬 Discord-Server beitreten
+                </a>
+            </p>
+        </section>
+    </div>
+
+    <div class="footer-disclaimer">
+        <!-- Der Fanwerk-Hinweis wird von immersieg.de eingebunden statt hier abgelegt:
+             Die DS-Lizenz stellt ausdrücklich nur Texte und Regelmechaniken unter
+             CC BY-NC-SA, nicht aber Grafiken und Logos. -->
+        <a class="fanwerk-marke" href="https://www.dungeonslayers.net/fanwerk-richtlinien/"
+           target="_blank" rel="noopener" title="Ein Fanwerk zu Dungeonslayers — zu den Fanwerk-Richtlinien">
+            <img src="https://immersieg.de/images/DS4Fanwerkbanner.gif"
+                 alt="Dungeonslayers-Fanwerk" width="100" height="46" loading="lazy">
+        </a>
+        Dies ist ein inoffizielles Fan-Projekt von <strong>German Redneck Engineering</strong>
+        und steht in keiner Verbindung zu Christian Kennig oder dem Burning Books Verlag.<br>
+        Entwickelt von
+        <a href="https://github.com/DonDavis-vibe" target="_blank" rel="noopener">DonDavis</a> |
+        <a href="https://github.com/DonDavis-vibe/Dungeonslayers-pnp-tools" target="_blank" rel="noopener">Repository auf GitHub</a> |
+        <a href="https://discord.gg/DPk8QRSZ5W" target="_blank" rel="noopener">Discord</a><br>
+        <span class="footer-tester">Am Tisch getestet von <strong>StCuthbert</strong></span><br>
+        Das Pen-&amp;-Paper-Regelsystem <em>Dungeonslayers</em> wurde geschaffen von
+        <strong>Christian Kennig</strong>; seine Texte und Regelmechaniken unterliegen der
+        <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.de" target="_blank" rel="noopener">CC BY-NC-SA 4.0</a>
+        Lizenz. Das Regelwerk gibt es kostenlos unter
+        <a href="https://www.dungeonslayers.net/" target="_blank" rel="noopener">dungeonslayers.net</a>.
+    </div>
+</footer>
 
 <!-- ============ KARTE ============ -->
 <!-- Das Karten-Element wird zwischen den Einhängepunkten verschoben:
@@ -920,23 +921,23 @@
     </div>
 </div>
 
-<script src="data.js?v=20260828v"></script>
-<script src="talents.js?v=20260828v"></script>
-<script src="zauber.js?v=20260828v"></script>
-<script src="bestiarium.js?v=20260828v"></script>
-<script src="sounds.js?v=20260828v"></script>
-<script src="hausregeln.js?v=20260828v"></script>
-<script src="rules.js?v=20260828v"></script>
-<script src="app.js?v=20260828v"></script>
-<script src="talentPicker.js?v=20260828v"></script>
-<script src="spellPicker.js?v=20260828v"></script>
-<script src="wizard.js?v=20260828v"></script>
-<script src="combat.js?v=20260828v"></script>
-<script src="battlemap.js?v=20260828v"></script>
-<script src="multiplayer.js?v=20260828v"></script>
-<script src="mapui.js?v=20260828v"></script>
-<script src="session.js?v=20260828v"></script>
-<script src="discord.js?v=20260828v"></script>
-<script src="hilfe.js?v=20260828v"></script>
+<script src="data.js?v=20260828x"></script>
+<script src="talents.js?v=20260828x"></script>
+<script src="zauber.js?v=20260828x"></script>
+<script src="bestiarium.js?v=20260828x"></script>
+<script src="sounds.js?v=20260828x"></script>
+<script src="hausregeln.js?v=20260828x"></script>
+<script src="rules.js?v=20260828x"></script>
+<script src="app.js?v=20260828x"></script>
+<script src="talentPicker.js?v=20260828x"></script>
+<script src="spellPicker.js?v=20260828x"></script>
+<script src="wizard.js?v=20260828x"></script>
+<script src="combat.js?v=20260828x"></script>
+<script src="battlemap.js?v=20260828x"></script>
+<script src="multiplayer.js?v=20260828x"></script>
+<script src="mapui.js?v=20260828x"></script>
+<script src="session.js?v=20260828x"></script>
+<script src="discord.js?v=20260828x"></script>
+<script src="hilfe.js?v=20260828x"></script>
 </body>
 </html>

@@ -90,7 +90,7 @@ select option { background: #1c1712; }
     background:
         linear-gradient(0deg, rgba(15, 12, 9, 0.93) 0%, rgba(15, 12, 9, 0.30) 42%, rgba(15, 12, 9, 0.42) 72%, rgba(15, 12, 9, 0.80) 100%),
         linear-gradient(90deg, rgba(15, 12, 9, 0.5) 0%, rgba(15, 12, 9, 0.1) 45%, rgba(15, 12, 9, 0) 75%),
-        url('img/titelbild.jpg?v=20260828v') 25% 70% / cover no-repeat,
+        url('img/titelbild.jpg?v=20260828x') 25% 70% / cover no-repeat,
         var(--bg-alt);
     border-bottom: 1px solid var(--panel-border-strong);
 }
@@ -115,17 +115,20 @@ select option { background: #1c1712; }
     align-items: center;
     gap: 1rem;
     padding: 0.7rem 1.2rem;
-    /* Kopfbild hinter der Leiste, darüber ein Verlauf, damit Titel und
-       Knöpfe lesbar bleiben. Die Leiste wird dadurch nicht höher. */
-    background:
-        linear-gradient(180deg, rgba(28, 21, 13, 0.82), rgba(20, 16, 11, 0.88)),
-        url('header.svg?v=20260828v') center / cover no-repeat,
-        linear-gradient(180deg, rgba(40, 30, 18, 0.95), rgba(24, 19, 13, 0.9));
+    background: linear-gradient(180deg, rgba(40, 30, 18, 0.95), rgba(24, 19, 13, 0.92)), var(--bg-alt);
     border-bottom: 1px solid var(--panel-border-strong);
     position: sticky;
     top: 0;
     z-index: 50;
     flex-wrap: wrap;
+}
+/* Im Dashboard trägt die Leiste selbst das Titelbild (stark abgedunkelt),
+   weil dort kein Platz für ein eigenes Kopfbild-Band ist. */
+#gm-dashboard .topbar {
+    background:
+        linear-gradient(180deg, rgba(20, 16, 11, 0.82), rgba(16, 13, 9, 0.92)),
+        url('img/titelbild.jpg?v=20260828x') center 32% / cover no-repeat,
+        var(--bg-alt);
 }
 .topbar h1 {
     font-size: 1.25rem;
