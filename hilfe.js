@@ -359,6 +359,19 @@ const HILFE_THEMEN = {
                Feld hervorgehoben. Die <strong>+</strong>/<strong>−</strong>-Knöpfe gehen in
                Einerschritten (gedrückt halten zählt weiter), größere Werte tippst du direkt ein.</p>`
     },
+    'beliebige-wuerfel': {
+        gruppe: 'wuerfe',
+        titel: 'Beliebige Würfel',
+        text: `<p>Für alles, was das Regelsystem nicht als Probe kennt — Zufallstabellen, Beute,
+               Schaden fremder Effekte, ein schneller Entscheidungswurf.</p>
+               <p>Eingabe als <strong>Formel</strong>: <code>2W6</code>, <code>1W100</code>,
+               <code>3W8+2</code>. Ohne Anzahl heißt einer (<code>W20</code>), der Zuschlag am Ende
+               ist optional. Erlaubt sind 1–50 Würfel mit 2–1000 Seiten.</p>
+               <p>Das Feld <em>Bonus/Malus für den nächsten Wurf</em> zählt mit und wird danach
+               geleert. Das Ergebnis mit allen Einzelwürfeln landet im Logbuch und — im Multiplayer —
+               bei der ganzen Runde. Der Spielleiter kann seine beliebigen Würfe wie jeden anderen
+               Wurf verdeckt oder nur an einen Spieler schicken.</p>`
+    },
     'proben': {
         gruppe: 'wuerfe',
         titel: 'Proben würfeln',

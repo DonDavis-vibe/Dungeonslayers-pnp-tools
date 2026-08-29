@@ -5,6 +5,32 @@ function d20() {
     return Math.floor(Math.random() * 20) + 1;
 }
 
+// Beliebige Würfel: parst "2W6", "1w100", "d20", "3W8+2", "1W20-1" und würfelt.
+// DS4 selbst braucht nur den W20 — das hier ist ein Werkzeug für Zufallstabellen,
+// Trefferpunkte über Zeit, Beute und was der Tisch sich sonst ausdenkt.
+function wuerfelFormel(text) {
+    const roh = String(text || '').toLowerCase().replace(/\s+/g, '');
+    const m = roh.match(/^(\d*)[wd](\d+)([+-]\d+)?$/);
+    if (!m) return { ok: false, fehler: 'Format: z.B. 2W6, 1W100 oder 3W8+2' };
+    const anzahl = parseInt(m[1] || '1', 10);
+    const seiten = parseInt(m[2], 10);
+    const mod = m[3] ? parseInt(m[3], 10) : 0;
+    if (anzahl < 1 || anzahl > 50 || seiten < 2 || seiten > 1000) {
+        return { ok: false, fehler: 'Bitte 1–50 Würfel mit 2–1000 Seiten.' };
+    }
+    const wuerfe = [];
+    let augen = 0;
+    for (let i = 0; i < anzahl; i++) {
+        const w = Math.floor(Math.random() * seiten) + 1;
+        wuerfe.push(w);
+        augen += w;
+    }
+    return {
+        ok: true, wuerfe, augen, mod, summe: augen + mod,
+        formel: `${anzahl}W${seiten}${mod ? (mod > 0 ? '+' + mod : mod) : ''}`
+    };
+}
+
 // --- Ausrüstungs-Auswertung -------------------------------------------------
 
 function findWeapon(name) {

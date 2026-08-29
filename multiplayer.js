@@ -668,6 +668,20 @@ function rollGmProbe() {
     verteileSlWurf(msg, result.status, result);
 }
 
+// Beliebige Würfel für den Spielleiter — respektiert "Wer sieht den Wurf?".
+function rollGmBeliebigeWuerfel() {
+    const feld = document.getElementById('gm-wuerfel-formel');
+    const w = wuerfelFormel(feld.value);
+    if (!w.ok) { feld.title = w.fehler; return; }
+    const detail = w.wuerfe.length > 1 ? ` (${w.wuerfe.join(' + ')})` : '';
+    document.getElementById('gm-dice-number').textContent = w.summe;
+    document.getElementById('gm-dice-label').textContent = w.formel;
+    document.getElementById('gm-dice-status').textContent = '';
+    document.getElementById('gm-dice-detail').textContent = detail.trim();
+    document.getElementById('gm-dice-display').className = 'dice-display';
+    verteileSlWurf(`<strong>${w.formel}</strong> = <strong>${w.summe}</strong>${detail}`, 'neutral', null);
+}
+
 function rollGmPlainD20() {
     const die = d20();
     document.getElementById('gm-dice-number').textContent = die;

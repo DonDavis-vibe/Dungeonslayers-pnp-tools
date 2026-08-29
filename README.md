@@ -209,6 +209,10 @@ Vollständig nach Regelwerk S.38–40 umgesetzt:
   Kampfwerten erstmals mit einem Klick anwendbar.
 - **Vergleichende Proben** — beide Seiten würfeln, die höhere gelungene Probe gewinnt;
   misslingen beide, gibt es kein Ergebnis.
+- **Beliebige Würfel** — eine Formel wie `2W6`, `1W100` oder `3W8+2` für Zufallstabellen, Beute
+  oder fremde Effekte. Keine Probenlogik, nur die Augensumme; das Bonus/Malus-Feld zählt mit. Das
+  Ergebnis landet im Logbuch und im Multiplayer bei der ganzen Runde, die Spielleitung kann ihre
+  Würfe auch verdeckt oder nur an einen Spieler schicken.
 - **Kampfmodifikatoren** als aufklappbares Feld: Entfernung (−1 je 10m, bei Schleuder und
   Wurfmesser −1 je 2m), Zielen (+2 je Runde, max. +10), liegend, von hinten/der Seite,
   Größenunterschied und der Zwei-Waffen-Malus (automatisch um deine Ränge im Talent

@@ -1722,6 +1722,35 @@ function probeWertFor(probe) {
     return pw;
 }
 
+// Beliebige Würfel (2W6, 1W100, 3W8+2 …). Kein Probenwert, keine Immersieg-/
+// Patzer-Wertung — einfach die Augensumme. Das ±-Feld zählt mit.
+function rollBeliebigeWuerfel() {
+    const feld = document.getElementById('f-wuerfel-formel');
+    const w = wuerfelFormel(feld.value);
+    if (!w.ok) { feld.title = w.fehler; feld.classList.add('wurfbonus-aktiv'); return; }
+    feld.classList.remove('wurfbonus-aktiv');
+
+    const bonus = wurfBonus();
+    const summe = w.summe + bonus;
+    const detail = (w.wuerfe.length > 1 ? `${w.wuerfe.join(' + ')}` : '');
+    const modTeile = [];
+    if (w.mod) modTeile.push(w.mod > 0 ? `+${w.mod}` : `${w.mod}`);
+    if (bonus) modTeile.push(bonus > 0 ? `+${bonus}` : `${bonus}`);
+    const modText = modTeile.join(' ');
+
+    document.getElementById('dice-number').textContent = summe;
+    document.getElementById('dice-label').textContent = w.formel + (bonus ? (bonus > 0 ? ` +${bonus}` : ` ${bonus}`) : '');
+    document.getElementById('dice-status').textContent = '';
+    document.getElementById('dice-detail').textContent = [detail, modText && `Mod ${modText}`].filter(Boolean).join(' · ');
+    document.getElementById('dice-display').className = 'dice-display';
+
+    const msg = `<strong>${w.formel}</strong> = <strong>${summe}</strong>` +
+        (detail ? ` (${detail})` : '') + (modText ? ` [${modText}]` : '');
+    addLog(msg, 'neutral');
+    sendMultiplayerLog(msg, 'neutral');
+    wurfBonusVerbrauchen();
+}
+
 function rollFreeProbe() {
     const pw = parseInt(document.getElementById('f-free-pw').value, 10) || 0;
     const result = rollProbe(pw, { label: 'Freie Probe', modifier: currentModifier() });
