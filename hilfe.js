@@ -513,7 +513,9 @@ const HILFE_THEMEN = {
                (<em>Karten-Werkzeuge</em>).</p>
                <ul>
                  <li><strong>Ansehen und bewegen</strong>: Mausrad zoomt, <strong>✋ Bewegen</strong>
-                     schiebt die Karte, <strong>Einpassen</strong> rückt alles wieder ins Bild.</li>
+                     oder die <strong>mittlere Maustaste</strong> schiebt die Karte,
+                     <strong>Einpassen</strong> rückt alles wieder ins Bild. Wer mitten in der
+                     Sitzung dazukommt, bekommt den aktuellen Stand automatisch nachgereicht.</li>
                  <li><strong>Deine Figur</strong> trägt dein Charakterbild in deiner Spielerfarbe.
                      Ziehst du sie, bleibt sie zunächst stehen und meldet den Zug mit Entfernung als
                      <strong>Vorschlag</strong> an den Spielleiter — er gibt ihn frei. Außerhalb des
@@ -621,6 +623,11 @@ const HILFE_THEMEN = {
                <p>Du siehst alle Helden live: Lebenskraft, Kampfwerte, Attribute, Ausrüstung,
                Talente, Zauber samt laufender Abklingzeiten, Inventar und EP/LP/TP — dazu jeden
                Wurf im Live-Log.</p>
+               <p>In der Kopfzeile liegen <strong>🗺️ Karte</strong>, <strong>📡 Verbindung</strong>
+               (Discord jederzeit ein- und ausrichtbar), <strong>Sitzung speichern/laden</strong>
+               und die Hausregeln. Weiter unten der <strong>Kampf-Tracker</strong>, dein
+               <strong>SL-Würfel</strong>, das <strong>🎵 Soundboard</strong> und die
+               <strong>Spielerkarten</strong> — alle mit eigenem „?".</p>
                <p><strong>Dashboard verlassen</strong> bringt dich zurück auf den eigenen Bogen;
                der Raum wird dabei geschlossen.</p>`
     },
