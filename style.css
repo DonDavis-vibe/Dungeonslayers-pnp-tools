@@ -784,6 +784,12 @@ select option { background: #1c1712; }
     text-align: center;
 }
 
+.footer-tester {
+    font-size: 0.72rem;
+    opacity: 0.6;
+}
+.footer-tester strong { font-weight: 600; }
+
 
 /* ---------- Hilfe: "?"-Symbole und Popover ---------- */
 
