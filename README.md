@@ -34,7 +34,7 @@
 
 Dungeonslayers ist ein minimalistisches deutsches OSR-System, das komplett **kostenlos** als PDF
 erhältlich ist ([dungeonslayers.net](https://www.dungeonslayers.net/downloads/)) — aber praktisch
-keine digitalen Werkzeuge hat. Dieses Projekt schließt die Lücke.
+keine digitalen Werkzeuge hat. Das **Slayer-Arsenal** schließt die Lücke.
 
 ## Schnellstart
 
@@ -576,9 +576,9 @@ Bildschirmgröße und Zoomstufe und ist klein genug, um ihn bei jeder Bewegung z
 
 ### Nach einer Änderung: Versionsnummer hochzählen
 
-Alle eigenen Dateien werden mit einem Versionsparameter eingebunden (`app.js?v=20260825i`). Wer
-etwas ändert, zählt die Version in `index.html` hoch — sonst behalten Besucher die alte Fassung
-aus dem Browser-Cache.
+Alle eigenen Dateien werden mit demselben Versionsparameter eingebunden (`app.js?v=YYYYMMDDx`).
+Wer etwas ändert, zählt die Version bei **allen** Vorkommen in `index.html` auf einmal hoch —
+sonst behalten Besucher die alte Fassung aus dem Browser-Cache.
 
 ## Lizenz
 
