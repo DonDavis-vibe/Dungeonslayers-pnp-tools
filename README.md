@@ -1,4 +1,5 @@
 <div align="center">
+  <img src="img/titelbild.jpg" alt="Slayer-Arsenal — eine Heldengruppe am Klippenrand blickt über das Land Caera" width="640">
   <h1>⚔️ Slayer-Arsenal</h1>
   <p>
     <strong>Charakterbogen, Kampf-Tracker, Battlemap und Live-Multiplayer für das kostenlose
@@ -509,7 +510,8 @@ Im Ordner [`beispiele/`](beispiele/) liegen zwei fertige Helden zum Ausprobieren
 | `multiplayer.js` | WebRTC-Verbindung und SL-Dashboard |
 | `discord.js` | Optionale Discord-Webhook-Anbindung |
 | `hilfe.js` | Hilfetexte hinter den „?"-Symbolen und die Kurzanleitung |
-| `header.svg` | Kopfbild der Seite — von Hand gezeichnete Rüstkammer (SVG) in der Farbpalette des Bogens |
+| `header.svg` | Textur hinter der Knopfleiste — von Hand gezeichnete Rüstkammer (SVG) in der Farbpalette des Bogens |
+| `img/titelbild.jpg` | Gemaltes Kopfbild der Spieleransicht, zugleich Vorschaubild beim Teilen (og:image) |
 | `regeln/` | Die offiziellen PDFs plus aufbereitete Regel-Referenzen |
 | `beispiele/` | Fertige Charaktere als JSON |
 
