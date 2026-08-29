@@ -598,6 +598,7 @@ function renderCombat() {
                     ` : `
                         <button class="btn btn-sm btn-danger" data-pattack="${c.peerId}" title="Angriff — der Spieler würfelt seine Abwehr">Angreifen</button>
                         <button class="btn btn-sm" data-pheal="${c.peerId}">Heilen</button>
+                        <button class="btn btn-sm btn-ghost" data-pnudge="${c.peerId}" title="Anstupsen — kurze Einblendung samt Ton, 'du bist dran'">👉</button>
                         <button class="btn btn-sm btn-ghost" data-pmsg="${c.peerId}">Flüstern</button>
                         <button class="btn btn-sm btn-ghost ${c.abwarten ? 'btn-primary' : ''}" data-abwarten="${c.id}"
                                 title="Abwartehandlung: +2 Initiative je Runde ohne Aktion, höchstens +10">⏳</button>
@@ -663,6 +664,10 @@ function wireCombatControls(box) {
             const amount = parseInt(prompt('Wie viele LK heilen?'), 10);
             if (!isNaN(amount)) gmHealPlayer(btn.dataset.pheal, amount);
         });
+    });
+
+    box.querySelectorAll('[data-pnudge]').forEach(btn => {
+        btn.addEventListener('click', () => gmNudge(btn.dataset.pnudge));
     });
 
     box.querySelectorAll('[data-pmsg]').forEach(btn => {

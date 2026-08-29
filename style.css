@@ -521,13 +521,15 @@ select option { background: #1c1712; }
 }
 
 .round-indicator {
-    position: fixed; top: 4.2rem; right: 1.2rem; z-index: 120;
+    /* unten rechts statt oben — die Kopfzeile bricht auf schmalen Fenstern um,
+       dann lag die Anzeige sonst über den Knöpfen */
+    position: fixed; bottom: 1rem; right: 1rem; z-index: 120;
     background: rgba(32, 26, 20, 0.95);
     border: 1px solid var(--accent);
     border-radius: 20px; padding: 0.3rem 0.9rem;
     font-size: 0.85rem; color: var(--accent-bright);
     box-shadow: var(--shadow);
-    opacity: 0; transform: translateY(-8px);
+    opacity: 0; transform: translateY(8px);
     transition: opacity 0.25s, transform 0.25s;
     pointer-events: none;
 }

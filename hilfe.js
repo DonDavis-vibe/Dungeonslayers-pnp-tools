@@ -582,6 +582,9 @@ const HILFE_THEMEN = {
                      (höchstens +10); sobald der Charakter handelt, verfällt der Bonus.</li>
                  <li><strong>NSC-Angriffe</strong> per Klick: Gegen Spieler würfelt der Spieler
                      selbst seine Abwehr und bekommt den Restschaden angerechnet.</li>
+                 <li>Beim Weiterschalten der Runde bekommt der Spieler, der jetzt dran ist,
+                     automatisch eine Einblendung samt Ton. Zusätzlich stupst <strong>👉</strong>
+                     einen trödelnden Spieler auf Knopfdruck an.</li>
                  <li><strong>Größenkategorien</strong> fließen automatisch ein — der Oger gegen den
                      Goblin bekommt seine −4 ohne dein Zutun.</li>
                  <li><strong>Gehört</strong> ordnet einen NSC einem verbundenen Spieler zu — praktisch
@@ -613,6 +616,10 @@ const HILFE_THEMEN = {
                  <li><strong>✨ EP vergeben</strong> — nach S.88 die EP-Summe der besiegten Gegner
                      geteilt durch die Zahl der beteiligten Helden. Der Dialog nennt Summe, Teiler
                      und Ergebnis und schlägt das Viertel für ein erreichtes Abenteuerziel vor.</li>
+                 <li><strong>👉 Anstupsen</strong> — ein Klick, und beim Spieler ploppt eine
+                     Einblendung samt „du bist am Zug"-Ton auf. Für trödelnde Spieler oder um zu
+                     zeigen: jetzt bist DU gemeint. (Beim Weiterschalten der Runde passiert das
+                     ohnehin automatisch.)</li>
                  <li><strong>Flüstern</strong> an einzelne Spieler.</li>
                </ul>`
     },

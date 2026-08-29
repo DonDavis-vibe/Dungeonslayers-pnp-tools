@@ -556,6 +556,7 @@ function renderGmDashboard() {
                 <div style="display:flex;gap:0.3rem;margin-top:0.6rem;flex-wrap:wrap">
                     <button class="btn btn-sm btn-danger" data-card-attack="${peerId}">Angreifen</button>
                     <button class="btn btn-sm" data-card-heal="${peerId}">Heilen</button>
+                    <button class="btn btn-sm btn-ghost" data-card-nudge="${peerId}" title="Kurze Einblendung samt Ton beim Spieler — 'du bist dran'">👉 Anstupsen</button>
                     <button class="btn btn-sm btn-ghost" data-card-probe="${peerId}">Probe fordern</button>
                     <button class="btn btn-sm btn-ghost" data-card-msg="${peerId}">Flüstern</button>
                     <button class="btn btn-sm btn-ghost" data-card-ep="${peerId}">EP</button>
@@ -591,6 +592,7 @@ function renderGmDashboard() {
         const name = prompt('Welche Probe?\n\n' + DS4_TYPISCHE_PROBEN.map(p => p.name).join(', '), 'Bemerken');
         if (name) gmRequestProbe(btn.dataset.cardProbe, name);
     }));
+    grid.querySelectorAll('[data-card-nudge]').forEach(btn => btn.addEventListener('click', () => gmNudge(btn.dataset.cardNudge)));
     grid.querySelectorAll('[data-card-msg]').forEach(btn => btn.addEventListener('click', () => {
         const text = prompt('Nachricht an diesen Spieler:');
         if (text) gmSendMessage(btn.dataset.cardMsg, text);
@@ -1007,6 +1009,15 @@ function gmRequestProbe(peerId, probeName) {
     addGmLog('Spielleiter', `fordert von <strong>${escapeHtml(player ? player.name : '?')}</strong> eine ${escapeHtml(probeName)}-Probe.`, 'neutral');
 }
 
+// Anstupsen: kurze Einblendung samt "Du bist am Zug"-Ton beim Spieler, ohne
+// den Kampf weiterzuschalten — für "du bist dran" oder "jetzt bist DU gemeint".
+function gmNudge(peerId) {
+    if (!peerId) return;
+    sendToPlayer(peerId, { type: 'nudge' });
+    const player = connectedPlayers[peerId];
+    addGmLog('Spielleiter', `stupst <strong>${escapeHtml(player ? player.name : '?')}</strong> an.`, 'neutral');
+}
+
 // --- Spieler: Befehle vom Spielleiter --------------------------------------
 
 function handleGmCommand(payload) {
@@ -1063,6 +1074,11 @@ function handleGmCommand(payload) {
             showGmMessage(sichererHtml(payload.text));
             addLog(`<strong>Spielleiter:</strong> ${escapeHtml(payload.text)}`, 'neutral');
             if (typeof spielSound === 'function') spielSound(payload.ansage ? 'ansage' : 'fluestern');
+            break;
+        case 'nudge':
+            showGmMessage('<strong>👉 Der Spielleiter stupst dich an!</strong>');
+            addLog('👉 <strong>Der Spielleiter stupst dich an</strong> — du bist wohl dran.', 'neutral');
+            if (typeof spielSound === 'function') spielSound('dein-zug');
             break;
         case 'requestProbe': {
             showGmMessage(`Der Spielleiter fordert eine <strong>${escapeHtml(payload.probeName)}</strong>-Probe.`);

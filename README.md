@@ -262,6 +262,8 @@ SL-Notizen (lokal gespeichert).
   ausgelöster Stufenaufstieg schreibt Lern- und Talentpunkte automatisch gut — nach den
   **Hausregeln der Runde**, falls welche gesetzt sind
 - **Flüstern** an einzelne Spieler und **Ansagen an alle**
+- **👉 Anstupsen** — ein Klick, beim Spieler ploppt eine Einblendung samt „du bist am Zug"-Ton auf.
+  Beim Weiterschalten der Runde passiert das ohnehin automatisch für den, der jetzt dran ist.
 - die **aktuelle Kampfrunde**, an der die Abklingzeiten der Zauber hängen
 
 **Verbindungsanzeige:** Sobald ein Spieler Multiplayer nutzt, erscheint in der Kopfzeile eine
