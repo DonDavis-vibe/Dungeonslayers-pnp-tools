@@ -494,11 +494,16 @@ const HILFE_THEMEN = {
                      Kampfes nervt das; ein Klick gibt die Bewegung frei, die Spieler ziehen dann
                      direkt. Die Umstellung gilt sofort für alle und auch für später Beitretende.</li>
                </ul>
-               <p><strong>Werkzeuge</strong></p>
+               <p><strong>Werkzeuge</strong> — jedes hat ein Tastenkürzel:
+               <strong>H</strong> Hand, <strong>R</strong> Messen, <strong>M</strong> Malen,
+               <strong>E</strong> Radieren, <strong>F</strong>/<strong>G</strong> Nebel auf/zu,
+               <strong>Esc</strong> zurück zur Hand.</p>
                <ul>
                  <li><strong>✋</strong> bewegt Karte und Figuren, <strong>📏</strong> misst
                      (geht auch jederzeit mit <em>Umschalt+Ziehen</em>), <strong>✏️</strong> malt,
-                     <strong>🧽</strong> radiert Markierungen weg.</li>
+                     <strong>🧽</strong> radiert Markierungen weg. Das <strong>Mausrad zoomt</strong>,
+                     die <strong>mittlere Maustaste schiebt die Karte</strong> — auch mitten im
+                     Messen oder Zeichnen.</li>
                  <li><strong>↶</strong> nimmt die letzte Markierungs- oder Nebel-Aktion zurück
                      (auch <em>Strg+Z</em>) — bis zu 40 Schritte weit. Figuren-Positionen bleiben
                      unberührt, die wandern ja auch über Spieler-Vorschläge.</li>

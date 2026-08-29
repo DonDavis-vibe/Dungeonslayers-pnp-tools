@@ -471,9 +471,18 @@ const BattleMap = (() => {
 
         canvas.addEventListener('pointerdown', ereignis => {
             const pos = zeigerPosition(ereignis);
-            canvas.setPointerCapture(ereignis.pointerId);
+            try { canvas.setPointerCapture(ereignis.pointerId); } catch (e) { /* Zeiger schon weg */ }
 
             const feldJetzt = bildschirmZuFeld(pos.x, pos.y);
+
+            // Mittlere Maustaste schiebt die Karte, egal welches Werkzeug aktiv ist
+            // — so kommt man auch mitten im Messen oder Zeichnen weiter.
+            if (ereignis.button === 1) {
+                ereignis.preventDefault();
+                ziehen = { art: 'karte', vonX: pos.x - ansicht.x, vonY: pos.y - ansicht.y };
+                canvas.style.cursor = 'grabbing';
+                return;
+            }
 
             // Messen: über das Werkzeug, die Umschalttaste oder die rechte Maustaste
             if (werkzeug === 'messen' || messModus || ereignis.shiftKey || ereignis.button === 2) {
@@ -601,6 +610,7 @@ const BattleMap = (() => {
                 melden();
             }
             ziehen = null;
+            werkzeugCursorSetzen();   // nach Mittelmaus-Schieben wieder das Werkzeug
             zeichnen();
         }
 
@@ -684,6 +694,8 @@ const BattleMap = (() => {
         canvas.addEventListener('pointerup', ziehenBeenden);
         canvas.addEventListener('pointercancel', ziehenBeenden);
         canvas.addEventListener('contextmenu', e => e.preventDefault());
+        // Mittelklick nicht das Auto-Scrollen von Windows auslösen lassen
+        canvas.addEventListener('mousedown', e => { if (e.button === 1) e.preventDefault(); });
 
         canvas.addEventListener('wheel', ereignis => {
             ereignis.preventDefault();
@@ -886,14 +898,18 @@ const BattleMap = (() => {
 
         // --- Werkzeuge ------------------------------------------------------
 
-        function setWerkzeug(name) {
-            werkzeug = name || 'zeigen';
-            messModus = werkzeug === 'messen';
+        function werkzeugCursorSetzen() {
             const zeiger = {
                 messen: 'crosshair', malen: 'crosshair', radieren: 'cell',
                 'nebel-auf': 'copy', 'nebel-zu': 'not-allowed'
             };
             canvas.style.cursor = zeiger[werkzeug] || 'grab';
+        }
+
+        function setWerkzeug(name) {
+            werkzeug = name || 'zeigen';
+            messModus = werkzeug === 'messen';
+            werkzeugCursorSetzen();
             entwurf = null;
             zeichnen();
         }

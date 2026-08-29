@@ -315,6 +315,9 @@ Nach Anhang B des Regelwerks gilt: **ein Feld = 1 Meter**.
   dem *Laufen*-Wert des Helden, bekommt eine Warnung bei zu weiten Zügen und entscheidet.
   Der Spielleiter selbst versetzt Figuren jederzeit direkt.
 - **Messen** per Werkzeug oder Umschalt+Ziehen, in Feldern und Metern.
+- **Werkzeug-Kürzel** für den Spielleiter: `H` Hand, `R` Messen, `M` Malen, `E` Radieren,
+  `F`/`G` Nebel auf/zu, `Esc` zurück zur Hand. Die **mittlere Maustaste schiebt die Karte** —
+  auch mitten im Messen oder Zeichnen.
 - **Markierungen** als Freihand, Linie, Kreis oder Rechteck in fünf Farben. Der Kreis beschriftet
   sich mit seinem Radius in Metern — praktisch für Zauberwirkungen.
 - **↶ Rückgängig** (auch Strg+Z) nimmt die letzte Markierungs- oder Nebel-Aktion zurück, bis zu

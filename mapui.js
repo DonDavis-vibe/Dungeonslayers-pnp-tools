@@ -157,10 +157,10 @@ function renderKartenWerkzeuge() {
         <button class="btn btn-sm" onclick="figurenAusKampfUebernehmen()" title="Alle Kampfteilnehmer auf einmal setzen">👥 Aus Kampf</button>
         <button class="btn btn-sm" onclick="figurSetzenDialog()" title="Einzelne Figur auf die Karte setzen">➕ Figur</button>
         <span class="werkzeug-gruppe">
-            <label class="radio-pill ${aktiv('zeigen')}" onclick="werkzeugWaehlen('zeigen')" title="Karte und Figuren bewegen">✋</label>
-            <label class="radio-pill ${aktiv('messen')}" onclick="werkzeugWaehlen('messen')" title="Entfernung messen">📏</label>
-            <label class="radio-pill ${aktiv('malen')}" onclick="werkzeugWaehlen('malen')" title="Markierung zeichnen">✏️</label>
-            <label class="radio-pill ${aktiv('radieren')}" onclick="werkzeugWaehlen('radieren')" title="Markierung entfernen">🧽</label>
+            <label class="radio-pill ${aktiv('zeigen')}" onclick="werkzeugWaehlen('zeigen')" title="Karte und Figuren bewegen (H)">✋</label>
+            <label class="radio-pill ${aktiv('messen')}" onclick="werkzeugWaehlen('messen')" title="Entfernung messen (R) — Umschalt+Ziehen geht jederzeit">📏</label>
+            <label class="radio-pill ${aktiv('malen')}" onclick="werkzeugWaehlen('malen')" title="Markierung zeichnen (M)">✏️</label>
+            <label class="radio-pill ${aktiv('radieren')}" onclick="werkzeugWaehlen('radieren')" title="Markierung entfernen (E)">🧽</label>
             <button class="btn btn-sm btn-ghost" id="map-undo" onclick="karteRueckgaengig()" ${karte.kannRueckgaengig() ? '' : 'disabled style="opacity:0.4"'}
                     title="Letzte Markierung oder Nebel-Aktion zurücknehmen (Strg+Z)">↶</button>
         </span>
@@ -172,8 +172,8 @@ function renderKartenWerkzeuge() {
             <button class="btn btn-sm btn-ghost" onclick="karte.formenLoeschen()">Alle löschen</button>
         </span>` : ''}
         <span class="werkzeug-gruppe" title="Nebel des Krieges">
-            <label class="radio-pill ${aktiv('nebel-auf')}" onclick="werkzeugWaehlen('nebel-auf')" title="Bereich vormerken zum Aufdecken">🔦 Auf</label>
-            <label class="radio-pill ${aktiv('nebel-zu')}" onclick="werkzeugWaehlen('nebel-zu')" title="Bereich wieder zudecken">🌫️ Zu</label>
+            <label class="radio-pill ${aktiv('nebel-auf')}" onclick="werkzeugWaehlen('nebel-auf')" title="Bereich vormerken zum Aufdecken (F)">🔦 Auf</label>
+            <label class="radio-pill ${aktiv('nebel-zu')}" onclick="werkzeugWaehlen('nebel-zu')" title="Bereich wieder zudecken (G)">🌫️ Zu</label>
             <label class="radio-pill ${karte.getNebelForm() === 'rechteck' ? 'selected' : ''}" onclick="nebelFormWaehlen('rechteck')" title="Rechteckiger Bereich">▭</label>
             <label class="radio-pill ${karte.getNebelForm() === 'kreis' ? 'selected' : ''}" onclick="nebelFormWaehlen('kreis')" title="Runder Bereich (z.B. Lichtschein)">⭕</label>
             <button class="btn btn-sm btn-ghost" onclick="karte.nebelAllesZudecken();renderKartenWerkzeuge()" title="Ganze Karte verdecken">Alles zu</button>
@@ -227,8 +227,8 @@ function einrastenUmschalten() {
 
 const WERKZEUG_HINWEIS = {
     zeigen: '',
-    messen: 'Ziehen misst die Entfernung in Feldern und Metern.',
-    malen: 'Ziehen zeichnet eine Markierung. Der Kreis zeigt seinen Radius in Metern — praktisch für Zauberwirkungen.',
+    messen: 'Ziehen misst die Entfernung in Feldern und Metern. Mit der mittleren Maustaste schiebst du dabei die Karte.',
+    malen: 'Ziehen zeichnet eine Markierung. Der Kreis zeigt seinen Radius in Metern — praktisch für Zauberwirkungen. Mittlere Maustaste schiebt die Karte.',
     radieren: 'Auf eine Markierung klicken, um sie zu entfernen.',
     'nebel-auf': 'Ein Rechteck ziehen, um diesen Bereich für die Spieler aufzudecken.',
     'nebel-zu': 'Ein Rechteck ziehen, um diesen Bereich wieder zu verdecken.'
@@ -265,14 +265,44 @@ function aktualisiereRueckgaengigKnopf() {
     btn.style.opacity = geht ? '' : '0.4';
 }
 
+// Werkzeug-Kürzel für die Karte (nur Spielleiter, nur bei geöffneter Karte).
+const KARTEN_HOTKEYS = {
+    h: 'zeigen',      // Hand
+    v: 'zeigen',      // (englisch: "move")
+    r: 'messen',      // Ruler
+    m: 'malen',       // Malen
+    e: 'radieren',    // Eraser
+    f: 'nebel-auf',   // Fog aufdecken
+    g: 'nebel-zu'     // Fog wieder zudecken
+};
+
 document.addEventListener('keydown', e => {
+    if (!isGmMode || typeof karte === 'undefined' || !karte || !karteOffen) return;
+
+    const el = document.activeElement;
+    if (el && (/^(input|textarea|select)$/i.test(el.tagName) || el.isContentEditable)) return;
+    // Nicht, während ein Dialog oder ein Hilfe-Popover offen ist
+    if (document.querySelector('.modal-overlay.active')) return;
+    const pop = document.getElementById('help-pop');
+    if (pop && pop.classList.contains('active')) return;
+
+    // Strg+Z: Rückgängig
     if ((e.key === 'z' || e.key === 'Z') && (e.ctrlKey || e.metaKey) && !e.shiftKey && !e.altKey) {
-        const el = document.activeElement;
-        if (el && /^(input|textarea|select)$/i.test(el.tagName)) return;
-        if (isGmMode && typeof karte !== 'undefined' && karte.kannRueckgaengig && karte.kannRueckgaengig()) {
-            e.preventDefault();
-            karteRueckgaengig();
-        }
+        if (karte.kannRueckgaengig && karte.kannRueckgaengig()) { e.preventDefault(); karteRueckgaengig(); }
+        return;
+    }
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+
+    const ziel = KARTEN_HOTKEYS[e.key.toLowerCase()];
+    if (ziel) {
+        e.preventDefault();
+        werkzeugWaehlen(ziel);
+        return;
+    }
+    // Esc: zurück zur Hand
+    if (e.key === 'Escape' && karte.getWerkzeug && karte.getWerkzeug() !== 'zeigen') {
+        e.preventDefault();
+        werkzeugWaehlen('zeigen');
     }
 });
 
