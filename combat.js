@@ -416,7 +416,9 @@ function npcAttack(npcId, targetId) {
 
     if (!result.success) {
         const extra = result.patzer ? ` · ${DS4_KAMPFPATZER.schlagen}` : '';
-        addGmLog('Spielleiter', `<strong>${escapeHtml(npc.name)}</strong> greift ${escapeHtml(target.name)} an — ${DS4_STATUS_TEXT[result.status]} (Wurf ${result.rolls.map(r => r.die).join('+')})${groessenText}${extra}`, result.status);
+        const zeile = `<strong>${escapeHtml(npc.name)}</strong> greift ${escapeHtml(target.name)} an — ${DS4_STATUS_TEXT[result.status]}${groessenText}${extra}`;
+        addGmLog('Spielleiter', `${zeile} (Wurf ${result.rolls.map(r => r.die).join('+')})`, result.status);
+        if (typeof meldeKampfwurfAnSpieler === 'function') meldeKampfwurfAnSpieler(zeile, result.status);
         return;
     }
 
@@ -426,6 +428,9 @@ function npcAttack(npcId, targetId) {
     if (target.type === 'player') {
         gmAttackPlayer(target.peerId, damage, npc.name, ga);
         addGmLog('Spielleiter', `<strong>${escapeHtml(npc.name)}</strong> trifft ${escapeHtml(target.name)} für <strong>${damage}</strong> (Wurf ${result.rolls.map(r => r.die).join('+')}${gaText})${groessenText} — Abwehr beim Spieler`, result.status);
+        if (typeof meldeKampfwurfAnSpieler === 'function') {
+            meldeKampfwurfAnSpieler(`<strong>${escapeHtml(npc.name)}</strong> trifft ${escapeHtml(target.name)} für <strong>${damage}</strong>${groessenText}`, result.status);
+        }
     } else {
         // NSC gegen NSC: Abwehr direkt hier auswürfeln
         const def = rollProbe(target.abwehr, { label: `${target.name}: Abwehr`, modifier: ga, slayend });
@@ -433,7 +438,12 @@ function npcAttack(npcId, targetId) {
         const reduced = def.success ? def.total : 0;
         const final = Math.max(0, damage - reduced);
         target.lkCurrent -= final;
-        addGmLog('Spielleiter', `<strong>${escapeHtml(npc.name)}</strong> trifft ${escapeHtml(target.name)}${groessenText}: ${damage} − ${reduced} Abwehr = <strong>${final}</strong> (LK ${target.lkCurrent}/${target.lkMax})`, final > 0 ? 'fehlschlag' : 'erfolg');
+        const besiegt = target.lkCurrent <= 0 ? ' — <strong>besiegt!</strong>' : '';
+        addGmLog('Spielleiter', `<strong>${escapeHtml(npc.name)}</strong> trifft ${escapeHtml(target.name)}${groessenText}: ${damage} − ${reduced} Abwehr = <strong>${final}</strong> (LK ${target.lkCurrent}/${target.lkMax})${besiegt}`, final > 0 ? 'fehlschlag' : 'erfolg');
+        // Spieler sehen den Treffer, aber keine Gegner-LK
+        if (typeof meldeKampfwurfAnSpieler === 'function') {
+            meldeKampfwurfAnSpieler(`<strong>${escapeHtml(npc.name)}</strong> trifft ${escapeHtml(target.name)} für <strong>${final}</strong>${besiegt}`, final > 0 ? 'fehlschlag' : 'erfolg');
+        }
         renderCombat();
     }
 }
@@ -454,9 +464,13 @@ function npcDefend(npcId, damage, gaMod = 0) {
     }
 
     const gaText = gaMod ? ` (inkl. ${gaMod > 0 ? '+' : ''}${gaMod} Gegnerabwehr)` : '';
-    let msg = `<strong>${escapeHtml(npc.name)}</strong> wehrt ab (PW ${result.pw}${gaText}) — ${DS4_STATUS_TEXT[result.status]}: ${damage} − ${reduced} = <strong>${final}</strong> Schaden · LK ${npc.lkCurrent}/${npc.lkMax}`;
-    if (npc.lkCurrent <= 0) msg += ' — <strong>besiegt!</strong>';
-    addGmLog('Spielleiter', msg, npc.lkCurrent <= 0 ? 'erfolg' : 'neutral');
+    const besiegt = npc.lkCurrent <= 0 ? ' — <strong>besiegt!</strong>' : '';
+    addGmLog('Spielleiter',
+        `<strong>${escapeHtml(npc.name)}</strong> wehrt ab (PW ${result.pw}${gaText}) — ${DS4_STATUS_TEXT[result.status]}: ${damage} − ${reduced} = <strong>${final}</strong> Schaden · LK ${npc.lkCurrent}/${npc.lkMax}${besiegt}`,
+        npc.lkCurrent <= 0 ? 'erfolg' : 'neutral');
+    if (typeof meldeKampfwurfAnSpieler === 'function') {
+        meldeKampfwurfAnSpieler(`<strong>${escapeHtml(npc.name)}</strong> wehrt ab — ${DS4_STATUS_TEXT[result.status]}, <strong>${final}</strong> Schaden kommen durch${besiegt}`, npc.lkCurrent <= 0 ? 'erfolg' : 'neutral');
+    }
     renderCombat();
 }
 
@@ -496,6 +510,7 @@ function parseAngriffsEingabe(text) {
     if (!result.success) {
         const extra = result.patzer ? ` · ${DS4_KAMPFPATZER.schlagen}` : '';
         addGmLog('Spielleiter', `Angriff misslungen (PW ${basis.schaden}, Wurf ${result.rolls.map(r => r.die).join('+')}) — ${DS4_STATUS_TEXT[result.status]}${extra}`, result.status);
+        if (typeof meldeKampfwurfAnSpieler === 'function') meldeKampfwurfAnSpieler(`Ein Angriff des Spielleiters geht daneben — ${DS4_STATUS_TEXT[result.status]}${extra}`, result.status);
         return null;
     }
     return { schaden: result.total, ga: basis.ga, gewuerfelt: true };

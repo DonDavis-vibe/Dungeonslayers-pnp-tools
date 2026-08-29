@@ -34,11 +34,35 @@ const HILFE_THEMEN = {
                  <li>Du wirst geheilt</li>
                  <li>Der Spielleiter flüstert dir etwas oder macht eine Ansage an alle</li>
                </ul>
-               <p><strong>🔊/🔇</strong> in der Kopfzeile schaltet alle Töne auf einmal stumm —
-               die Einstellung bleibt in diesem Browser gespeichert.</p>
+               <p><strong>🔊/🔇</strong> in der Kopfzeile schaltet alle Töne auf einmal stumm,
+               der <strong>Regler</strong> daneben stellt <em>deine</em> Lautstärke ein — für die
+               Hinweistöne <strong>und</strong> das Soundboard des Spielleiters. Er legt sich als
+               Gesamtpegel über dessen Mischung, ersetzt sie also nicht. Beides bleibt auf deinem
+               Gerät gespeichert und wandert nicht in die Charakterdatei.</p>
                <p>Browser blockieren Sound, bevor du überhaupt mit der Seite interagiert hast.
                Ein Klick irgendwo auf der Seite (z.B. Raum eröffnen oder beitreten) reicht, danach
                spielen die Töne normal.</p>`
+    },
+    'soundboard': {
+        gruppe: 'sl',
+        titel: 'Soundboard',
+        text: `<p>Ausgewählte Effekte und Ambient-Tracks für die Runde — nach Gruppen sortiert
+               (Reaktionen, Kulisse, Dungeon, Kampf &amp; Magie, Tisch-Kontrolle, Musik).</p>
+               <ul>
+                 <li><strong>🎧 Vorhören</strong> spielt den Klang nur bei dir.</li>
+                 <li><strong>▶ Für alle</strong> spielt ihn zusätzlich bei jedem verbundenen
+                     Spieler ab.</li>
+                 <li><strong>🌙 Fade</strong> blendet alles Laufende in 3 Sekunden aus,
+                     <strong>⏹ Stop</strong> bricht sofort ab.</li>
+                 <li>Der <strong>Gesamtlautstärke</strong>-Regler mischt die laufenden Sounds
+                     zueinander und wird an alle mitgeschickt; jeder Spieler hat daneben noch
+                     seinen eigenen Regler in der Kopfzeile.</li>
+               </ul>
+               <p>Sounds stoppen sich <strong>nicht</strong> gegenseitig — so läuft Regen als
+               Endlos-Kulisse, während du einen Gong oder einen Schrei darüberlegst.</p>
+               <p class="hint-rule">Die Klangdateien liegen im Schwesterprojekt
+               <em>How to be a Hero</em> (gleicher Autor) und werden von dort geladen — das braucht
+               eine Internetverbindung, hält aber das DS4-Tool klein.</p>`
     },
 
     'ueberblick': {
@@ -383,6 +407,9 @@ const HILFE_THEMEN = {
         titel: 'Logbuch',
         text: `<p>Jeder Wurf mit Probenwert, Modifikator, Ergebnis und Bewertung — farbig nach
                Immersieg, Erfolg, Fehlschlag und Patzer.</p>
+               <p>Im <strong>Multiplayer</strong> landen hier auch die Würfe der Mitspieler
+               (mit Namen davor), die Kampfwürfe des Spielleiters und seine „an alle" gemachten
+               Proben — dein Logbuch hat also den kompletten Mitschrieb der Runde.</p>
                <p>Praktisch, um am Tisch eine strittige Probe nachzuschlagen.
                <strong>Log leeren</strong> im Würfelkasten räumt auf.</p>`
     },
@@ -641,7 +668,18 @@ const HILFE_THEMEN = {
         text: `<p>Dein eigener Würfelkasten für NSC und Monster: Probenwert eintragen,
                <strong>Probe</strong> drücken. Dieselbe Mechanik wie beim Spieler, inklusive
                Immersieg, Patzer und Kettenwürfen über 20.</p>
-               <p>Diese Würfe erscheinen nur bei dir — nicht in den Logbüchern der Spieler.</p>`
+               <p><strong>Wer sieht den Wurf?</strong> steuert, wohin das Ergebnis geht:</p>
+               <ul>
+                 <li><strong>alle Spieler</strong> — landet in jedem Logbuch (und, falls
+                     eingerichtet, in Discord). So kann der Kampf-Mitschrieb den Bot ersetzen.</li>
+                 <li><strong>verdeckt — nur ich</strong> — bleibt bei dir, auch nicht in Discord.
+                     Für heimliche Proben (bemerkt der Dieb die Falle? lügt der NSC?).</li>
+                 <li><strong>nur ein bestimmter Spieler</strong> (steht namentlich in der Liste,
+                     sobald Spieler verbunden sind) — geht nur an diesen einen, sonst niemand.
+                     Für Dinge, die nur eine Figur weiß.</li>
+               </ul>
+               <p>Auch die <strong>Kampfwürfe</strong> aus dem Tracker (NSC-Angriff und -Abwehr)
+               wandern in die Logbücher aller Spieler — aber ohne Gegner-LK.</p>`
     },
     'gm-log': {
         gruppe: 'sl',

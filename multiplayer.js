@@ -370,7 +370,12 @@ function handleIncomingData(peerId, payload) {
         sendeGruppenliste();
     } else if (payload.type === 'roll') {
         const player = connectedPlayers[peerId];
-        addGmLog(player ? player.name : 'Unbekannt', sichererHtml(payload.message), sichererStatus(payload.status));
+        const name = player ? player.name : 'Unbekannt';
+        const msg = sichererHtml(payload.message);
+        const status = sichererStatus(payload.status);
+        addGmLog(name, msg, status);
+        // Alle anderen Spieler bekommen den Wurf ins Logbuch — der Absender hat ihn schon
+        broadcastToPlayers({ type: 'mitschrieb', von: name, message: msg, status }, peerId);
     } else if (payload.type === 'whisper') {
         const player = connectedPlayers[peerId];
         const name = player ? player.name : 'Unbekannt';
@@ -473,6 +478,7 @@ function renderGmDashboard() {
     document.getElementById('gm-player-count').textContent =
         `${peerIds.length} verbunden`;
     emptyHint.style.display = peerIds.length ? 'none' : '';
+    renderGmWurfSicht();
 
     // Laufende Notizeingabe nicht durch das Neuzeichnen unterbrechen
     const active = document.activeElement;
@@ -659,8 +665,7 @@ function rollGmProbe() {
     showProbeResult(result, 'gm-');
     let msg = `<strong>SL-Probe</strong> (PW ${result.pw}) — ${DS4_STATUS_TEXT[result.status]} · Wurf ${result.rolls.map(r => r.die).join('+')}`;
     if (result.success) msg += ` · Ergebnis <strong>${result.total}</strong>`;
-    addGmLog('Spielleiter', msg, result.status);
-    if (typeof discordPostProbe === 'function') discordPostProbe(result, '');
+    verteileSlWurf(msg, result.status, result);
 }
 
 function rollGmPlainD20() {
@@ -670,7 +675,7 @@ function rollGmPlainD20() {
     document.getElementById('gm-dice-status').textContent = '';
     document.getElementById('gm-dice-detail').textContent = '';
     document.getElementById('gm-dice-display').className = 'dice-display';
-    addGmLog('Spielleiter', `Blanker 1W20: <strong>${die}</strong>`, 'neutral');
+    verteileSlWurf(`Blanker 1W20: <strong>${die}</strong>`, 'neutral');
 }
 
 // --- Spieler (Client) -------------------------------------------------------
@@ -899,8 +904,47 @@ function sendToPlayer(peerId, payload) {
     if (conn && conn.open) conn.send(payload);
 }
 
-function broadcastToPlayers(payload) {
-    Object.values(clientConnections).forEach(conn => { if (conn.open) conn.send(payload); });
+function broadcastToPlayers(payload, ausserPeerId) {
+    Object.entries(clientConnections).forEach(([peerId, conn]) => {
+        if (conn.open && peerId !== ausserPeerId) conn.send(payload);
+    });
+}
+
+// Ein SL-Wurf: ins eigene Log, und je nach Sichtbarkeit an alle Spieler, an
+// einen einzelnen oder an niemanden. "verdeckt" geht bewusst auch nicht nach
+// Discord — sonst wäre er dort ja doch zu sehen.
+function verteileSlWurf(msg, status, result) {
+    const sicht = (document.getElementById('gm-wurf-sicht') || {}).value || 'alle';
+    let logMsg = msg;
+    if (sicht === 'verdeckt') logMsg += ' <span class="hint">🔒 verdeckt</span>';
+    else if (sicht !== 'alle') {
+        const p = connectedPlayers[sicht];
+        logMsg += ` <span class="hint">🔒 nur ${escapeHtml(p ? p.name : '?')}</span>`;
+    }
+    addGmLog('Spielleiter', logMsg, status);
+
+    if (sicht === 'alle') {
+        broadcastToPlayers({ type: 'mitschrieb', von: 'Spielleiter', message: msg, status });
+        if (result && typeof discordPostProbe === 'function') discordPostProbe(result, '');
+    } else if (sicht !== 'verdeckt') {
+        sendToPlayer(sicht, { type: 'mitschrieb', von: 'Spielleiter (nur an dich)', message: msg, status });
+    }
+}
+
+// Die Auswahlliste "Wer sieht den Wurf?" an die verbundenen Spieler anpassen.
+function renderGmWurfSicht() {
+    const sel = document.getElementById('gm-wurf-sicht');
+    if (!sel) return;
+    const aktuell = sel.value;
+    const spieler = Object.entries(connectedPlayers)
+        .map(([pid, p]) => `<option value="${pid}">nur ${escapeHtml(p.name)}</option>`).join('');
+    sel.innerHTML = `<option value="alle">alle Spieler</option><option value="verdeckt">verdeckt — nur ich</option>${spieler}`;
+    if ([...sel.options].some(o => o.value === aktuell)) sel.value = aktuell;
+}
+
+// Kampf-Würfe (NSC-Angriff/-Abwehr, SL-Angriff) sind öffentlich — ins Log aller.
+function meldeKampfwurfAnSpieler(msg, status) {
+    broadcastToPlayers({ type: 'mitschrieb', von: '', message: msg, status });
 }
 
 // Der Spielleiter greift an: der Spieler würfelt selbst seine Abwehr (Regelwerk S.41)
@@ -1009,6 +1053,42 @@ function gmRequestProbe(peerId, probeName) {
     addGmLog('Spielleiter', `fordert von <strong>${escapeHtml(player ? player.name : '?')}</strong> eine ${escapeHtml(probeName)}-Probe.`, 'neutral');
 }
 
+// --- Soundboard: der Spielleiter löst Klänge bei allen aus ----------------
+
+function slSoundPegel() {
+    const s = document.getElementById('sl-sound-pegel');
+    return s ? (parseFloat(s.value) || 0) : 0.7;
+}
+
+// Nur beim Spielleiter — zum Reinhören, ohne dass es die Runde hört.
+function slSoundVorhoeren(id) {
+    if (typeof soundboardAbspielen === 'function') soundboardAbspielen(id, slSoundPegel());
+}
+
+function slSoundAbspielen(id) {
+    const pegel = slSoundPegel();
+    if (typeof soundboardAbspielen === 'function') soundboardAbspielen(id, pegel);
+    broadcastToPlayers({ type: 'soundboard', soundId: id, pegel });
+    const name = typeof soundboardName === 'function' ? soundboardName(id) : id;
+    addGmLog('Spielleiter', `🎵 <strong>${escapeHtml(name)}</strong> — für alle abgespielt`, 'neutral');
+}
+
+function slSoundStop() {
+    if (typeof soundboardStop === 'function') soundboardStop();
+    broadcastToPlayers({ type: 'soundboard-stop' });
+}
+
+function slSoundFade() {
+    if (typeof soundboardFade === 'function') soundboardFade();
+    broadcastToPlayers({ type: 'soundboard-fade' });
+}
+
+function slSoundPegelAendern(wert) {
+    const pegel = Math.max(0, Math.min(1, parseFloat(wert) || 0));
+    if (typeof soundboardPegelSetzen === 'function') soundboardPegelSetzen(pegel);
+    broadcastToPlayers({ type: 'soundboard-vol', pegel });
+}
+
 // Anstupsen: kurze Einblendung samt "Du bist am Zug"-Ton beim Spieler, ohne
 // den Kampf weiterzuschalten — für "du bist dran" oder "jetzt bist DU gemeint".
 function gmNudge(peerId) {
@@ -1079,6 +1159,25 @@ function handleGmCommand(payload) {
             showGmMessage('<strong>👉 Der Spielleiter stupst dich an!</strong>');
             addLog('👉 <strong>Der Spielleiter stupst dich an</strong> — du bist wohl dran.', 'neutral');
             if (typeof spielSound === 'function') spielSound('dein-zug');
+            break;
+        case 'mitschrieb': {
+            // Wuerfe der Mitspieler, des Spielleiters und aus dem Kampf — der
+            // Spielleiter verteilt sie, damit jedes Logbuch alles hat.
+            const von = payload.von ? `<strong>${escapeHtml(payload.von)}</strong> · ` : '';
+            addLog(von + sichererHtml(payload.message), sichererStatus(payload.status));
+            break;
+        }
+        case 'soundboard':
+            if (typeof soundboardAbspielen === 'function') soundboardAbspielen(payload.soundId, payload.pegel);
+            break;
+        case 'soundboard-stop':
+            if (typeof soundboardStop === 'function') soundboardStop();
+            break;
+        case 'soundboard-fade':
+            if (typeof soundboardFade === 'function') soundboardFade();
+            break;
+        case 'soundboard-vol':
+            if (typeof soundboardPegelSetzen === 'function') soundboardPegelSetzen(payload.pegel);
             break;
         case 'requestProbe': {
             showGmMessage(`Der Spielleiter fordert eine <strong>${escapeHtml(payload.probeName)}</strong>-Probe.`);

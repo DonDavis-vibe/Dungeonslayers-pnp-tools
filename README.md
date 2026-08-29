@@ -272,6 +272,20 @@ Lebenskraft-Balken darunter; **Gegner-Werte bleiben verborgen**, in der Reihenfo
 mit Namen. Ist Discord eingerichtet, nennt der Kampfbeginn-Post die Teilnehmer getrennt nach
 *🛡️ Helden* und *👹 Gegner* (ebenfalls ohne Gegner-LK).
 
+**Gemeinsames Logbuch:** Jeder Wurf jedes Spielers landet — über den Spielleiter verteilt — in
+**allen** Logbüchern (mit Namen davor), dazu die Kampfwürfe des Spielleiters (NSC-Angriff/-Abwehr,
+ohne Gegner-LK). So hat jedes Logbuch den kompletten Mitschrieb und kann den Discord-Bot ersetzen.
+Der Spielleiter wählt beim **SL-Würfel** je Wurf, wer ihn sieht: *alle Spieler*, *verdeckt (nur
+ich)* oder *nur ein bestimmter Spieler* — verdeckte Würfe gehen auch nicht nach Discord.
+
+**🎵 Soundboard (Spielleiter):** Ausgewählte Effekte und Ambient-Tracks (Taverne, Regen, Gong,
+Schwertkampf, Bosskampf-Musik …), nach Gruppen sortiert. *Vorhören* spielt nur beim Spielleiter,
+*Für alle* zusätzlich bei jedem verbundenen Spieler — samt *Fade* und *Stop*. Die Sounds stoppen
+sich nicht gegenseitig, laufen also als Mixer: Regen als Kulisse, Gong darüber. Ein
+Gesamtlautstärke-Regler beim Spielleiter mischt und wird gesynct; jeder Spieler hat daneben seinen
+eigenen Regler in der Kopfzeile. Die Klangdateien werden vom Schwesterprojekt *How to be a Hero*
+geladen (spart Platz, braucht Internet).
+
 **Verbindungsanzeige:** Sobald ein Spieler Multiplayer nutzt, erscheint in der Kopfzeile eine
 dauerhafte Statusanzeige — grün bei bestehender Verbindung (mit Raum-Code), pulsierend gelb beim
 Verbinden, rot bei Abbruch. Ohne Multiplayer bleibt sie unsichtbar. Ein Klick öffnet das Menü mit
