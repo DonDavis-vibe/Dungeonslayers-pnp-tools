@@ -462,8 +462,7 @@ const HILFE_THEMEN = {
                <p><strong>Treffer im Kampf:</strong> Gelingt dein Angriff (Schlagen/Schießen)
                während eines Kampfes, erscheint unter dem Würfelergebnis eine Auswahl der Gegner.
                Wähl dein Ziel und drück <em>Anrechnen</em> — der Spielleiter würfelt automatisch
-               die Abwehr des Gegners und der Restschaden wird abgezogen, du musst nichts durchsagen.</p>`
-
+               die Abwehr des Gegners und der Restschaden wird abgezogen, du musst nichts durchsagen.</p>
                <p><strong>Deine Mitspieler</strong> stehen darunter mit Klasse, Stufe und ihrem
                Lebenskraft-Balken — praktisch, um zu sehen, wer dringend Heilung braucht.
                Bewusstlose und Tote sind ausgewiesen. Gegner-<strong>Werte</strong> siehst du
