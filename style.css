@@ -86,6 +86,21 @@ input[type=number]::-webkit-outer-spin-button,
 input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 select option { background: #1c1712; }
 
+/* Einheitlicher Gold-Chevron statt des Browser-Standardpfeils */
+select {
+    appearance: none; -webkit-appearance: none; -moz-appearance: none;
+    padding-right: 1.9rem;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%23d4a24c' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.65rem center;
+}
+select:focus {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%23f0c069' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+}
+/* Die winzigen, dicht gepackten Selects im Kampf-Tracker behalten den
+   nativen Pfeil — dort ist kein Platz für Extra-Padding. */
+.combat-row select { appearance: auto; -webkit-appearance: auto; -moz-appearance: auto; padding-right: 0.3rem; background-image: none; }
+
 .num-stepper { display: inline-flex; align-items: stretch; }
 .num-stepper button {
     flex: none; width: 1.7rem; padding: 0; line-height: 1; font-size: 1rem;
@@ -119,7 +134,7 @@ select option { background: #1c1712; }
     background:
         linear-gradient(0deg, rgba(15, 12, 9, 0.93) 0%, rgba(15, 12, 9, 0.30) 42%, rgba(15, 12, 9, 0.42) 72%, rgba(15, 12, 9, 0.80) 100%),
         linear-gradient(90deg, rgba(15, 12, 9, 0.5) 0%, rgba(15, 12, 9, 0.1) 45%, rgba(15, 12, 9, 0) 75%),
-        url('img/titelbild.jpg?v=20260828z') 25% 70% / cover no-repeat,
+        url('img/titelbild.jpg?v=20260830b') 25% 70% / cover no-repeat,
         var(--bg-alt);
     border-bottom: 1px solid var(--panel-border-strong);
 }
@@ -142,21 +157,23 @@ select option { background: #1c1712; }
 .topbar {
     display: flex;
     align-items: center;
-    gap: 1rem;
-    padding: 0.7rem 1.2rem;
-    background: linear-gradient(180deg, rgba(40, 30, 18, 0.95), rgba(24, 19, 13, 0.92)), var(--bg-alt);
-    border-bottom: 1px solid var(--panel-border-strong);
+    gap: 0.8rem;
+    padding: 0.6rem 1.1rem;
+    background: linear-gradient(180deg, rgba(44, 33, 19, 0.96), rgba(22, 17, 12, 0.94)), var(--bg-alt);
+    border-bottom: 1px solid var(--gold-line);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
     position: sticky;
     top: 0;
     z-index: 50;
     flex-wrap: wrap;
 }
+.topbar .btn { padding: 0.38rem 0.72rem; font-size: 0.82rem; }
 /* Im Dashboard trägt die Leiste selbst das Titelbild (stark abgedunkelt),
    weil dort kein Platz für ein eigenes Kopfbild-Band ist. */
 #gm-dashboard .topbar {
     background:
         linear-gradient(180deg, rgba(20, 16, 11, 0.82), rgba(16, 13, 9, 0.92)),
-        url('img/titelbild.jpg?v=20260828z') center 32% / cover no-repeat,
+        url('img/titelbild.jpg?v=20260830b') center 32% / cover no-repeat,
         var(--bg-alt);
 }
 .topbar h1 {
@@ -166,7 +183,7 @@ select option { background: #1c1712; }
     white-space: nowrap;
 }
 .topbar h1 small { display: block; font-size: 0.65rem; color: var(--text-dim); letter-spacing: 0.14em; text-transform: uppercase; font-family: 'Segoe UI', sans-serif; font-weight: normal; }
-.topbar-actions { margin-left: auto; display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.topbar-actions { margin-left: auto; display: flex; gap: 0.4rem; flex-wrap: wrap; align-items: center; }
 
 .btn {
     background: linear-gradient(180deg, rgba(96, 72, 36, 0.92), rgba(56, 41, 20, 0.92));
@@ -213,6 +230,7 @@ select option { background: #1c1712; }
     position: relative;
     background:
         linear-gradient(180deg, var(--sheen), transparent 20%),
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E"),
         var(--panel);
     border: 1px solid var(--panel-border);
     border-radius: var(--radius);
@@ -309,8 +327,10 @@ select option { background: #1c1712; }
 
 .budget {
     display: flex; align-items: center; gap: 0.5rem;
-    font-size: 0.82rem; padding: 0.35rem 0.6rem; border-radius: 4px;
-    background: rgba(0, 0, 0, 0.35); border: 1px solid var(--panel-border);
+    font-size: 0.82rem; padding: 0.4rem 0.7rem; border-radius: 4px;
+    background: linear-gradient(180deg, rgba(46, 36, 22, 0.45), var(--ink));
+    border: 1px solid var(--panel-border);
+    box-shadow: var(--inset-deep);
 }
 .budget strong { color: var(--accent-bright); font-size: 1rem; }
 .budget.over { border-color: var(--fail); color: #ffb4a0; }
@@ -452,12 +472,14 @@ select option { background: #1c1712; }
 
 .list-row {
     display: flex; align-items: center; gap: 0.5rem;
-    padding: 0.4rem 0.5rem; border-radius: 4px;
-    background: rgba(0, 0, 0, 0.25);
-    border: 1px solid transparent;
+    padding: 0.42rem 0.55rem; border-radius: 4px;
+    background: linear-gradient(180deg, rgba(255, 244, 224, 0.03), transparent 40%), rgba(0, 0, 0, 0.28);
+    border: 1px solid var(--panel-border);
+    box-shadow: inset 0 1px 0 rgba(255, 244, 224, 0.03);
+    transition: border-color 0.15s, background 0.15s;
 }
 .list-row + .list-row { margin-top: 0.35rem; }
-.list-row:hover { border-color: var(--panel-border); }
+.list-row:hover { border-color: var(--panel-border-strong); background: linear-gradient(180deg, rgba(255, 244, 224, 0.05), transparent 40%), rgba(20, 15, 8, 0.4); }
 .list-row input[type=text] { flex: 1; min-width: 0; }
 .list-row .row-sub { font-size: 0.75rem; color: var(--text-dim); }
 .icon-btn {
@@ -563,30 +585,45 @@ select option { background: #1c1712; }
 
 .wizard-steps { display: flex; gap: 0.3rem; padding: 0.7rem 0.9rem; flex-wrap: wrap; border-bottom: 1px solid var(--panel-border); }
 .wizard-step {
-    font-size: 0.72rem; padding: 0.22rem 0.6rem; border-radius: 12px;
-    background: rgba(0, 0, 0, 0.35); border: 1px solid var(--panel-border); color: var(--text-dim);
+    font-size: 0.72rem; padding: 0.24rem 0.65rem; border-radius: 12px;
+    background: linear-gradient(180deg, rgba(50, 38, 22, 0.4), rgba(0, 0, 0, 0.35));
+    border: 1px solid var(--panel-border); color: var(--text-dim);
+    box-shadow: inset 0 1px 0 rgba(255, 244, 224, 0.04);
 }
-.wizard-step.active { background: rgba(168, 118, 44, 0.55); border-color: var(--accent-bright); color: #fff8ea; }
+.wizard-step.active {
+    background: linear-gradient(180deg, #b07d2e, #7a5420);
+    border-color: var(--accent-bright); color: #fff8ea;
+    box-shadow: inset 0 1px 0 rgba(255, 244, 224, 0.25), 0 0 12px rgba(212, 162, 76, 0.35);
+}
 .wizard-step.done { border-color: var(--success); color: var(--success); }
 
 .choice-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.7rem; }
 .choice-card {
     border: 1px solid var(--panel-border); border-radius: var(--radius);
-    padding: 0.8rem; background: rgba(0, 0, 0, 0.3); cursor: pointer; transition: all 0.15s;
+    padding: 0.8rem;
+    background: linear-gradient(180deg, rgba(255, 244, 224, 0.04), transparent 32%), rgba(0, 0, 0, 0.32);
+    box-shadow: inset 0 1px 0 rgba(255, 244, 224, 0.04);
+    cursor: pointer; transition: border-color 0.15s, transform 0.15s, box-shadow 0.15s;
 }
-.choice-card:hover { border-color: var(--accent); transform: translateY(-2px); }
-.choice-card.selected { border-color: var(--accent-bright); background: rgba(168, 118, 44, 0.25); box-shadow: 0 0 14px rgba(212, 162, 76, 0.2); }
+.choice-card:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: inset 0 1px 0 rgba(255, 244, 224, 0.06), 0 6px 16px rgba(0, 0, 0, 0.4), var(--glow-gold); }
+.choice-card.selected { border-color: var(--accent-bright); background: linear-gradient(180deg, rgba(168, 118, 44, 0.32), rgba(120, 84, 30, 0.18)); box-shadow: 0 0 18px rgba(212, 162, 76, 0.28), inset 0 1px 0 rgba(255, 244, 224, 0.1); }
 .choice-card h4 { color: var(--accent-bright); font-size: 1rem; margin-bottom: 0.25rem; }
 .choice-card p { font-size: 0.78rem; color: var(--text-dim); }
 .choice-card ul { font-size: 0.75rem; color: var(--text-dim); margin: 0.4rem 0 0 1rem; }
 
 .radio-row { display: flex; gap: 0.5rem; flex-wrap: wrap; }
 .radio-pill {
-    padding: 0.3rem 0.7rem; border-radius: 14px; font-size: 0.82rem;
-    background: rgba(0, 0, 0, 0.3); border: 1px solid var(--panel-border); cursor: pointer; transition: all 0.15s;
+    padding: 0.3rem 0.75rem; border-radius: 14px; font-size: 0.82rem;
+    background: linear-gradient(180deg, rgba(60, 46, 26, 0.4), rgba(0, 0, 0, 0.35)); border: 1px solid var(--panel-border);
+    box-shadow: inset 0 1px 0 rgba(255, 244, 224, 0.05);
+    cursor: pointer; transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
 }
 .radio-pill:hover { border-color: var(--accent); }
-.radio-pill.selected { background: rgba(168, 118, 44, 0.5); border-color: var(--accent-bright); color: #fff8ea; }
+.radio-pill.selected {
+    background: linear-gradient(180deg, #b07d2e, #7a5420);
+    border-color: var(--accent-bright); color: #fff8ea;
+    box-shadow: inset 0 1px 0 rgba(255, 244, 224, 0.25), 0 0 12px rgba(212, 162, 76, 0.3);
+}
 
 /* ---------- Multiplayer-Statusanzeige ---------- */
 
@@ -634,10 +671,11 @@ select option { background: #1c1712; }
 /* ---------- Talente ---------- */
 
 .talent-entry {
-    background: rgba(0, 0, 0, 0.28);
+    background: linear-gradient(180deg, rgba(255, 244, 224, 0.035), transparent 30%), rgba(0, 0, 0, 0.3);
     border: 1px solid var(--panel-border);
     border-radius: var(--radius);
     padding: 0.55rem 0.7rem;
+    box-shadow: inset 0 1px 0 rgba(255, 244, 224, 0.04);
 }
 .talent-entry + .talent-entry { margin-top: 0.45rem; }
 .talent-entry-head { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
@@ -648,13 +686,14 @@ select option { background: #1c1712; }
 
 .talent-picker-list { max-height: 52vh; overflow-y: auto; display: flex; flex-direction: column; gap: 0.45rem; padding-right: 0.3rem; }
 .talent-option {
-    background: rgba(0, 0, 0, 0.28);
+    background: linear-gradient(180deg, rgba(255, 244, 224, 0.035), transparent 30%), rgba(0, 0, 0, 0.3);
     border: 1px solid var(--panel-border);
     border-radius: var(--radius);
     padding: 0.55rem 0.7rem;
-    transition: border-color 0.15s;
+    box-shadow: inset 0 1px 0 rgba(255, 244, 224, 0.04);
+    transition: border-color 0.15s, box-shadow 0.15s;
 }
-.talent-option:hover { border-color: var(--accent); }
+.talent-option:hover { border-color: var(--accent); box-shadow: inset 0 1px 0 rgba(255, 244, 224, 0.06), var(--glow-gold); }
 .talent-option.locked { opacity: 0.5; }
 
 /* ---------- Kampf-Tracker ---------- */
@@ -786,12 +825,16 @@ select option { background: #1c1712; }
     display: flex;
     align-items: center;
     gap: 0.7rem;
-    padding: 0.6rem 0.9rem;
-    background: linear-gradient(180deg, rgba(70, 52, 26, 0.6), rgba(40, 30, 18, 0.4));
-    border-bottom: 1px solid var(--panel-border-strong);
+    padding: 0.62rem 0.95rem;
+    background: linear-gradient(180deg, rgba(80, 60, 31, 0.7), rgba(38, 28, 17, 0.3));
+    border-bottom: 1px solid var(--gold-line);
     flex: none;
 }
-.map-head h3 { font-size: 1rem; color: var(--accent-bright); white-space: nowrap; }
+.map-head h3 {
+    font-size: 1.02rem; color: var(--accent-bright); white-space: nowrap;
+    letter-spacing: 0.035em;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6), 0 0 18px rgba(240, 192, 105, 0.2);
+}
 .map-tools {
     display: flex;
     align-items: center;
@@ -1078,16 +1121,29 @@ select option { background: #1c1712; }
     padding: 0.45rem 0.6rem;
     font-size: 0.88rem;
     color: var(--text);
-    list-style-position: inside;
 }
 .help-guide-item > summary:hover { color: var(--accent-bright); }
 .help-guide-item[open] > summary { color: var(--accent-bright); border-bottom: 1px solid var(--panel-border); }
 .help-guide-body { padding: 0.6rem 0.75rem; font-size: 0.83rem; line-height: 1.55; }
-/* Scrollbars */
-::-webkit-scrollbar { width: 9px; height: 9px; }
-::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.3); }
-::-webkit-scrollbar-thumb { background: rgba(140, 106, 52, 0.6); border-radius: 5px; }
-::-webkit-scrollbar-thumb:hover { background: rgba(180, 140, 80, 0.8); }
+
+/* Aufklappbare Abschnitte (Werte & Ausrüstung, Zauber, Inventar, Hilfe …) */
+details > summary {
+    list-style: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+details > summary::-webkit-details-marker { display: none; }
+details > summary::before {
+    content: "\25B8";
+    color: var(--accent);
+    font-size: 0.8em;
+    flex: none;
+    transition: transform 0.15s;
+}
+details[open] > summary::before { transform: rotate(90deg); }
+details > summary:hover { color: var(--accent-bright); }
 
 /* ---------- Gruppe & Kampf (Spieleransicht im Multiplayer) ---------- */
 
