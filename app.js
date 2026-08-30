@@ -1166,6 +1166,10 @@ function showProbeResult(result, targetPrefix = '', modDetail = '') {
     const display = document.getElementById(targetPrefix + 'dice-display');
     const primary = result.rolls.length ? result.rolls[0].die : '—';
 
+    // Ein neuer Wurf beim Spieler löscht eine noch offene Ziel-Auswahl;
+    // rollKampfwert() blendet sie danach ggf. für einen Treffer wieder ein.
+    if (!targetPrefix && typeof versteckeAngriffsZiel === 'function') versteckeAngriffsZiel();
+
     document.getElementById(targetPrefix + 'dice-number').textContent = primary;
     document.getElementById(targetPrefix + 'dice-label').textContent =
         `${result.label} — PW ${result.pw}${result.modifier ? ` (${result.modifier > 0 ? '+' : ''}${result.modifier})` : ''}`;
@@ -1508,6 +1512,51 @@ function rollKampfwert(key, label, pw) {
     if (istAngriff && result.success && schaden > 0) slayerpunktVerdienen();
 
     logProbe(result, extra);
+
+    // Im Multiplayer-Kampf: getroffen → Ziel wählen, der Spielleiter zieht ab
+    if (istAngriff && result.success && ['schlagen', 'schiessen'].includes(key)) {
+        zeigeAngriffsZiel(schaden, gegnerabwehr(charForRules(), key));
+    } else {
+        versteckeAngriffsZiel();
+    }
+}
+
+// --- Treffer im Kampf einem Gegner zuweisen -------------------------------
+// Der Spieler wählt aus den Gegnern im Tracker des Spielleiters; dessen NSC
+// würfelt dann automatisch die Abwehr und der Restschaden wird abgezogen.
+function zeigeAngriffsZiel(schaden, ga) {
+    const box = document.getElementById('dice-ziel');
+    if (!box) return;
+    const aktiv = typeof kampfStand !== 'undefined' && kampfStand && kampfStand.aktiv;
+    const gegner = aktiv ? kampfStand.reihenfolge.filter(e => !e.istSpieler).map(e => e.name) : [];
+    if (!gegner.length) { versteckeAngriffsZiel(); return; }
+
+    box.dataset.schaden = schaden;
+    box.dataset.ga = ga || 0;
+    box.innerHTML = `
+        <span>🎯 Treffer für <strong>${schaden}</strong>${ga ? ` (${ga > 0 ? '+' : ''}${ga} GA)` : ''} an:</span>
+        <select id="dice-ziel-name">${gegner.map(n => `<option>${escapeHtml(n)}</option>`).join('')}</select>
+        <button class="btn btn-sm btn-primary" onclick="angriffZielSenden()">Anrechnen</button>`;
+    box.style.display = '';
+}
+
+function versteckeAngriffsZiel() {
+    const box = document.getElementById('dice-ziel');
+    if (box) { box.style.display = 'none'; box.innerHTML = ''; }
+}
+
+function angriffZielSenden() {
+    const box = document.getElementById('dice-ziel');
+    const sel = document.getElementById('dice-ziel-name');
+    if (!box || !sel || typeof hostConnection === 'undefined' || !hostConnection || !hostConnection.open) return;
+    hostConnection.send({
+        type: 'spielerAngriff',
+        zielName: sel.value,
+        schaden: parseInt(box.dataset.schaden, 10) || 0,
+        ga: parseInt(box.dataset.ga, 10) || 0
+    });
+    addLog(`🎯 Treffer an <strong>${escapeHtml(sel.value)}</strong> gemeldet — der Spielleiter würfelt die Abwehr.`, 'neutral');
+    versteckeAngriffsZiel();
 }
 
 // Abklingzeit des vorbereiteten Zaubers starten. Ohne laufenden Kampf gibt es

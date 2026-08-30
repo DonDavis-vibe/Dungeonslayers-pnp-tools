@@ -383,7 +383,68 @@ function handleIncomingData(peerId, payload) {
         if (typeof spielSound === 'function') spielSound('fluestern');
     } else if (payload.type === 'healRequest') {
         behandleHealRequest(peerId, payload);
+    } else if (payload.type === 'spielerAngriff') {
+        behandleSpielerAngriff(peerId, payload);
     }
+}
+
+// Ein Spieler hat im Kampf getroffen und ein Ziel aus dem Tracker gewählt.
+// Der NSC würfelt seine Abwehr (npcDefend rechnet und meldet den Rest), damit
+// der Spielleiter nichts von Hand abziehen muss.
+function behandleSpielerAngriff(vonPeerId, payload) {
+    if (typeof combatants === 'undefined') return;
+    const angreifer = connectedPlayers[vonPeerId];
+    const name = angreifer ? angreifer.name : 'Ein Held';
+    const npc = combatants.find(c => c.type === 'npc' && c.name === payload.zielName);
+    const schaden = parseInt(payload.schaden, 10) || 0;
+    if (!npc) {
+        addGmLog('System', `<strong>${escapeHtml(name)}</strong> trifft <strong>${escapeHtml(payload.zielName || '?')}</strong> für ${schaden} — steht aber nicht (mehr) im Tracker, bitte von Hand abziehen.`, 'fehlschlag');
+        return;
+    }
+    addGmLog('System', `<strong>${escapeHtml(name)}</strong> greift <strong>${escapeHtml(npc.name)}</strong> an (Schaden ${schaden})${payload.ga ? ` · ${payload.ga > 0 ? '+' : ''}${payload.ga} Gegnerabwehr` : ''} — Abwehr läuft automatisch.`, 'neutral');
+    if (typeof npcDefend === 'function') npcDefend(npc.id, schaden, parseInt(payload.ga, 10) || 0);
+}
+
+// --- Handouts: Bild oder Text an alle Spieler ----------------------------
+
+function slHandoutText() {
+    const feld = document.getElementById('sl-handout-text');
+    const text = (feld ? feld.value : '').trim();
+    if (!text) { setHandoutHinweis('Erst einen Text eintippen.'); return; }
+    broadcastToPlayers({ type: 'handout', text });
+    setHandoutHinweis('Text an alle Spieler geschickt.');
+    addGmLog('Spielleiter', '🖼️ Handout (Text) an alle geschickt.', 'neutral');
+}
+
+function slHandoutBild(event) {
+    const datei = event.target.files && event.target.files[0];
+    event.target.value = '';
+    if (!datei) return;
+    if (typeof BattleMap === 'undefined' || !BattleMap.bildVerkleinern) {
+        setHandoutHinweis('Bild-Werkzeug nicht verfügbar.');
+        return;
+    }
+    setHandoutHinweis('Bild wird vorbereitet …');
+    BattleMap.bildVerkleinern(datei, 1400, 0.72).then(ergebnis => {
+        broadcastToPlayers({ type: 'handout', bild: ergebnis.dataUrl });
+        const vorschau = document.getElementById('sl-handout-vorschau');
+        if (vorschau) { vorschau.src = ergebnis.dataUrl; vorschau.style.display = 'block'; }
+        setHandoutHinweis(`Bild an ${Object.keys(clientConnections).length} Spieler geschickt${ergebnis.verkleinert ? ' (verkleinert)' : ''}.`);
+        addGmLog('Spielleiter', '🖼️ Handout (Bild) an alle geschickt.', 'neutral');
+    }).catch(fehler => setHandoutHinweis('Fehler: ' + (fehler && fehler.message || fehler)));
+}
+
+function slHandoutAusblenden() {
+    broadcastToPlayers({ type: 'handout', clear: true });
+    const vorschau = document.getElementById('sl-handout-vorschau');
+    if (vorschau) { vorschau.style.display = 'none'; vorschau.removeAttribute('src'); }
+    setHandoutHinweis('Handout bei den Spielern ausgeblendet.');
+    addGmLog('Spielleiter', '🖼️ Handout ausgeblendet.', 'neutral');
+}
+
+function setHandoutHinweis(text) {
+    const el = document.getElementById('sl-handout-hinweis');
+    if (el) el.textContent = text || '';
 }
 
 // Heilzauber zwischen Spielern: es gibt keine direkte Verbindung zwischen
@@ -1250,6 +1311,9 @@ function handleGmCommand(payload) {
             addLog(`<strong>Spielleiter:</strong> ${escapeHtml(payload.text)}`, 'neutral');
             if (typeof spielSound === 'function') spielSound(payload.ansage ? 'ansage' : 'fluestern');
             break;
+        case 'handout':
+            zeigeHandout(payload);
+            break;
         case 'nudge':
             showGmMessage('<strong>👉 Der Spielleiter stupst dich an!</strong>');
             addLog('👉 <strong>Der Spielleiter stupst dich an</strong> — du bist wohl dran.', 'neutral');
@@ -1442,6 +1506,39 @@ function fluesterAnSl() {
     if (!text) return;
     hostConnection.send({ type: 'whisper', text });
     addLog(`🤫 <em>An den Spielleiter:</em> ${escapeHtml(text)}`, 'neutral');
+}
+
+// --- Handout beim Spieler anzeigen --------------------------------------
+
+let letztesHandout = null;   // {bild} | {text} — für den „erneut zeigen"-Knopf
+
+function zeigeHandout(payload) {
+    const modal = document.getElementById('handout-modal');
+    const koerper = document.getElementById('handout-body');
+    const knopf = document.getElementById('handout-wieder');
+    if (!modal || !koerper) return;
+
+    if (payload.clear) {
+        letztesHandout = null;
+        if (typeof closeModal === 'function') closeModal('handout-modal');
+        if (knopf) knopf.style.display = 'none';
+        return;
+    }
+
+    if (payload.bild) {
+        koerper.innerHTML = `<img src="${payload.bild}" alt="Handout des Spielleiters">`;
+        letztesHandout = { bild: payload.bild };
+    } else {
+        koerper.innerHTML = `<div class="handout-text">${escapeHtml(payload.text || '')}</div>`;
+        letztesHandout = { text: payload.text || '' };
+    }
+    if (knopf) knopf.style.display = '';
+    if (typeof openModal === 'function') openModal('handout-modal');
+    if (typeof spielSound === 'function') spielSound('ansage');
+}
+
+function handoutErneutZeigen() {
+    if (letztesHandout) zeigeHandout(letztesHandout);
 }
 
 // Einblendung für Nachrichten des Spielleiters

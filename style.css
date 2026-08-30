@@ -134,7 +134,7 @@ select:focus {
     background:
         linear-gradient(0deg, rgba(15, 12, 9, 0.93) 0%, rgba(15, 12, 9, 0.30) 42%, rgba(15, 12, 9, 0.42) 72%, rgba(15, 12, 9, 0.80) 100%),
         linear-gradient(90deg, rgba(15, 12, 9, 0.5) 0%, rgba(15, 12, 9, 0.1) 45%, rgba(15, 12, 9, 0) 75%),
-        url('img/titelbild.jpg?v=20260830c') 25% 70% / cover no-repeat,
+        url('img/titelbild.jpg?v=20260830d') 25% 70% / cover no-repeat,
         var(--bg-alt);
     border-bottom: 1px solid var(--panel-border-strong);
 }
@@ -173,7 +173,7 @@ select:focus {
 #gm-dashboard .topbar {
     background:
         linear-gradient(180deg, rgba(20, 16, 11, 0.82), rgba(16, 13, 9, 0.92)),
-        url('img/titelbild.jpg?v=20260830c') center 32% / cover no-repeat,
+        url('img/titelbild.jpg?v=20260830d') center 32% / cover no-repeat,
         var(--bg-alt);
 }
 .topbar h1 {
@@ -445,6 +445,16 @@ select:focus {
 .status-fehlschlag { color: var(--fail); }
 .status-immersieg { color: var(--crit); }
 .status-patzer { color: var(--patzer); }
+
+/* Ziel-Auswahl nach einem Treffer im Multiplayer-Kampf */
+.dice-ziel {
+    display: flex; align-items: center; gap: 0.45rem; flex-wrap: wrap;
+    margin-top: 0.6rem; padding: 0.5rem 0.6rem;
+    border-radius: var(--radius); font-size: 0.82rem;
+    background: linear-gradient(180deg, rgba(168, 118, 44, 0.2), rgba(120, 84, 30, 0.12));
+    border: 1px solid var(--panel-border-strong);
+}
+.dice-ziel select { flex: 1; min-width: 6rem; }
 
 .quick-probe { display: grid; grid-template-columns: 1fr auto; gap: 0.4rem; align-items: end; }
 /* Ohne min-width:0 schrumpft die 1fr-Spalte nicht unter die Breite des längsten
@@ -807,6 +817,28 @@ select:focus {
     pointer-events: none;
 }
 .round-indicator.visible { opacity: 1; transform: translateY(0); }
+
+/* Handout des Spielleiters */
+#handout-body { text-align: center; }
+#handout-body img { max-width: 100%; max-height: 72vh; border-radius: 4px; display: inline-block; }
+.handout-text {
+    white-space: pre-wrap;
+    text-align: left;
+    font-size: 1.02rem;
+    line-height: 1.6;
+    font-family: Georgia, 'Times New Roman', serif;
+    color: var(--text);
+}
+.handout-wieder {
+    position: fixed; bottom: 1rem; left: 1rem; z-index: 120;
+    background: linear-gradient(180deg, rgba(60, 44, 22, 0.96), rgba(32, 26, 20, 0.96));
+    border: 1px solid var(--accent);
+    border-radius: 20px; padding: 0.4rem 0.9rem;
+    font-size: 0.85rem; color: var(--accent-bright);
+    box-shadow: var(--shadow-panel);
+    cursor: pointer;
+}
+.handout-wieder:hover { border-color: var(--accent-bright); box-shadow: var(--shadow-panel), var(--glow-gold); }
 
 /* ---------- Charakterbild ---------- */
 

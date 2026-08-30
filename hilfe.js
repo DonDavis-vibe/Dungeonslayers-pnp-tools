@@ -459,6 +459,11 @@ const HILFE_THEMEN = {
                Helden oder Gegner hängt, erscheinen als Marker neben dem Namen — mit Rundenzähler,
                wenn einer gesetzt ist. Deine eigenen stehen zusätzlich oben im Kasten
                (<em>„Du bist: …"</em>).</p>
+               <p><strong>Treffer im Kampf:</strong> Gelingt dein Angriff (Schlagen/Schießen)
+               während eines Kampfes, erscheint unter dem Würfelergebnis eine Auswahl der Gegner.
+               Wähl dein Ziel und drück <em>Anrechnen</em> — der Spielleiter würfelt automatisch
+               die Abwehr des Gegners und der Restschaden wird abgezogen, du musst nichts durchsagen.</p>`
+
                <p><strong>Deine Mitspieler</strong> stehen darunter mit Klasse, Stufe und ihrem
                Lebenskraft-Balken — praktisch, um zu sehen, wer dringend Heilung braucht.
                Bewusstlose und Tote sind ausgewiesen. Gegner-<strong>Werte</strong> siehst du
@@ -647,6 +652,9 @@ const HILFE_THEMEN = {
                      (höchstens +10); sobald der Charakter handelt, verfällt der Bonus.</li>
                  <li><strong>NSC-Angriffe</strong> per Klick: Gegen Spieler würfelt der Spieler
                      selbst seine Abwehr und bekommt den Restschaden angerechnet.</li>
+                 <li><strong>Spielerangriffe</strong> laufen von selbst durch: Wählt ein Spieler
+                     nach einem Treffer sein Ziel im Tracker, würfelt der NSC hier automatisch die
+                     Abwehr und der Restschaden wird von seiner LK abgezogen — kein Abtippen.</li>
                  <li>Beim Weiterschalten der Runde bekommt der Spieler, der jetzt dran ist,
                      automatisch eine Einblendung samt Ton. Zusätzlich stupst <strong>👉</strong>
                      einen trödelnden Spieler auf Knopfdruck an.</li>
@@ -701,6 +709,23 @@ const HILFE_THEMEN = {
         text: `<p>Freitext für die Runde — er wandert mit in die gespeicherte Sitzung.</p>
                <p><strong>📢 Ansage an alle</strong> schickt eine Nachricht in die Logbücher
                sämtlicher verbundener Spieler (und, falls eingerichtet, nach Discord).</p>`
+    },
+    'gm-handout': {
+        gruppe: 'sl',
+        titel: 'Handout',
+        text: `<p>Blendet ein <strong>Bild</strong> oder einen <strong>Textblock</strong> bei allen
+               verbundenen Spielern in einem Fenster ein — für Vorlesetext, ein Rätsel, einen
+               Brief, eine Skizze.</p>
+               <ul>
+                 <li><strong>▶ Text zeigen</strong> schickt den Inhalt des Feldes; Zeilenumbrüche
+                     bleiben erhalten.</li>
+                 <li><strong>🖼️ Bild zeigen</strong> wählt eine Datei — sie wird für die
+                     Übertragung verkleinert und an alle geschickt.</li>
+                 <li><strong>⏹ Ausblenden</strong> schließt das Fenster bei allen wieder.</li>
+               </ul>
+               <p>Der Spieler kann das Fenster selbst schließen und über einen kleinen Knopf unten
+               links jederzeit wieder öffnen. Handouts wandern <strong>nicht</strong> in die
+               gespeicherte Sitzung.</p>`
     },
     'gm-wuerfel': {
         gruppe: 'sl',

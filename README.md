@@ -259,6 +259,8 @@ SL-Notizen (lokal gespeichert).
 - **Angriff** → der Spieler würfelt automatisch seine Abwehr, der Restschaden wird angerechnet
   und zurückgemeldet (genau der Ablauf aus dem Regelwerk)
 - **Heilung** und **Schaden ohne Abwehrmöglichkeit**
+- **Handout** — ein Bild oder einen Textblock (Vorlesetext, Rätsel, Skizze) bei allen Spielern in
+  einem Fenster einblenden; sie können es selbst schließen und über einen Knopf wieder öffnen
 - **Probe fordern** — einzeln oder von der ganzen Gruppe; beim Spieler wird die passende Probe
   direkt vorgewählt
 - **Erfahrungspunkte** einzeln oder an alle — nach Regelwerk S.88 als **EP-Summe der besiegten
@@ -456,6 +458,9 @@ frühere Sitzung wiederherzustellen.
   daneben frei anlegen.
 - **NSC-Angriffe** per Klick: gegen Spieler würfelt der Spieler selbst die Abwehr, gegen andere
   NSC wird sie direkt mit ausgewürfelt
+- **Spielerangriffe** laufen automatisch durch: Wählt ein Spieler nach einem Treffer sein Ziel aus
+  dem Tracker, würfelt der NSC hier selbst die Abwehr und der Restschaden wird von seiner LK
+  abgezogen — der Spielleiter tippt nichts ab
 - **Gegnerabwehr der Monsterwaffen** wird aus dem Statblock gelesen (z.B. „Massive Keule
   (WB+2; GA−2)") und beim Angriff mitgeschickt; in der Zeile ist sie nachträglich änderbar
 - **Heroische und epische Gegner** (S.105) per Auswahl: Lebenskraft ×5 bzw. ×10, Abwehr +2/+4,
