@@ -34,10 +34,75 @@ function makeNpc(preset = {}) {
         notiz: preset.notiz || '',
         // Abwartehandlung: +2 Initiative je abgewartete Runde, höchstens +10 (S.43)
         abwarten: 0,
+        // Zustände (Vergiftet, Brennt, Liegend …) — reine Marker, siehe unten
+        zustaende: [],
         // Wird beim Kampfstart einmalig für Gleichstände ausgewürfelt (S.40).
         // Später hinzugestoßene Gegner bekommen ihn sofort.
         stechen: combatActive ? d20() : 0
     };
+}
+
+// --- Zustände (Vergiftet, Brennt, Liegend …) ------------------------------
+//
+// Freitext-Marker je Kampfteilnehmer, für Gegner und Spieler. Optional mit
+// Rundendauer: die zählt beim Rundenwechsel runter und der Zustand verfällt
+// bei 0. Bewusst rein narrativ — der Bogen leitet daraus KEINE Regelwirkung
+// ab (kein Abzug, kein automatischer Schaden), das bleibt bei Tisch und
+// Spielleiter. Jede Änderung geht ins SL-Log UND in die Logbücher aller
+// verbundenen Spieler, damit die Runde den Überblick behält.
+const ZUSTAND_SCHNELLWAHL = ['Vergiftet', 'Brennt', 'Liegend', 'Gefesselt', 'Blind', 'Betäubt', 'Furcht', 'Verlangsamt'];
+
+function meldeZustand(html, status) {
+    if (typeof addGmLog === 'function') addGmLog('System', html, status || 'neutral');
+    if (typeof broadcastToPlayers === 'function') {
+        broadcastToPlayers({ type: 'mitschrieb', von: '', message: html, status: status || 'neutral' });
+    }
+}
+
+function zustandHinzufuegen(cid, text, runden) {
+    const c = combatants.find(x => x.id === cid);
+    text = String(text || '').trim();
+    if (!c || !text) return;
+    if (!Array.isArray(c.zustaende)) c.zustaende = [];
+    const zahl = parseInt(runden, 10);
+    const r = Number.isFinite(zahl) && zahl > 0 ? zahl : null;
+    c.zustaende.push({ text: text.slice(0, 40), runden: r });
+    meldeZustand(`<strong>${escapeHtml(c.name)}</strong> — Zustand <strong>${escapeHtml(text)}</strong>${r ? ` (${r} Runden)` : ''}`, 'fehlschlag');
+    zustandRefresh();
+}
+
+// Nach jeder Zustandsänderung: Tracker, Spielerkarten und die Spieler-Clients
+function zustandRefresh() {
+    if (typeof sendeKampfstand === 'function') sendeKampfstand();
+    if (typeof renderGmDashboard === 'function') renderGmDashboard();
+    renderCombat();
+}
+
+function zustandEntfernen(cid, index) {
+    const c = combatants.find(x => x.id === cid);
+    if (!c || !Array.isArray(c.zustaende)) return;
+    const weg = c.zustaende.splice(index, 1)[0];
+    if (weg) meldeZustand(`<strong>${escapeHtml(c.name)}</strong> — Zustand <strong>${escapeHtml(weg.text)}</strong> aufgehoben`, 'erfolg');
+    zustandRefresh();
+}
+
+// Rundenwechsel: Dauer runterzählen, Abgelaufenes entfernen und melden.
+function zustaendeRundenTick() {
+    let etwasWeg = false;
+    combatants.forEach(c => {
+        if (!Array.isArray(c.zustaende) || !c.zustaende.length) return;
+        c.zustaende = c.zustaende.filter(z => {
+            if (z.runden == null) return true;
+            z.runden -= 1;
+            if (z.runden <= 0) {
+                meldeZustand(`<strong>${escapeHtml(c.name)}</strong> — Zustand <strong>${escapeHtml(z.text)}</strong> ist vorbei`, 'erfolg');
+                etwasWeg = true;
+                return false;
+            }
+            return true;
+        });
+    });
+    if (etwasWeg && typeof renderGmDashboard === 'function') renderGmDashboard();
 }
 
 // --- Abwartehandlung (Regelwerk S.43) ---------------------------------------
@@ -315,7 +380,7 @@ function syncPlayersIntoCombat() {
                 lkCurrent: p.lkCurrent, lkMax: p.lkMax,
                 abwehr: p.abwehr, schlagen: p.schlagen, notiz: '', stechen: 0,
                 // Die Spielervölker gelten alle als normal groß (S.104)
-                gk: 'normal', abwarten: 0
+                gk: 'normal', abwarten: 0, zustaende: []
             });
         }
     });
@@ -376,6 +441,7 @@ function nextTurn() {
         turnIndex = 0;
         currentRound++;
         abwartenHochzaehlen();
+        zustaendeRundenTick();
         broadcastToPlayers({ type: 'round', round: currentRound });
         addGmLog('System', `<strong>Runde ${currentRound}</strong>`, 'neutral');
     }
@@ -530,6 +596,9 @@ function renderCombat() {
     const box = document.getElementById('combat-tracker');
     if (!box) return;
 
+    // Ältere Sitzungen / frisch übernommene Spieler kennen das Feld evtl. nicht
+    combatants.forEach(c => { if (!Array.isArray(c.zustaende)) c.zustaende = []; });
+
     if (combatActive) syncPlayersIntoCombat();
     // Kampfstand über einen versehentlichen Reload retten
     if (typeof sitzungSichern === 'function') sitzungSichern();
@@ -608,6 +677,10 @@ function renderCombat() {
                         LK <strong style="color:${lkColor}">${c.lkCurrent}/${c.lkMax}</strong>
                         · Abwehr <strong>${c.abwehr}</strong> · Schlagen <strong>${c.schlagen}</strong>
                     `}
+                </div>
+                <div class="combat-zustaende">
+                    ${(c.zustaende || []).map((z, zi) => `<span class="zustand-chip">${escapeHtml(z.text)}${z.runden != null ? `<b>${z.runden}</b>` : ''}<button data-zrm="${c.id}" data-zi="${zi}" title="Zustand aufheben" aria-label="Zustand aufheben">×</button></span>`).join('')}
+                    <button class="zustand-plus" data-zadd="${c.id}" title="Zustand hinzufügen (Vergiftet, Brennt, Liegend …)">+ Zustand</button>
                 </div>
                 <div class="combat-actions">
                     ${c.type === 'npc' ? `
@@ -711,5 +784,21 @@ function wireCombatControls(box) {
 
     box.querySelectorAll('[data-crm]').forEach(btn => {
         btn.addEventListener('click', () => removeCombatant(btn.dataset.crm));
+    });
+
+    box.querySelectorAll('[data-zadd]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const roh = prompt(
+                'Zustand hinzufügen — landet auch in den Logbüchern der Spieler.\n' +
+                'Rundendauer optional mit " / N", z.B. "Vergiftet / 3" (leer = bis du ihn aufhebst).\n\n' +
+                'Schnellwahl: ' + ZUSTAND_SCHNELLWAHL.join(', '));
+            if (!roh) return;
+            const teile = roh.split('/');
+            zustandHinzufuegen(btn.dataset.zadd, teile[0], teile[1]);
+        });
+    });
+
+    box.querySelectorAll('[data-zrm]').forEach(btn => {
+        btn.addEventListener('click', () => zustandEntfernen(btn.dataset.zrm, parseInt(btn.dataset.zi, 10)));
     });
 }

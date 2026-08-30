@@ -455,6 +455,10 @@ const HILFE_THEMEN = {
                gemischt nach Initiative. Wer gerade dran ist, ist markiert; bist du es selbst,
                wird der Kasten hervorgehoben und du bekommst zusätzlich eine Einblendung samt Ton.
                Ohne Kampf steht dort schlicht, dass gerade keiner läuft.</p>
+               <p><strong>Zustände</strong> (Vergiftet, Brennt, Liegend …), die der Spielleiter an
+               Helden oder Gegner hängt, erscheinen als Marker neben dem Namen — mit Rundenzähler,
+               wenn einer gesetzt ist. Deine eigenen stehen zusätzlich oben im Kasten
+               (<em>„Du bist: …"</em>).</p>
                <p><strong>Deine Mitspieler</strong> stehen darunter mit Klasse, Stufe und ihrem
                Lebenskraft-Balken — praktisch, um zu sehen, wer dringend Heilung braucht.
                Bewusstlose und Tote sind ausgewiesen. Gegner-<strong>Werte</strong> siehst du
@@ -651,6 +655,13 @@ const HILFE_THEMEN = {
                  <li><strong>Gehört</strong> ordnet einen NSC einem verbundenen Spieler zu — praktisch
                      für Beschwörungen und Vertraute. Rein informativ (Namensschild in Spielerfarbe),
                      der Bogen rechnet daraus nichts automatisch aus.</li>
+                 <li><strong>+ Zustand</strong> setzt einen Marker an jeden Teilnehmer, Gegner wie
+                     Held (<em>Vergiftet</em>, <em>Brennt</em>, <em>Liegend</em> …). Mit
+                     <em>„ / 3"</em> hinter dem Namen bekommt er eine Rundendauer, die beim
+                     Rundenwechsel runterzählt und automatisch verfällt. Rein narrativ — der Bogen
+                     zieht daraus keine Werte ab. Jede Änderung steht im SL-Log <strong>und</strong>
+                     in den Logbüchern aller Spieler; Zustände auf einem Helden sieht dieser auch
+                     oben in seinem Kampfkasten.</li>
                </ul>
                <p>Werte, die ein Statblock nicht nennt, setzt der Tracker als Platzhalter ein und
                sagt ausdrücklich dazu, dass sie nachgetragen gehören.</p>`

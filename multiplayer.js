@@ -446,7 +446,9 @@ function sendeKampfstand() {
         amZug: i === turnIndex,
         // Gegner-LK geht die Spieler nichts an, eigene Leute schon
         lkCurrent: c.type === 'player' ? c.lkCurrent : null,
-        lkMax: c.type === 'player' ? c.lkMax : null
+        lkMax: c.type === 'player' ? c.lkMax : null,
+        // Zustände sieht die ganze Runde (Vergiftet, Brennt, Liegend …)
+        zustaende: (c.zustaende || []).map(z => ({ text: z.text, runden: z.runden }))
     })) : [];
 
     broadcastToPlayers({
@@ -519,6 +521,13 @@ function renderGmDashboard() {
                     ? '<div class="hint" style="color:var(--patzer);margin-top:0.2rem"><strong>☠ Gestorben</strong></div>'
                     : (p.lkCurrent <= (p.bewusstlosAb || 0)
                         ? '<div class="hint" style="color:var(--fail);margin-top:0.2rem"><strong>Bewusstlos!</strong></div>' : '')}
+                    ${(() => {
+                        const kampf = (typeof combatants !== 'undefined') ? combatants.find(c => c.peerId === peerId) : null;
+                        const zl = kampf && kampf.zustaende || [];
+                        return zl.length
+                            ? `<div class="combat-zustaende" style="margin-top:0.35rem">${zl.map(z => `<span class="zustand-chip mini">${escapeHtml(z.text)}${z.runden != null ? `<b>${z.runden}</b>` : ''}</span>`).join('')}</div>`
+                            : '';
+                    })()}
                 </div>
 
                 <div class="gm-stat-row">
@@ -1367,6 +1376,8 @@ function renderGruppe() {
 
     if (kampfStand.aktiv) {
         const dran = kampfStand.reihenfolge.find(e => e.amZug);
+        const chips = zl => (zl || []).map(z =>
+            `<span class="zustand-chip mini">${escapeHtml(z.text)}${z.runden != null ? `<b>${z.runden}</b>` : ''}</span>`).join('');
         const reihe = kampfStand.reihenfolge.map(e => {
             const klassen = ['kampf-eintrag'];
             if (e.amZug) klassen.push('am-zug');
@@ -1375,8 +1386,13 @@ function renderGruppe() {
                 ? ` <span class="hint">${e.lkCurrent}/${e.lkMax}</span>` : '';
             // Freund/Feind auf einen Blick — die Initiative-Reihenfolge bleibt gemischt
             const symbol = e.istSpieler ? '🛡️' : '👹';
-            return `<div class="${klassen.join(' ')}">${e.amZug ? '▶ ' : ''}${symbol} ${escapeHtml(e.name)}${lk}</div>`;
+            const zst = (e.zustaende && e.zustaende.length) ? ` ${chips(e.zustaende)}` : '';
+            return `<div class="${klassen.join(' ')}">${e.amZug ? '▶ ' : ''}${symbol} ${escapeHtml(e.name)}${lk}${zst}</div>`;
         }).join('');
+
+        const meine = (kampfStand.reihenfolge.find(e => e.name === characterName()) || {}).zustaende || [];
+        const meineZeile = meine.length
+            ? `<div class="kampf-eigene-zustaende">Du bist: ${chips(meine)}</div>` : '';
 
         kampfBox.innerHTML = `
             <div class="kampf-kopf ${kampfStand.amZug ? 'ich-dran' : ''}">
@@ -1384,6 +1400,7 @@ function renderGruppe() {
                 ${kampfStand.amZug
                     ? '<div class="kampf-dran">Du bist am Zug!</div>'
                     : `<div class="hint">Am Zug: ${dran ? escapeHtml(dran.name) : '—'}</div>`}
+                ${meineZeile}
             </div>
             <div class="kampf-reihenfolge">${reihe}</div>`;
     } else {

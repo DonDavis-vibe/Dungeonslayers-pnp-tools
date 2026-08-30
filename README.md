@@ -445,6 +445,10 @@ frühere Sitzung wiederherzustellen.
 - **Rundenzähler**, der automatisch an alle Spieler synchronisiert wird
 - **Abwartehandlung** per Klick: +2 Initiative je Runde ohne Aktion (höchstens +10), die
   Reihenfolge sortiert sich live um; sobald der Charakter handelt, verfällt der Bonus
+- **Zustände** (Vergiftet, Brennt, Liegend …) als Freitext-Marker an Gegnern *und* Helden,
+  optional mit Rundendauer, die beim Rundenwechsel runterzählt und automatisch verfällt. Rein
+  narrativ — der Bogen zieht daraus keine Werte ab. Jede Änderung landet im SL-Log **und** in den
+  Logbüchern aller Spieler; eigene Zustände sieht der Held oben in seinem Kampfkasten
 - **Bestiarium mit 78 Kreaturen** aus dem Regelwerk — durchsuchbar, nach Gegnerhärte sortiert,
   per Klick direkt in die Initiative-Reihenfolge. Der Knopf **„+ Karte"** setzt die Kreatur in
   einem Zug in den Kampf *und* als Figur auf die Karte, in der Größe ihrer Kategorie.
