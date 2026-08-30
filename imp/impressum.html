@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, follow">
+<title>Impressum &amp; Datenschutz — Slayer-Arsenal</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%2314100c'/%3E%3Cpath d='M16 3 29 10.5v11L16 29 3 21.5v-11z' fill='none' stroke='%23d4a24c' stroke-width='2' stroke-linejoin='round'/%3E%3Cpath d='M16 3 16 29M3 10.5 29 21.5M29 10.5 3 21.5' stroke='%23d4a24c' stroke-width='1' opacity='.45'/%3E%3Ctext x='16' y='20' font-family='Georgia,serif' font-size='11' font-weight='bold' fill='%23f0c069' text-anchor='middle'%3E20%3C/text%3E%3C/svg%3E">
+<style>
+    /*
+        Eigenständige Impressums-/Datenschutz-Seite ohne Abhängigkeit zu
+        style.css. Struktur aus dem Schwesterprojekt "How to be a Hero"
+        übernommen, Farben an die Palette des Slayer-Arsenals angeglichen.
+
+        Die Datenschutz-Abschnitte 3–8 beschreiben den TATSÄCHLICHEN
+        technischen Aufbau dieses Tools (welche CDNs, welche localStorage-
+        Schlüssel …). Ändert sich die Technik, muss dieser Text angepasst
+        werden.
+    */
+    :root {
+        --bg: #14100c;
+        --panel: #211a12;
+        --border: rgba(180, 140, 80, 0.28);
+        --text: #ede3d4;
+        --text-muted: #a89880;
+        --accent: #d4a24c;
+    }
+    * { box-sizing: border-box; }
+    body {
+        margin: 0;
+        min-height: 100vh;
+        background: var(--bg);
+        background-image:
+            radial-gradient(ellipse at 16% 4%, rgba(150, 95, 35, 0.16), transparent 55%),
+            radial-gradient(ellipse at 88% 100%, rgba(90, 45, 20, 0.2), transparent 55%);
+        color: var(--text);
+        font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        line-height: 1.65;
+        padding: 2.5rem 1.25rem 4rem;
+    }
+    .wrap { max-width: 720px; margin: 0 auto; }
+    .back-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        color: var(--text-muted);
+        text-decoration: none;
+        font-size: 0.9rem;
+        margin-bottom: 2rem;
+    }
+    .back-link:hover { color: var(--accent); }
+    h1 {
+        font-family: 'Georgia', 'Times New Roman', serif;
+        font-size: 1.8rem;
+        margin: 0 0 0.5rem;
+        color: var(--accent);
+    }
+    .subtitle { color: var(--text-muted); font-size: 0.9rem; margin: 0 0 2rem; }
+    h2 {
+        font-family: 'Georgia', 'Times New Roman', serif;
+        font-size: 1.15rem;
+        color: var(--accent);
+        margin: 2.5rem 0 0.75rem;
+        padding-bottom: 0.4rem;
+        border-bottom: 1px solid var(--border);
+        scroll-margin-top: 1.5rem;
+    }
+    h3 {
+        font-size: 0.95rem;
+        color: var(--accent);
+        margin: 1.25rem 0 0.4rem;
+    }
+    p, li { margin: 0 0 0.6rem; }
+    ul { padding-left: 1.2rem; }
+    a { color: var(--accent); }
+    code {
+        background: rgba(255, 244, 224, 0.08);
+        padding: 0.1rem 0.4rem;
+        border-radius: 4px;
+        font-size: 0.85em;
+    }
+    .box {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 1.25rem 1.5rem;
+        margin: 1rem 0;
+    }
+    .muted { color: var(--text-muted); font-size: 0.9rem; }
+    footer { margin-top: 2.5rem; font-size: 0.8rem; color: var(--text-muted); }
+</style>
+</head>
+<body>
+    <div class="wrap">
+        <a class="back-link" href="../index.html">&larr; Zurück zum Tool</a>
+
+        <h1>Impressum &amp; Datenschutz</h1>
+        <p class="subtitle">Slayer-Arsenal · Stand: August 2026</p>
+
+        <h2 id="impressum">Impressum</h2>
+        <div class="box">
+            <p><strong>[Name entfernt]</strong><br>
+            [Anschrift entfernt]<br>
+            [Ort entfernt]<br>
+            Deutschland</p>
+
+            <h3>Kontakt</h3>
+            <p>Telefon: [Telefon entfernt]<br>
+            E-Mail: <a href="[E-Mail entfernt]</a></p>
+        </div>
+        <p class="muted">Angaben gemäß § 5 Digitale-Dienste-Gesetz (DDG).</p>
+
+        <h2 id="datenschutz">Datenschutzerklärung</h2>
+
+        <h3>1. Verantwortlicher</h3>
+        <p>Verantwortlicher im Sinne der DSGVO ist die im Impressum genannte Person ([Name entfernt], Anschrift und Kontakt siehe oben).</p>
+
+        <h3>2. Grundsätzliches</h3>
+        <p>Das Slayer-Arsenal läuft vollständig im Browser (clientseitig). Es gibt keinen eigenen Server, der Charakterdaten, Würfelergebnisse oder Notizen empfängt, speichert oder auswertet. Die Seite wird kostenlos über GitHub Pages ausgeliefert. Es werden keine Analyse- oder Tracking-Tools eingesetzt, keine Werbung eingebunden und keine Cookies zu Analyse- oder Marketingzwecken gesetzt.</p>
+
+        <h3>3. Hosting (GitHub Pages)</h3>
+        <p>Diese Seite wird über GitHub Pages ausgeliefert, einem Dienst der GitHub, Inc. / GitHub B.V. Beim Aufruf verarbeitet GitHub als Hosting-Anbieter automatisch technische Zugriffsdaten (u.a. IP-Adresse, Datum und Uhrzeit des Zugriffs, angeforderte Datei, verwendeter Browser) in Server-Logs. Dies dient dem technischen Betrieb und der Absicherung der Auslieferung (Art. 6 Abs. 1 lit. f DSGVO, berechtigtes Interesse an einem funktionierenden und sicheren Betrieb). Näheres regelt die <a href="https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement" target="_blank" rel="noopener">Datenschutzerklärung von GitHub</a>.</p>
+
+        <h3>4. Externe Ressourcen</h3>
+        <p>Einige Inhalte werden direkt von externen Anbietern nachgeladen. Dabei erfährt der jeweilige Anbieter zwangsläufig die IP-Adresse des aufrufenden Geräts, da der Browser die Anfrage direkt an ihn stellt (Art. 6 Abs. 1 lit. f DSGVO, berechtigtes Interesse an technisch funktionierender Darstellung).</p>
+        <ul>
+            <li><strong>Fanwerk-Hinweisbild</strong> von <code>immersieg.de</code> — ein kleines Banner im Fußbereich, das auf die Fanwerk-Richtlinien von Dungeonslayers verweist. Wird bei jedem Seitenaufruf geladen.</li>
+            <li><strong>PeerJS</strong> über <code>unpkg.com</code> — die Programmbibliothek für die Multiplayer-Funktion. Sie wird <em>nur</em> nachgeladen, wenn das Multiplayer-Menü tatsächlich geöffnet wird.</li>
+            <li><strong>Soundboard des Spielleiters:</strong> Die kurzen Effekte liegen im Tool selbst. Die längeren Kulissen- und Musikstücke werden — nur wenn die Spielleitung sie abspielt — von <code>dondavis-vibe.github.io</code> nachgeladen (ebenfalls GitHub Pages, siehe Ziffer 3).</li>
+        </ul>
+        <p>Es werden <strong>keine</strong> externen Schriftarten (z.B. Google Fonts), Icon-Dienste oder Analyse-Skripte geladen.</p>
+
+        <h3>5. Echtzeit-Multiplayer (WebRTC)</h3>
+        <p>Die Multiplayer-Funktion verbindet Spielleitung und Spieler:innen direkt miteinander (Peer-to-Peer), ohne dass Charakterdaten, Würfelwürfe oder Notizen über einen Server des Betreibers laufen. Für den technisch notwendigen Verbindungsaufbau kommen zum Einsatz:</p>
+        <ul>
+            <li><strong>Signalisierungsserver von PeerJS</strong> — vermittelt kurzzeitig den Erstkontakt zwischen den Geräten und sieht dabei deren IP-Adressen.</li>
+            <li><strong>STUN-Server von Google</strong> (<code>stun.l.google.com</code> u.a.) — helfen den Geräten, sich gegenseitig zu finden, und sehen dabei ebenfalls die IP-Adressen.</li>
+            <li><strong>Optionaler eigener TURN-Server</strong> — falls die Spielleitung im Menü selbst einen TURN-Server hinterlegt, läuft die Verbindung darüber; das liegt dann in der Verantwortung der Person, die diesen Server betreibt.</li>
+        </ul>
+        <p>Nach dem Verbindungsaufbau werden Charakterdaten, Würfelergebnisse, Notizen, Kartenbilder, Handouts und — falls von der Spielleitung genutzt — eigene Sound-Dateien direkt zwischen den beteiligten Browsern ausgetauscht (Art. 6 Abs. 1 lit. a DSGVO — die Teilnahme setzt die aktive Eingabe eines Raum-Codes voraus und ist damit eine bewusste Einwilligung in diese Verbindung). Der Betreiber dieses Tools erhält, sieht oder speichert diese Daten zu keinem Zeitpunkt.</p>
+
+        <h3>6. Discord-Anbindung (optional)</h3>
+        <p>Falls in den Verbindungseinstellungen eine eigene Discord-Webhook-URL eingetragen und die Synchronisierung aktiviert wird, sendet der Browser Würfelergebnisse, Charakternamen und Kampf-Ereignisse direkt an Discord. Diese Funktion ist standardmäßig deaktiviert und wird ausschließlich durch aktives Eintragen der URL und Bestätigen genutzt (Art. 6 Abs. 1 lit. a DSGVO, Einwilligung). Es gilt zusätzlich die <a href="https://discord.com/privacy" target="_blank" rel="noopener">Datenschutzerklärung von Discord Inc.</a> Die Webhook-URL wird nur lokal im Browser gespeichert (siehe Ziffer 7) und nicht in geteilte Charakterdateien geschrieben.</p>
+
+        <h3>7. Lokale Speicherung im Browser</h3>
+        <p>Für einzelne Funktionen speichert das Tool Einstellungen und Zwischenstände lokal im Browser (Local Storage, Session Storage, IndexedDB). Diese Daten verlassen das eigene Gerät nicht und werden nicht an den Betreiber übertragen (Art. 6 Abs. 1 lit. f DSGVO bzw. § 25 Abs. 2 TDDDG, technisch notwendig für die jeweils aktiv genutzte Funktion):</p>
+        <ul>
+            <li>der eigene Charakterbogen (Name, Werte, Talente, Zauber, Inventar, Portraitbild), damit er beim nächsten Aufruf wieder da ist</li>
+            <li>eingestellte Hausregeln der Runde</li>
+            <li>eigene Lautstärke- und Stummschalt-Einstellung</li>
+            <li>ob das Begrüßungsfenster schon einmal angezeigt wurde</li>
+            <li>ob das Karten-Panel ein- oder ausgeklappt ist</li>
+            <li>eine optional hinterlegte eigene Discord-Webhook-URL</li>
+            <li>ein optional hinterlegter eigener TURN-Server</li>
+            <li>Rolle und Raum-Code, um einen versehentlichen Reload während einer laufenden Sitzung abzufedern</li>
+        </ul>
+        <p>Zusätzlich <strong>nur auf dem Gerät der Spielleitung</strong>:</p>
+        <ul>
+            <li>Kampagnen-Notizen, geheime Notizen je Spieler:in und die Spielerfarben</li>
+            <li>ein Sicherungsstand der laufenden Sitzung (Kampf-Tracker, Notizen, Kartenstand) für den Fall eines Reloads</li>
+            <li>in IndexedDB: das hochgeladene Kartenbild sowie optional hochgeladene eigene Sound-Dateien</li>
+        </ul>
+        <p>Alle diese Daten lassen sich jederzeit über die Browser-Einstellungen („Website-Daten löschen" o.ä.) entfernen.</p>
+
+        <h3>8. Charakterdaten</h3>
+        <p>Der eigene Charakterbogen wird laufend automatisch im Browser gespeichert (siehe Ziffer 7) und bleibt auf dem eigenen Gerät. Über <em>„💾 Speichern"</em> lässt sich zusätzlich eine JSON-Datei erzeugen — diese landet dann im Download-Ordner des eigenen Geräts, nicht beim Betreiber. Eine Übertragung an den Betreiber findet zu keinem Zeitpunkt statt; eine Weitergabe an andere Spieler:innen erfolgt nur über die Multiplayer-Verbindung nach Ziffer 5.</p>
+
+        <h3>9. Rechte der betroffenen Person</h3>
+        <p>Soweit personenbezogene Daten verarbeitet werden, stehen jeder betroffenen Person die folgenden Rechte zu:</p>
+        <ul>
+            <li>Auskunft über die verarbeiteten Daten (Art. 15 DSGVO)</li>
+            <li>Berichtigung unrichtiger Daten (Art. 16 DSGVO)</li>
+            <li>Löschung (Art. 17 DSGVO)</li>
+            <li>Einschränkung der Verarbeitung (Art. 18 DSGVO)</li>
+            <li>Datenübertragbarkeit (Art. 20 DSGVO)</li>
+            <li>Widerspruch gegen die Verarbeitung (Art. 21 DSGVO)</li>
+        </ul>
+        <p>Wende dich dafür an die im Impressum genannte Kontaktadresse.</p>
+
+        <h3>10. Beschwerderecht</h3>
+        <p>Unabhängig davon besteht ein Beschwerderecht bei einer Datenschutz-Aufsichtsbehörde, insbesondere in dem EU-Mitgliedstaat des eigenen Wohnsitzes. Für den Verantwortlichen zuständig ist die <a href="https://www.ldi.nrw.de/" target="_blank" rel="noopener">Landesbeauftragte für Datenschutz und Informationsfreiheit Nordrhein-Westfalen (LDI NRW)</a>.</p>
+
+        <footer>
+            <p>Diese Erklärung beschreibt den tatsächlichen technischen Aufbau dieses Tools zum oben genannten Stand. Ändert sich die eingesetzte Technik, wird sie entsprechend angepasst.</p>
+        </footer>
+    </div>
+</body>
+</html>

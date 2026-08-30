@@ -524,6 +524,7 @@ Im Ordner [`beispiele/`](beispiele/) liegen zwei fertige Helden zum Ausprobieren
 | `multiplayer.js` | WebRTC-Verbindung und SL-Dashboard |
 | `discord.js` | Optionale Discord-Webhook-Anbindung |
 | `hilfe.js` | Hilfetexte hinter den „?"-Symbolen und die Kurzanleitung |
+| `imp/impressum.html` | Impressum (§ 5 DDG) und Datenschutzerklärung auf einer eigenständigen Seite, aus dem Footer verlinkt — ohne Abhängigkeit zu `style.css`. Die Datenschutz-Abschnitte beschreiben den tatsächlichen Technik-Stack (CDNs, localStorage-Schlüssel) und müssen bei Änderungen mitgezogen werden |
 | `img/titelbild.jpg` | Gemaltes Kopfbild (Spieleransicht als Band, im Dashboard hinter der Leiste); zugleich Vorschaubild beim Teilen (og:image) |
 | `regeln/` | Die offiziellen PDFs plus aufbereitete Regel-Referenzen |
 | `beispiele/` | Fertige Charaktere als JSON |
