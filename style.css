@@ -47,6 +47,16 @@ h1, h2, h3, h4 { font-family: 'Georgia', 'Times New Roman', serif; font-weight: 
 
 ::selection { background: rgba(212, 162, 76, 0.35); color: #fff8ea; }
 
+/* Wer Bewegung reduziert haben will, bekommt keine Animationen */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
 /* Dunkle, schmale Scrollbalken mit Goldakzent */
 * { scrollbar-width: thin; scrollbar-color: rgba(180, 140, 80, 0.45) transparent; }
 ::-webkit-scrollbar { width: 10px; height: 10px; }
@@ -134,7 +144,7 @@ select:focus {
     background:
         linear-gradient(0deg, rgba(15, 12, 9, 0.93) 0%, rgba(15, 12, 9, 0.30) 42%, rgba(15, 12, 9, 0.42) 72%, rgba(15, 12, 9, 0.80) 100%),
         linear-gradient(90deg, rgba(15, 12, 9, 0.5) 0%, rgba(15, 12, 9, 0.1) 45%, rgba(15, 12, 9, 0) 75%),
-        url('img/titelbild.jpg?v=20260830d') 25% 70% / cover no-repeat,
+        url('img/titelbild.jpg?v=20260830f') 25% 70% / cover no-repeat,
         var(--bg-alt);
     border-bottom: 1px solid var(--panel-border-strong);
 }
@@ -173,7 +183,7 @@ select:focus {
 #gm-dashboard .topbar {
     background:
         linear-gradient(180deg, rgba(20, 16, 11, 0.82), rgba(16, 13, 9, 0.92)),
-        url('img/titelbild.jpg?v=20260830d') center 32% / cover no-repeat,
+        url('img/titelbild.jpg?v=20260830f') center 32% / cover no-repeat,
         var(--bg-alt);
 }
 .topbar h1 {
@@ -441,6 +451,59 @@ select:focus {
     0% { transform: scale(1.04); filter: brightness(1.5); }
     100% { transform: scale(1); filter: brightness(1); }
 }
+
+/* --- Der Würfel "rollt" ------------------------------------------------ */
+/* Ein hellerer W20 dreht sich hinter der Zahl, solange gewürfelt wird. */
+.dice-display::before {
+    content: "";
+    position: absolute;
+    left: 50%; top: 42%;
+    width: 120px; height: 120px;
+    margin: -60px 0 0 -60px;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cg fill='none' stroke='%23f0c069' stroke-opacity='0.55' stroke-width='2.5' stroke-linejoin='round'%3E%3Cpath d='M50 6 89 28v44L50 94 11 72V28z'/%3E%3Cpath d='M50 6V94M11 28 89 72M89 28 11 72'/%3E%3Cpath d='M50 6 11 72 89 72z'/%3E%3C/g%3E%3C/svg%3E") center / contain no-repeat;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+}
+.dice-display.is-rolling {
+    border-color: var(--accent);
+    box-shadow: var(--inset-deep), 0 0 26px rgba(240, 192, 105, 0.28);
+    animation: dice-schuettel 0.28s ease-in-out infinite;
+}
+.dice-display.is-rolling::before {
+    opacity: 0.75;
+    animation: dice-drehen 0.5s linear infinite;
+}
+.dice-display.is-rolling .dice-result-number {
+    color: var(--accent);
+    opacity: 0.65;
+    filter: blur(1.2px);
+    animation: dice-tumble 0.13s linear infinite;
+}
+@keyframes dice-schuettel {
+    0%, 100% { transform: translateX(0) rotate(0); }
+    25% { transform: translateX(-2px) rotate(-0.5deg); }
+    75% { transform: translateX(2px) rotate(0.5deg); }
+}
+@keyframes dice-drehen {
+    from { transform: rotate(0) scale(0.9); }
+    to { transform: rotate(360deg) scale(1.06); }
+}
+@keyframes dice-tumble {
+    0% { transform: translateY(0) rotate(-7deg) scale(0.95); }
+    50% { transform: translateY(-4px) rotate(6deg) scale(1.04); }
+    100% { transform: translateY(0) rotate(-7deg) scale(0.95); }
+}
+/* Aufschlag: die Zahl "landet" federnd */
+.dice-display.landed .dice-result-number {
+    animation: dice-aufschlag 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes dice-aufschlag {
+    0% { transform: scale(0.4) rotate(-12deg); opacity: 0.2; }
+    55% { transform: scale(1.22) rotate(4deg); opacity: 1; }
+    100% { transform: scale(1) rotate(0); opacity: 1; }
+}
+
 .status-erfolg { color: var(--success); }
 .status-fehlschlag { color: var(--fail); }
 .status-immersieg { color: var(--crit); }

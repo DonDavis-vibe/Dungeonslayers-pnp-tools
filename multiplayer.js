@@ -744,22 +744,37 @@ function rollGmBeliebigeWuerfel() {
     const w = wuerfelFormel(feld.value);
     if (!w.ok) { feld.title = w.fehler; return; }
     const detail = w.wuerfe.length > 1 ? ` (${w.wuerfe.join(' + ')})` : '';
-    document.getElementById('gm-dice-number').textContent = w.summe;
     document.getElementById('gm-dice-label').textContent = w.formel;
     document.getElementById('gm-dice-status').textContent = '';
-    document.getElementById('gm-dice-detail').textContent = detail.trim();
-    document.getElementById('gm-dice-display').className = 'dice-display';
+    document.getElementById('gm-dice-detail').textContent = '';
+    gmWuerfelAnimieren(w.summe, () => {
+        document.getElementById('gm-dice-detail').textContent = detail.trim();
+    });
     verteileSlWurf(`<strong>${w.formel}</strong> = <strong>${w.summe}</strong>${detail}`, 'neutral', null);
 }
 
 function rollGmPlainD20() {
     const die = d20();
-    document.getElementById('gm-dice-number').textContent = die;
     document.getElementById('gm-dice-label').textContent = 'Blanker 1W20';
     document.getElementById('gm-dice-status').textContent = '';
     document.getElementById('gm-dice-detail').textContent = '';
-    document.getElementById('gm-dice-display').className = 'dice-display';
+    gmWuerfelAnimieren(die);
     verteileSlWurf(`Blanker 1W20: <strong>${die}</strong>`, 'neutral');
+}
+
+// Kleine Hülle um wuerfelRollen() für den SL-Würfelkasten (ohne Wertungsklasse).
+function gmWuerfelAnimieren(wert, onLand) {
+    const display = document.getElementById('gm-dice-display');
+    const num = document.getElementById('gm-dice-number');
+    if (typeof wuerfelRollen === 'function') {
+        wuerfelRollen(display, num, wert, () => {
+            display.className = 'dice-display landed';
+            if (onLand) onLand();
+        });
+    } else {
+        num.textContent = wert;
+        if (onLand) onLand();
+    }
 }
 
 // --- Spieler (Client) -------------------------------------------------------

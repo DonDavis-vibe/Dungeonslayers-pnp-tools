@@ -191,7 +191,9 @@ Kein Freitextfeld, sondern eine echte Auswahl mit Regelprüfung:
 ### 🎲 Die Probenmechanik
 Vollständig nach Regelwerk S.38–40 umgesetzt:
 
-- **1W20 unterwürfeln** gegen den Probenwert. Wurf ≤ PW = Erfolg.
+- **1W20 unterwürfeln** gegen den Probenwert. Wurf ≤ PW = Erfolg. Die Würfelanzeige *rollt*
+  kurz — durchlaufende Zahlen, ein rotierender W20 im Hintergrund, dann ein federnder Aufschlag;
+  Wertung und Rahmen decken sich erst mit dem Landen auf (respektiert `prefers-reduced-motion`).
 - **Immersieg** bei natürlicher 1 — immer Erfolg, zählt als bestmögliches Ergebnis (voller PW).
 - **Patzer** bei natürlicher 20 — immer Fehlschlag, im Kampf mit der jeweiligen Zusatzfolge
   (Waffe fällt, Zauber springt heraus, Charakter stürzt).

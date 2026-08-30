@@ -1162,21 +1162,68 @@ function wireCombatModifiers() {
     }
 }
 
+// --- Würfelanimation -----------------------------------------------------
+//
+// Der Würfel "rollt": kurzes Durchlaufen von Zufallszahlen mit leichter
+// Unschärfe, dann landet er mit einem federnden Aufschlag. Erst danach ruft
+// onLand() die Wertung und den Rahmen auf — so wird das Ergebnis wirklich
+// "aufgedeckt", statt einfach umzuspringen. prefers-reduced-motion überspringt
+// die Animation komplett.
+const _wuerfelTimer = {};
+
+function wuerfelRollen(display, numberEl, finalValue, onLand) {
+    const key = numberEl.id || 'w';
+    if (_wuerfelTimer[key]) { clearInterval(_wuerfelTimer[key]); _wuerfelTimer[key] = null; }
+
+    // Alte Wertungsklassen weg, damit der Rahmen während des Rollens neutral ist
+    display.classList.remove('erfolg', 'fehlschlag', 'immersieg', 'patzer', 'landed', 'neutral');
+
+    const reduziert = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduziert) {
+        numberEl.textContent = finalValue;
+        if (onLand) onLand();
+        return;
+    }
+
+    display.classList.add('is-rolling');
+    const start = performance.now();
+    const dauer = 520;
+    _wuerfelTimer[key] = setInterval(() => {
+        if (performance.now() - start >= dauer) {
+            clearInterval(_wuerfelTimer[key]);
+            _wuerfelTimer[key] = null;
+            numberEl.textContent = finalValue;
+            display.classList.remove('is-rolling');
+            // Aufschlag-Keyframe sicher neu auslösen
+            display.classList.remove('landed');
+            void display.offsetWidth;
+            display.classList.add('landed');
+            if (onLand) onLand();
+        } else {
+            numberEl.textContent = Math.floor(Math.random() * 20) + 1;
+        }
+    }, 55);
+}
+
 function showProbeResult(result, targetPrefix = '', modDetail = '') {
     const display = document.getElementById(targetPrefix + 'dice-display');
+    const numberEl = document.getElementById(targetPrefix + 'dice-number');
+    const statusEl = document.getElementById(targetPrefix + 'dice-status');
+    const detailEl = document.getElementById(targetPrefix + 'dice-detail');
     const primary = result.rolls.length ? result.rolls[0].die : '—';
 
     // Ein neuer Wurf beim Spieler löscht eine noch offene Ziel-Auswahl;
     // rollKampfwert() blendet sie danach ggf. für einen Treffer wieder ein.
     if (!targetPrefix && typeof versteckeAngriffsZiel === 'function') versteckeAngriffsZiel();
 
-    document.getElementById(targetPrefix + 'dice-number').textContent = primary;
     document.getElementById(targetPrefix + 'dice-label').textContent =
         `${result.label} — PW ${result.pw}${result.modifier ? ` (${result.modifier > 0 ? '+' : ''}${result.modifier})` : ''}`;
 
-    const statusEl = document.getElementById(targetPrefix + 'dice-status');
-    statusEl.textContent = DS4_STATUS_TEXT[result.status];
-    statusEl.className = 'dice-result-status status-' + result.status;
+    // Wertung und Detail erst nach dem Rollen einblenden — sonst verrät die
+    // Zeile "Ergebnis: 17" den Wurf, bevor der Würfel liegt.
+    statusEl.textContent = '';
+    statusEl.className = 'dice-result-status';
+    detailEl.innerHTML = '';
 
     const detail = [];
     if (result.rolls.length > 1) {
@@ -1185,11 +1232,13 @@ function showProbeResult(result, targetPrefix = '', modDetail = '') {
     if (result.success) detail.push(`Ergebnis: <strong>${result.total}</strong>`);
     if (result.slayendZusatz) detail.push(`⚡ ${escapeHtml(slayendText(result))}`);
     if (modDetail) detail.push(escapeHtml(modDetail));
-    document.getElementById(targetPrefix + 'dice-detail').innerHTML = detail.join(' · ');
 
-    display.className = 'dice-display ' + result.status;
-    display.style.transform = 'scale(0.96)';
-    setTimeout(() => { display.style.transform = 'scale(1)'; }, 120);
+    wuerfelRollen(display, numberEl, primary, () => {
+        statusEl.textContent = DS4_STATUS_TEXT[result.status];
+        statusEl.className = 'dice-result-status status-' + result.status;
+        detailEl.innerHTML = detail.join(' · ');
+        display.className = 'dice-display landed ' + result.status;
+    });
 }
 
 function logProbe(result, extra = '') {
@@ -1787,11 +1836,14 @@ function rollBeliebigeWuerfel() {
     if (bonus) modTeile.push(bonus > 0 ? `+${bonus}` : `${bonus}`);
     const modText = modTeile.join(' ');
 
-    document.getElementById('dice-number').textContent = summe;
     document.getElementById('dice-label').textContent = w.formel + (bonus ? (bonus > 0 ? ` +${bonus}` : ` ${bonus}`) : '');
     document.getElementById('dice-status').textContent = '';
-    document.getElementById('dice-detail').textContent = [detail, modText && `Mod ${modText}`].filter(Boolean).join(' · ');
-    document.getElementById('dice-display').className = 'dice-display';
+    const detailEl = document.getElementById('dice-detail');
+    detailEl.textContent = '';
+    wuerfelRollen(document.getElementById('dice-display'), document.getElementById('dice-number'), summe, () => {
+        detailEl.textContent = [detail, modText && `Mod ${modText}`].filter(Boolean).join(' · ');
+        document.getElementById('dice-display').className = 'dice-display landed';
+    });
 
     const msg = `<strong>${w.formel}</strong> = <strong>${summe}</strong>` +
         (detail ? ` (${detail})` : '') + (modText ? ` [${modText}]` : '');
