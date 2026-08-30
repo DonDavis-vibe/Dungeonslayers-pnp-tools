@@ -11,10 +11,13 @@
     <a href="https://dondavis-vibe.github.io/Dungeonslayers-pnp-tools/"><strong>🎲 Tool direkt öffnen</strong></a>
     &nbsp;·&nbsp;
     <a href="https://discord.gg/DPk8QRSZ5W"><strong>💬 Discord: Fragen &amp; Bug-Reports</strong></a>
+    &nbsp;·&nbsp;
+    <a href="https://ko-fi.com/don_davis"><strong>☕ Ko-fi</strong></a>
   </p>
 
   <p>
     <a href="https://discord.gg/DPk8QRSZ5W"><img alt="Discord" src="https://img.shields.io/badge/Discord-beitreten-5865F2.svg?logo=discord&logoColor=white"></a>
+    <a href="https://ko-fi.com/don_davis"><img alt="Ko-fi" src="https://img.shields.io/badge/Ko--fi-don__davis-FF5E5B.svg?logo=ko-fi&logoColor=white"></a>
     <a href="LICENSE"><img alt="Code: MIT" src="https://img.shields.io/badge/Code-MIT-yellow.svg"></a>
     <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.de"><img alt="Regeldaten: CC BY-NC-SA 4.0" src="https://img.shields.io/badge/Regeldaten-CC%20BY--NC--SA%204.0-blue.svg"></a>
     <img alt="Keine Abhängigkeiten" src="https://img.shields.io/badge/Abh%C3%A4ngigkeiten-keine-brightgreen.svg">
@@ -560,6 +563,9 @@ Wer keinen Code beisteuern möchte: Issues und Rückmeldungen sind genauso viel 
 
 **Anlaufstelle:** GitHub-Issues oder der **[Discord-Server](https://discord.gg/DPk8QRSZ5W)** — dort
 werden diese Pen-&-Paper-Tools entwickelt und getestet, und dort landen Bug-Reports am schnellsten.
+
+Wem das Tool am Tisch geholfen hat und wer die Entwicklung unterstützen mag:
+**[☕ Ko-fi](https://ko-fi.com/don_davis)**. Das Tool bleibt so oder so kostenlos und werbefrei.
 
 ### Wo was steckt
 
