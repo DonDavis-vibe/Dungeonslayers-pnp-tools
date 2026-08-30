@@ -387,14 +387,20 @@ function figurSetzenDialog() {
     });
 }
 
-// Setzt die Figur auf ein freies Feld nahe der Kartenmitte
+// Setzt die Figur auf ein freies Feld in der Mitte des sichtbaren Ausschnitts —
+// von dort aus spiralförmig nach außen, falls es dort schon eng ist.
 function figurSetzen(daten) {
-    let x = 1, y = 1;
+    const start = (karte && karte.sichtbaresZentrum) ? karte.sichtbaresZentrum() : { x: 1, y: 1 };
+    let x = start.x, y = start.y;
     const belegt = (px, py) => karte.figuren.some(f => Math.abs(f.x - px) < 0.9 && Math.abs(f.y - py) < 0.9);
-    suche: for (let ring = 0; ring < 12; ring++) {
-        for (let dy = 0; dy <= ring; dy++) {
-            for (let dx = 0; dx <= ring; dx++) {
-                if (!belegt(1 + dx, 1 + dy)) { x = 1 + dx; y = 1 + dy; break suche; }
+    if (belegt(x, y)) {
+        suche: for (let ring = 1; ring < 16; ring++) {
+            for (let dy = -ring; dy <= ring; dy++) {
+                for (let dx = -ring; dx <= ring; dx++) {
+                    if (Math.max(Math.abs(dx), Math.abs(dy)) !== ring) continue;
+                    const cx = start.x + dx, cy = start.y + dy;
+                    if (cx >= 1 && cy >= 1 && !belegt(cx, cy)) { x = cx; y = cy; break suche; }
+                }
             }
         }
     }
@@ -611,17 +617,32 @@ function figurenAusKampfUebernehmen() {
     if (typeof combatants === 'undefined') return;
     if (combatActive) syncPlayersIntoCombat();
 
-    let spalte = 1;
-    combatants.forEach((c, i) => {
+    // Noch nicht platzierte Teilnehmer als kleines Raster um die Mitte des
+    // sichtbaren Ausschnitts anordnen, statt in die Ecke zu stapeln.
+    const zentrum = (karte && karte.sichtbaresZentrum) ? karte.sichtbaresZentrum() : { x: 4, y: 4 };
+    const neue = combatants.filter(c => !karte.figuren.find(f => f.id === 'kampf:' + c.id));
+    const spalten = Math.max(1, Math.ceil(Math.sqrt(neue.length)));
+    const startX = Math.max(1, zentrum.x - Math.floor((spalten - 1) / 2));
+    const startY = Math.max(1, zentrum.y - Math.floor((Math.ceil(neue.length / spalten) - 1) / 2));
+    let neuIndex = 0;
+
+    combatants.forEach((c) => {
         const figurId = 'kampf:' + c.id;
         const vorhanden = karte.figuren.find(f => f.id === figurId);
+        let x, y;
+        if (vorhanden) {
+            x = vorhanden.x; y = vorhanden.y;
+        } else {
+            x = startX + (neuIndex % spalten);
+            y = startY + Math.floor(neuIndex / spalten);
+            neuIndex++;
+        }
         karte.addFigur({
             id: figurId,
             name: c.name,
             farbe: c.type === 'player' ? colorForPlayer(c.name) : '#a8342c',
             besitzer: c.type === 'player' ? 'spieler:' + c.name : 'sl',
-            x: vorhanden ? vorhanden.x : spalte,
-            y: vorhanden ? vorhanden.y : 1 + (i % 8),
+            x, y,
             groesse: 1
         });
 
@@ -630,7 +651,6 @@ function figurenAusKampfUebernehmen() {
             const spieler = connectedPlayers[c.peerId];
             if (spieler && spieler.portrait) karte.setFigurBild(figurId, spieler.portrait);
         }
-        if ((i + 1) % 8 === 0) spalte++;
     });
 
     verteileFigurenBilder();

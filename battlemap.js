@@ -822,6 +822,17 @@ const BattleMap = (() => {
             zeichnen();
         }
 
+        // Rasterfeld ungefähr in der Mitte des sichtbaren Ausschnitts. Neue
+        // Figuren landen dort, statt in der Ecke, wo der Spielleiter sie erst
+        // suchen und heranziehen müsste.
+        function sichtbaresZentrum() {
+            const feld = bildschirmZuFeld(canvas.clientWidth / 2, canvas.clientHeight / 2);
+            return {
+                x: Number.isFinite(feld.x) ? Math.max(1, Math.round(feld.x)) : 1,
+                y: Number.isFinite(feld.y) ? Math.max(1, Math.round(feld.y)) : 1
+            };
+        }
+
         // Spieler dürfen nur ihre eigene Figur bewegen; null = alles erlaubt
         function setBesitzer(kennung) { nurEigene = kennung || null; }
 
@@ -1023,7 +1034,7 @@ const BattleMap = (() => {
             rueckgaengig, kannRueckgaengig,
             setNebelDeckend, nebelAktiv, istNebelAktiv, nebelAllesZudecken, nebelAllesAufdecken,
             setNebelForm, getNebelForm, nebelFreigeben, nebelEntwurfVerwerfen, offeneNebelBereiche,
-            getState, applyState, einpassen, setBesitzer, zeichnen,
+            getState, applyState, einpassen, sichtbaresZentrum, setBesitzer, zeichnen,
             get figuren() { return zustand.figuren; },
             get raster() { return zustand.raster; },
             get bild() { return zustand.bild; }

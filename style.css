@@ -144,7 +144,7 @@ select:focus {
     background:
         linear-gradient(0deg, rgba(15, 12, 9, 0.93) 0%, rgba(15, 12, 9, 0.30) 42%, rgba(15, 12, 9, 0.42) 72%, rgba(15, 12, 9, 0.80) 100%),
         linear-gradient(90deg, rgba(15, 12, 9, 0.5) 0%, rgba(15, 12, 9, 0.1) 45%, rgba(15, 12, 9, 0) 75%),
-        url('img/titelbild.jpg?v=20260830f') 25% 70% / cover no-repeat,
+        url('img/titelbild.jpg?v=20260830g') 25% 70% / cover no-repeat,
         var(--bg-alt);
     border-bottom: 1px solid var(--panel-border-strong);
 }
@@ -183,7 +183,7 @@ select:focus {
 #gm-dashboard .topbar {
     background:
         linear-gradient(180deg, rgba(20, 16, 11, 0.82), rgba(16, 13, 9, 0.92)),
-        url('img/titelbild.jpg?v=20260830f') center 32% / cover no-repeat,
+        url('img/titelbild.jpg?v=20260830g') center 32% / cover no-repeat,
         var(--bg-alt);
 }
 .topbar h1 {
