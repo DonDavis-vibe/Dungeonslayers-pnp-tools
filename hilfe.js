@@ -266,13 +266,15 @@ const HILFE_THEMEN = {
                mit dem er auch gewirkt wird. Sprüche mit <em>formelhaftem</em> Zauberbonus (der vom
                Ziel abhängt) sind markiert — dort rechnet der Bogen bewusst mit 0, statt still
                etwas Falsches einzusetzen.</p>
-               <p>Mit dem Heldenklassen-Talent <em>Zauberroutine</em> (Erzmagier) erscheint zusätzlich
-               ein Knopf <strong>⚙ binden</strong> — bis zu so viele Zauber wie Talentränge lassen sich
-               damit an den Erzmagier binden, wie mit einem Zauberstab. Zu einem gebundenen Spruch
-               wechselst du <strong>ohne Aktion und ohne GEI+VE-Probe</strong>. Es bleibt trotzdem bei
-               einem vorbereiteten Zauber zur Zeit — der Zauberbonus zählt immer nur für den Spruch,
-               den du gerade wirkst. Die anderen gebundenen Sprüche stehen unter den Kampfwerten als
-               Erinnerung, welche ohne Wechselprobe bereit sind.</p>`
+               <p>Die Heldenklassen-Talente <em>Zauberroutine</em> (Erzmagier), <em>Stabbindung</em>
+               (Erzmagier) und <em>Zauberwaffe</em> (Kriegszauberer) blenden einen Knopf
+               <strong>⚙ binden</strong> ein — je Talentrang lässt sich ein Zauber binden, wie mit
+               einem Zauberstab (bei Stabbindung/Zauberwaffe, solange der Stab bzw. die Waffe
+               gehalten wird). Zu einem gebundenen Spruch wechselst du <strong>ohne Aktion und ohne
+               GEI+VE-Probe</strong>. Es bleibt trotzdem bei einem vorbereiteten Zauber zur Zeit —
+               der Zauberbonus zählt immer nur für den Spruch, den du gerade wirkst. Die übrigen
+               gebundenen Sprüche stehen unter den Kampfwerten als Erinnerung, welche ohne
+               Wechselprobe bereit sind.</p>`
     },
     'stufenaufstieg': {
         gruppe: 'bogen',

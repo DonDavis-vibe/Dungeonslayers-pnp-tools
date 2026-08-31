@@ -166,13 +166,13 @@ Kein Freitextfeld, sondern eine echte Auswahl mit Regelprüfung:
   der Meisterdieb für Schriftrollen freischaltet). *Waffenkenner*, *Handwerk*, *Instrument* und
   *Wissensgebiet* werden weiterhin je Gebiet einzeln erlernt.
 - **Zauberrelevante Talente** fließen ein: *Rüstzauberer* (ignoriert je Rang 2 Punkte
-  Panzerungsmalus beim Zaubern), *Stabbindung* und *Zauberwaffe* (je Rang +1 auf Zielzauber,
-  solange die gebundene Waffe geführt wird) sowie *Meister seiner Klasse* (Primärattribut der
-  Grundklasse +1, wirkt damit auf alle abgeleiteten Werte). *Zauberroutine* (Heldenklasse
-  Erzmagier) bindet je Talentrang einen Zauber, zu dem der Erzmagier **ohne Aktion und ohne
-  GEI+VE-Probe** wechseln darf — wie mit einem Zauberstab. Es bleibt trotzdem bei einem aktiven
-  Spruch: der Zauberbonus zählt immer nur für den gerade gewirkten Zauber (S.46), die gebundenen
-  Sprüche stehen unter den Kampfwerten nur als Erinnerung, welche ohne Wechselprobe bereit sind.
+  Panzerungsmalus beim Zaubern) sowie *Meister seiner Klasse* (Primärattribut der Grundklasse +1,
+  wirkt damit auf alle abgeleiteten Werte). *Zauberroutine* (Erzmagier), *Stabbindung* (Erzmagier)
+  und *Zauberwaffe* (Kriegszauberer) binden je Talentrang einen Zauber, zu dem **ohne Aktion und
+  ohne GEI+VE-Probe** gewechselt werden darf — wie mit einem Zauberstab (bei Stabbindung/Zauberwaffe,
+  solange Stab bzw. Waffe geführt werden). Es bleibt trotzdem bei einem aktiven Spruch: der
+  Zauberbonus zählt immer nur für den gerade gewirkten Zauber (S.46), die gebundenen Sprüche stehen
+  unter den Kampfwerten nur als Erinnerung, welche ohne Wechselprobe bereit sind.
 - **Zauberartgebundene Talente** ebenfalls: Dafür sind die Zaubersprüche nach Art ausgezeichnet
   (Heil- und Schutzzauber, Feuer, Blitz, Elementarschaden, Untote — dazu das schon vorhandene
   Merkmal *geistesbeeinflussend*). *Fürsorger*, *Feuermagier*, *Blitzmacher*, *Herr der Elemente*,

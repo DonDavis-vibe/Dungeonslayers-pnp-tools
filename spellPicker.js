@@ -73,8 +73,8 @@ function renderSpells() {
     const routineAnzahl = appData.spells.filter(s => s.routine).length;
     const kopf = `<div style="display:flex;gap:0.5rem;align-items:center;margin-bottom:0.7rem;flex-wrap:wrap">
         <span class="budget">Bekannte Zauber: <strong>${appData.spells.length}</strong></span>
-        ${routineMax ? `<span class="budget">Zauberroutine: <strong>${routineAnzahl}/${routineMax}</strong> gebunden</span>` : ''}
-        <span class="hint" style="margin-left:auto">Nur ein Zauber kann vorbereitet sein${routineMax ? ` — zu den ${routineMax} gebundenen Sprüchen wechselst du ohne Aktion und ohne Probe` : ''}</span>
+        ${routineMax ? `<span class="budget">Gebundene Zauber: <strong>${routineAnzahl}/${routineMax}</strong></span>` : ''}
+        <span class="hint" style="margin-left:auto">Nur ein Zauber kann vorbereitet sein${routineMax ? ` — zu den ${routineMax} gebundenen Sprüchen (Zauberroutine / Stabbindung / Zauberwaffe) wechselst du ohne Aktion und ohne Probe` : ''}</span>
     </div>`;
 
     if (!appData.spells.length) {
@@ -96,12 +96,12 @@ function renderSpells() {
             <div class="talent-entry-head">
                 <button class="btn btn-sm ${s.prepared ? 'btn-primary' : 'btn-ghost'}" data-prepare="${escapeHtml(s.name)}"
                         title="${s.routine
-                            ? 'Vorbereiteten Zauber setzen — als gebundener Zauberroutine-Spruch ohne Aktion und ohne GEI+VE-Probe'
+                            ? 'Vorbereiteten Zauber setzen — als gebundener Spruch ohne Aktion und ohne GEI+VE-Probe'
                             : 'Vorbereiteten Zauber setzen — Wechseln kostet im Kampf eine Aktion und eine GEI+VE-Probe'}">
                     ${s.prepared ? '★ vorbereitet' : '☆ vorbereiten'}
                 </button>
                 ${routineMax ? `<button class="btn btn-sm ${s.routine ? 'btn-primary' : 'btn-ghost'}" data-routine="${escapeHtml(s.name)}"
-                        title="Zauberroutine: an diesen Spruch binden — dann ohne Aktion und ohne Probe hierher wechseln. Beim Wirken zählt sein eigener ZB, er addiert sich nicht dauerhaft.">
+                        title="An diesen Spruch binden (Zauberroutine / Stabbindung / Zauberwaffe) — dann ohne Aktion und ohne Probe hierher wechseln. Beim Wirken zählt sein eigener ZB, er addiert sich nicht dauerhaft.">
                     ${s.routine ? '⚙ gebunden' : '⚙ binden'}
                 </button>` : ''}
                 <strong>${escapeHtml(s.name)}</strong>
@@ -143,7 +143,7 @@ function renderSpells() {
                 const max = typeof routineKapazitaet === 'function' ? routineKapazitaet() : 0;
                 const belegt = appData.spells.filter(s => s.routine).length;
                 if (belegt >= max) {
-                    alert(`Zauberroutine bindet höchstens ${max} Zauber${max === 1 ? '' : ' gleichzeitig'} — erst einen anderen lösen.`);
+                    alert(`Du kannst höchstens ${max} Zauber${max === 1 ? '' : ' gleichzeitig'} binden (Zauberroutine / Stabbindung / Zauberwaffe) — erst einen anderen lösen.`);
                     return;
                 }
             }

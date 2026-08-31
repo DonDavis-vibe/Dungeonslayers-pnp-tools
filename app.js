@@ -110,10 +110,15 @@ function preparedSpellZb() {
     return preparedSpellInfo().zb;
 }
 
-// Wie viele Zauber der Erzmagier mit dem Talent Zauberroutine zusätzlich
-// abrufbereit halten darf (1 je Talentrang).
+// Wie viele Zauber zusätzlich abrufbereit ("gebunden") gehalten werden dürfen:
+// 1 je Talentrang in Zauberroutine (Erzmagier), Stabbindung (Erzmagier) und
+// Zauberwaffe (Kriegszauberer). Alle drei binden im Regelwerk je Rang einen
+// Spruch, der "wie mit einem Zauberstab" ohne Wechselprobe bereitsteht —
+// bei Stabbindung/Zauberwaffe, solange der Stab bzw. die Waffe gehalten wird.
 function routineKapazitaet() {
-    return talentRang(appData.talents, 'Zauberroutine');
+    return talentRang(appData.talents, 'Zauberroutine')
+        + talentRang(appData.talents, 'Stabbindung')
+        + talentRang(appData.talents, 'Zauberwaffe');
 }
 
 // Zauberroutine (ERZ 16): pro Talentrang ein gebundener Zauber, zu dem der
@@ -384,13 +389,22 @@ function bindInputs() {
         el.addEventListener('input', () => {
             const value = el.type === 'number' ? (parseFloat(el.value) || 0) : el.value;
             setByPath(appData, path, value);
-            // Ändern sich EP oder Heldenklasse, verschiebt sich die Stufe —
-            // die Punkte müssen dann in beide Richtungen mitwandern.
-            if (path === 'ep' || path === 'heldenklasse') {
+            // Die Heldenklasse (Dropdown) verschiebt die Stufe sofort.
+            if (path === 'heldenklasse') {
                 if (stufenAbgleichen()) { refreshBoundInputs(); renderAll(); }
             }
             onDataChanged();
         });
+        // EP-Feld: die Stufen-/Punkte-Anpassung erst, wenn die Eingabe fertig ist
+        // (Verlassen des Feldes / Enter). Sonst rutscht der Charakter beim Tippen
+        // von "650" kurz über "6" und "65" und bekommt beim Wiederhochzählen Lern-
+        // und Talentpunkte gutgeschrieben, die längst ausgegeben sind (Forum, Aug 2026).
+        if (path === 'ep') {
+            el.addEventListener('change', () => {
+                if (stufenAbgleichen()) { refreshBoundInputs(); renderAll(); }
+                onDataChanged();
+            });
+        }
     });
 }
 
