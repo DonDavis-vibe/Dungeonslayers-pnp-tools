@@ -372,6 +372,12 @@ Nach Anhang B des Regelwerks gilt: **ein Feld = 1 Meter**.
 - **Wer mitten in der Runde beitritt**, bekommt den aktuellen Kartenstand nachgereicht – auch
   eine reine Rasterkarte ohne Hintergrundbild oder eine Karte, deren Bild nach einem Reload des
   Spielleiters noch fehlt.
+- **Mehrere Karten** hält der Spielleiter gleichzeitig — je Raum oder Stockwerk eine, jede mit
+  eigenem Bild, Figuren und Nebel. Ein Umschalten nimmt alle Spieler automatisch mit; ein reiner
+  Wechsel überträgt kein Bild neu. Teilt sich die Gruppe, weist die Leiste **👥 Wer sieht was**
+  jedem Spieler eine eigene Karte zu — die eine Hälfte sieht den Keller, die andere bleibt oben.
+  Auf ihrer eigenen Karte bewegen die Spieler frei; die Züge landen direkt im gespeicherten Stand
+  dieser Karte. Karten und Zuweisungen überstehen Reload und Sitzungsexport.
 
 ### ⚙️ Hausregeln
 Dungeonslayers lebt von Fanwerken und Hausregeln — deshalb sind die wichtigsten Stellschrauben

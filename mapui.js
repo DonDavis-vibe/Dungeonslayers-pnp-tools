@@ -15,6 +15,17 @@ let zuegeFrei = false;
 const BILD_STUECK = 16 * 1024;
 let bildEmpfang = {};
 
+// --- Mehrere Karten --------------------------------------------------------
+//
+// Der Spielleiter kann mehrere benannte Karten halten und umschalten. Nur EINE
+// ist "aktiv" und liegt in der Leinwand (`karte`); die übrigen leben als
+// gespeicherter Zustand in `karten`. Über `kartenZuweisung` bekommt optional
+// jeder Spieler eine eigene Karte — für den Fall, dass sich die Gruppe aufteilt.
+let karten = [];            // [{ id, name, zustand, bild, figurBilder }]
+let aktiveKarteId = null;
+let kartenZuweisung = {};   // { spielerName: kartenId }
+let peerBildSignatur = {};  // { peerId: "kartenId|bildLaenge" } — gegen unnötiges Nachschicken
+
 function karteVorhanden() {
     return typeof BattleMap !== 'undefined';
 }
@@ -38,6 +49,7 @@ function karteInitialisieren() {
         onZugVorschlag: (figur, felder) => sendeZugVorschlag(figur, felder)
     });
     wireKartenBedienung();
+    if (isGmMode) karteEintragSicherstellen();
 }
 
 function karteEinhaengen() {
@@ -60,7 +72,10 @@ function karteEinhaengen() {
     if (!isGmMode && ['malen', 'radieren', 'nebel-auf', 'nebel-zu'].includes(karte.getWerkzeug())) {
         karte.setWerkzeug('zeigen');
     }
+    if (isGmMode) karteEintragSicherstellen();
     renderKartenWerkzeuge();
+    renderKartenListe();
+    renderKartenZuweisung();
     // Die Leinwand kennt ihre Größe erst nach dem Umhängen
     setTimeout(() => karte.zeichnen(), 30);
 }
@@ -118,6 +133,317 @@ function eigeneFigurKennung() {
     return 'spieler:' + characterName();
 }
 
+// --- Kartenverwaltung (Spielleiter) --------------------------------------
+
+function aktiveKarte() { return karten.find(k => k.id === aktiveKarteId) || null; }
+function karteNachId(id) { return karten.find(k => k.id === id) || null; }
+
+// Mindestens eine Karte sicherstellen. Seed aus dem, was gerade in der Leinwand
+// liegt — greift nur beim allerersten Mal (der `karten.length`-Guard schützt
+// eine wiederhergestellte Sitzung vor dem Überschreiben).
+function karteEintragSicherstellen() {
+    if (!isGmMode || !karte || karten.length) return;
+    const id = 'karte:' + uid();
+    karten.push({
+        id, name: 'Karte 1',
+        zustand: karte.getState(),
+        bild: karteBildDatenUrl || null,
+        figurBilder: karte.getFigurBilder()
+    });
+    aktiveKarteId = id;
+}
+
+// Aktuellen Leinwandstand in den aktiven Eintrag zurückschreiben.
+function karteAktuellenStandSpeichern() {
+    if (!isGmMode || !karte) return;
+    karteEintragSicherstellen();
+    const k = aktiveKarte();
+    if (!k) return;
+    k.zustand = karte.getState();
+    k.bild = karteBildDatenUrl || null;
+    k.figurBilder = karte.getFigurBilder();
+}
+
+function karteWechseln(id) {
+    if (!isGmMode || !karte) return;
+    karteEintragSicherstellen();
+    const ziel = karteNachId(id);
+    if (!ziel) { renderKartenListe(); return; }
+    if (id === aktiveKarteId) { renderKartenListe(); return; }
+
+    // Offene Zugvorschläge auf der bisherigen Karte fallen lassen
+    karte.figuren.forEach(f => { f.geplantX = null; f.geplantY = null; });
+    renderZugVorschlaege();
+
+    karteAktuellenStandSpeichern();
+
+    aktiveKarteId = id;
+    karteBildDatenUrl = ziel.bild || null;
+    karte.applyState(ziel.zustand || {}, ziel.bild || null);
+    Object.entries(ziel.figurBilder || {}).forEach(([fid, url]) => karte.setFigurBild(fid, url));
+    setTimeout(() => karte.einpassen(), 60);
+
+    renderKartenListe();
+    renderKartenWerkzeuge();
+    renderNebelFreigabe();
+    renderKartenZuweisung();
+
+    verteileAlleSpielerKarten();
+
+    if (typeof sitzungSichern === 'function') sitzungSichern();
+    if (typeof addGmLog === 'function') addGmLog('Spielleiter', `hat zur Karte „${escapeHtml(ziel.name)}“ gewechselt.`, 'neutral');
+}
+
+function karteNeu() {
+    if (!isGmMode || !karte) return;
+    karteEintragSicherstellen();
+    const name = (prompt('Name der neuen Karte:', 'Karte ' + (karten.length + 1)) || '').trim();
+    if (!name) return;
+    const id = 'karte:' + uid();
+    karten.push({
+        id, name,
+        // leeres Raster-Objekt → die neue Karte erbt die aktuelle Rastereinstellung
+        zustand: { raster: {}, figuren: [], formen: [], nebel: { aktiv: false, aufgedeckt: [], entwurf: [] } },
+        bild: null, figurBilder: {}
+    });
+    karteWechseln(id);
+}
+
+function karteUmbenennen(id) {
+    const k = karteNachId(id) || aktiveKarte();
+    if (!k) return;
+    const name = (prompt('Karte umbenennen:', k.name) || '').trim();
+    if (!name || name === k.name) return;
+    k.name = name;
+    renderKartenListe();
+    renderKartenZuweisung();
+    if (typeof sitzungSichern === 'function') sitzungSichern();
+}
+
+function karteLoeschen(id) {
+    if (karten.length < 2) return;
+    const k = karteNachId(id) || aktiveKarte();
+    if (!k) return;
+    if (!confirm(`Karte „${k.name}“ wirklich löschen? Ihre Figuren und ihr Nebel gehen verloren.`)) return;
+
+    if (k.id === aktiveKarteId) {
+        const ersatz = karten.find(x => x.id !== k.id);
+        karteWechseln(ersatz.id);
+    }
+    karten = karten.filter(x => x.id !== k.id);
+    Object.keys(kartenZuweisung).forEach(name => {
+        if (kartenZuweisung[name] === k.id) delete kartenZuweisung[name];
+    });
+    if (typeof karteBildVerwerfen === 'function') karteBildVerwerfen(k.id);
+    renderKartenListe();
+    renderKartenZuweisung();
+    verteileAlleSpielerKarten();
+    if (typeof sitzungSichern === 'function') sitzungSichern();
+}
+
+// Kartenauswahl-Leiste — eigenes Element, weil #map-tools bei jedem
+// Werkzeugwechsel per innerHTML neu gebaut wird und ein offenes Dropdown
+// dabei zuklappen würde.
+function renderKartenListe() {
+    const box = document.getElementById('map-karten');
+    if (!box) return;
+    if (!isGmMode || !karte) { box.innerHTML = ''; return; }
+    karteEintragSicherstellen();
+    if (!karten.length) { box.innerHTML = ''; return; }
+
+    const opts = karten.map(k =>
+        `<option value="${escapeHtml(k.id)}"${k.id === aktiveKarteId ? ' selected' : ''}>${escapeHtml(k.name)}</option>`
+    ).join('');
+
+    box.innerHTML = `
+        <button class="help-btn" type="button" data-hilfe="karte-mehrere" aria-label="Hilfe: Mehrere Karten" title="Hilfe: Mehrere Karten">?</button>
+        <span class="map-karten-titel">🗺️ Aktive Karte:</span>
+        <select id="map-auswahl" title="Alle Spieler ohne eigene Zuweisung sehen diese Karte">${opts}</select>
+        <button class="btn btn-sm" id="map-karte-neu" title="Neue Karte anlegen">＋ Karte</button>
+        <button class="btn btn-sm btn-ghost" id="map-karte-umbenennen" title="Aktive Karte umbenennen">✎</button>
+        <button class="btn btn-sm btn-ghost" id="map-karte-loeschen"${karten.length < 2 ? ' disabled style="opacity:0.4"' : ''} title="Aktive Karte löschen">🗑️</button>`;
+
+    const sel = document.getElementById('map-auswahl');
+    if (sel) sel.addEventListener('change', () => karteWechseln(sel.value));
+    const neu = document.getElementById('map-karte-neu');
+    if (neu) neu.addEventListener('click', karteNeu);
+    const umb = document.getElementById('map-karte-umbenennen');
+    if (umb) umb.addEventListener('click', () => karteUmbenennen(aktiveKarteId));
+    const del = document.getElementById('map-karte-loeschen');
+    if (del) del.addEventListener('click', () => karteLoeschen(aktiveKarteId));
+}
+
+// --- Zuweisung Spieler → Karte (geteilte Gruppe) ------------------------
+
+function karteIdFuerPeer(peerId) {
+    const p = connectedPlayers[peerId];
+    const zugewiesen = p && kartenZuweisung[p.name];
+    if (zugewiesen && karteNachId(zugewiesen)) return zugewiesen;
+    return aktiveKarteId;
+}
+
+function zuegeFreiFuerPeer(peerId) {
+    return karteIdFuerPeer(peerId) !== aktiveKarteId ? true : zuegeFrei;
+}
+
+// Figurenliste einer Karte — die aktive liegt in der Leinwand, die übrigen im Eintrag
+function figurenListe(kid) {
+    if (kid === aktiveKarteId) return karte.figuren;
+    const k = karteNachId(kid);
+    if (!k) return [];
+    k.zustand = k.zustand || {};
+    if (!Array.isArray(k.zustand.figuren)) k.zustand.figuren = [];
+    return k.zustand.figuren;
+}
+
+function renderKartenZuweisung() {
+    const box = document.getElementById('map-zuweisung');
+    if (!box) return;
+    const namen = (typeof connectedPlayers !== 'undefined')
+        ? Object.values(connectedPlayers).map(p => p.name) : [];
+    if (!isGmMode || !karte || karten.length < 2 || !namen.length) { box.innerHTML = ''; return; }
+
+    const zeilen = namen.map(name => {
+        const sel = (kartenZuweisung[name] && karteNachId(kartenZuweisung[name])) ? kartenZuweisung[name] : aktiveKarteId;
+        const opts = karten.map(k =>
+            `<option value="${escapeHtml(k.id)}"${k.id === sel ? ' selected' : ''}>${escapeHtml(k.name)}</option>`
+        ).join('');
+        return `<span class="zuw-spieler">${escapeHtml(name)}
+            <select data-zuw-spieler="${escapeHtml(name)}">${opts}</select></span>`;
+    }).join('');
+
+    box.innerHTML = `<span class="map-karten-titel">👥 Wer sieht was:</span>${zeilen}
+        <button class="btn btn-sm btn-ghost" id="map-zuw-zusammen" title="Alle Spieler zurück auf die aktive Karte">↺ Alle zusammen</button>`;
+
+    box.querySelectorAll('select[data-zuw-spieler]').forEach(s => {
+        s.addEventListener('change', () => spielerAufKarteVerschieben(s.dataset.zuwSpieler, s.value));
+    });
+    const zus = document.getElementById('map-zuw-zusammen');
+    if (zus) zus.addEventListener('click', alleAufAktiveKarte);
+}
+
+function alleAufAktiveKarte() {
+    Object.keys(kartenZuweisung).forEach(name => spielerAufKarteVerschieben(name, aktiveKarteId));
+}
+
+function spielerAufKarteVerschieben(name, zielId) {
+    if (!isGmMode || !karte) return;
+    const ziel = karteNachId(zielId);
+    if (!ziel) return;
+    karteAktuellenStandSpeichern();
+
+    const vonId = (kartenZuweisung[name] && karteNachId(kartenZuweisung[name])) ? kartenZuweisung[name] : aktiveKarteId;
+    if (vonId === zielId) return;
+
+    const figId = 'spieler:' + name;
+    const vonListe = figurenListe(vonId);
+    const zielListe = figurenListe(zielId);
+    const alt = vonListe.find(f => f.id === figId);
+    const peerEintrag = Object.entries(connectedPlayers).find(([, p]) => p.name === name);
+    const portrait = peerEintrag ? peerEintrag[1].portrait : null;
+
+    if (!zielListe.find(f => f.id === figId)) {
+        const zentrum = (zielId === aktiveKarteId && karte.sichtbaresZentrum) ? karte.sichtbaresZentrum() : { x: 1, y: 1 };
+        zielListe.push({
+            id: figId, name,
+            farbe: (typeof colorForPlayer === 'function') ? colorForPlayer(name) : '#4a90d4',
+            besitzer: figId,
+            x: alt ? alt.x : zentrum.x,
+            y: alt ? alt.y : zentrum.y,
+            groesse: alt ? (alt.groesse || 1) : 1
+        });
+    }
+    // Auf der alten Karte kein Geistertoken zurücklassen
+    if (alt) {
+        const i = vonListe.indexOf(alt);
+        if (i >= 0) vonListe.splice(i, 1);
+    }
+
+    kartenZuweisung[name] = zielId;
+
+    if (portrait) {
+        if (zielId === aktiveKarteId) karte.setFigurBild(figId, portrait);
+        else { ziel.figurBilder = ziel.figurBilder || {}; ziel.figurBilder[figId] = portrait; }
+    }
+    if (zielId === aktiveKarteId || vonId === aktiveKarteId) karte.zeichnen();
+
+    if (peerEintrag) {
+        sendToPlayer(peerEintrag[0], { type: 'mapZugFreigabe', frei: zielId !== aktiveKarteId ? true : zuegeFrei });
+    }
+
+    renderKartenListe();
+    renderKartenZuweisung();
+    verteileAlleSpielerKarten();
+    if (typeof sitzungSichern === 'function') sitzungSichern();
+    if (typeof addGmLog === 'function') {
+        addGmLog('Spielleiter', `sieht <strong>${escapeHtml(name)}</strong> jetzt auf Karte „${escapeHtml(ziel.name)}“.`, 'neutral');
+    }
+}
+
+// --- Karten an die Spieler verteilen -----------------------------------
+
+// Kern des Stück-Versands — auch pro Peer nutzbar
+function sendeBildStuecke(sendFn, bild, zustandFuerEnde) {
+    const kennung = 'bild-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7);
+    const stuecke = [];
+    for (let i = 0; i < bild.length; i += BILD_STUECK) stuecke.push(bild.slice(i, i + BILD_STUECK));
+    sendFn({ type: 'mapImageStart', kennung, anzahl: stuecke.length });
+    stuecke.forEach((teil, index) => sendFn({ type: 'mapImageChunk', kennung, index, teil }));
+    sendFn({ type: 'mapImageEnd', kennung, zustand: zustandFuerEnde });
+    return stuecke.length;
+}
+
+// Bild + für-Spieler-gefilterter Zustand der Karte, die für diesen Peer gilt
+function kartenPaketFuerPeer(peerId) {
+    const kid = karteIdFuerPeer(peerId);
+    if (kid === aktiveKarteId) {
+        return { kid, bild: karteBildDatenUrl || null, zustand: karte.getStateFuerSpieler() };
+    }
+    const k = karteNachId(kid);
+    return { kid, bild: (k && k.bild) || null, zustand: BattleMap.fuerSpieler((k && k.zustand) || {}) };
+}
+
+function verteileFigurenBilderFuer(peerId, kid) {
+    let bilder;
+    if (kid === aktiveKarteId) bilder = karte.getFigurBilder();
+    else { const k = karteNachId(kid); bilder = (k && k.figurBilder) || {}; }
+    if (Object.keys(bilder).length) sendToPlayer(peerId, { type: 'mapPortraits', bilder });
+}
+
+function verteileKarteFuerPeer(peerId, immerPortraits) {
+    if (!isGmMode || !karte) return;
+    const { kid, bild, zustand } = kartenPaketFuerPeer(peerId);
+    const sig = (kid || 'aktiv') + '|' + (bild ? bild.length : 0);
+    const bildNeu = !!bild && peerBildSignatur[peerId] !== sig;
+    if (bildNeu) {
+        sendeBildStuecke(n => sendToPlayer(peerId, n), bild, zustand);
+        peerBildSignatur[peerId] = sig;
+    } else {
+        sendToPlayer(peerId, { type: 'mapState', zustand });
+    }
+    if (bildNeu || immerPortraits) verteileFigurenBilderFuer(peerId, kid);
+}
+
+// Alle verbundenen Spieler mit ihrer jeweiligen Karte versorgen
+function verteileAlleSpielerKarten(erzwingen) {
+    if (!isGmMode || !karte) return;
+    karteAktuellenStandSpeichern();
+    if (erzwingen) peerBildSignatur = {};
+    Object.keys(clientConnections).forEach(peerId => verteileKarteFuerPeer(peerId, false));
+    const status = document.getElementById('map-status');
+    if (erzwingen && status) {
+        status.textContent = `Karten an ${Object.keys(clientConnections).length} Spieler gesendet.`;
+    }
+}
+
+// Einen (neu beigetretenen) Spieler mit seiner Karte und dem Freigabe-Stand versorgen
+function kartePeerBegruessen(peerId) {
+    if (!isGmMode || !karte) return;
+    verteileKarteFuerPeer(peerId, true);
+    if (zuegeFreiFuerPeer(peerId)) sendToPlayer(peerId, { type: 'mapZugFreigabe', frei: true });
+    renderKartenZuweisung();
+}
+
 // --- Bedienleiste -----------------------------------------------------------
 
 function renderKartenWerkzeuge() {
@@ -153,7 +479,7 @@ function renderKartenWerkzeuge() {
     leiste.innerHTML = `
         <button class="help-btn" type="button" data-hilfe="karte-werkzeuge" aria-label="Hilfe: Karten-Werkzeuge" title="Hilfe: Karten-Werkzeuge">?</button>
         <button class="btn btn-sm btn-primary" onclick="document.getElementById('map-file').click()">🖼️ Karte</button>
-        ${karteBildDatenUrl ? '<button class="btn btn-sm" onclick="verteileKartenBild()" title="Karte erneut an alle verbundenen Spieler schicken">📤 Senden</button>' : ''}
+        ${karteBildDatenUrl ? '<button class="btn btn-sm" onclick="verteileAlleSpielerKarten(true)" title="Karte(n) erneut an alle verbundenen Spieler schicken">📤 Senden</button>' : ''}
         <button class="btn btn-sm" onclick="figurenAusKampfUebernehmen()" title="Alle Kampfteilnehmer auf einmal setzen">👥 Aus Kampf</button>
         <button class="btn btn-sm" onclick="figurSetzenDialog()" title="Einzelne Figur auf die Karte setzen">➕ Figur</button>
         <span class="werkzeug-gruppe">
@@ -476,41 +802,19 @@ function karteBildLaden(datei) {
         status.textContent = `Karte geladen: ${ergebnis.breite}×${ergebnis.hoehe} Pixel, ~${kb} KB` +
             (ergebnis.verkleinert ? ' (für die Übertragung verkleinert)' : '');
 
-        // Bild getrennt sichern, damit es einen Reload übersteht
-        if (typeof karteBildSichern === 'function') karteBildSichern(ergebnis.dataUrl);
-        if (isGmMode) verteileKartenBild();
+        if (isGmMode) {
+            karteEintragSicherstellen();
+            const k = aktiveKarte();
+            if (k) k.bild = ergebnis.dataUrl;
+            // Bild getrennt sichern, damit es einen Reload übersteht — je Karte
+            if (typeof karteBildSichern === 'function') karteBildSichern(ergebnis.dataUrl, aktiveKarteId);
+            verteileAlleSpielerKarten(true);
+        } else if (typeof karteBildSichern === 'function') {
+            karteBildSichern(ergebnis.dataUrl);
+        }
     }).catch(fehler => {
         status.textContent = 'Fehler: ' + fehler.message;
     });
-}
-
-// Das Bild in Stücken an alle Spieler schicken
-function verteileKartenBild(nurAn) {
-    if (!karteBildDatenUrl) return;
-    if (!nurAn && !Object.keys(clientConnections).length) {
-        const status = document.getElementById('map-status');
-        if (status) status.textContent = 'Noch kein Spieler verbunden — die Karte geht automatisch raus, sobald jemand beitritt.';
-        return;
-    }
-    const kennung = 'bild-' + Date.now();
-    const stuecke = [];
-    for (let i = 0; i < karteBildDatenUrl.length; i += BILD_STUECK) {
-        stuecke.push(karteBildDatenUrl.slice(i, i + BILD_STUECK));
-    }
-
-    const senden = nachricht => {
-        if (nurAn) sendToPlayer(nurAn, nachricht);
-        else broadcastToPlayers(nachricht);
-    };
-
-    senden({ type: 'mapImageStart', kennung, anzahl: stuecke.length });
-    stuecke.forEach((teil, index) => senden({ type: 'mapImageChunk', kennung, index, teil }));
-    // Empfänger sind immer Spieler — verdeckte Figuren und vorgemerkter Nebel
-    // dürfen nicht mitgehen, auch nicht beim Nachreichen an einen Neuzugang.
-    senden({ type: 'mapImageEnd', kennung, zustand: karte.getStateFuerSpieler() });
-
-    const status = document.getElementById('map-status');
-    if (status) status.textContent += ` · an ${nurAn ? 'einen Spieler' : Object.keys(clientConnections).length + ' Spieler'} gesendet`;
 }
 
 // --- Figurengröße -----------------------------------------------------------
@@ -555,7 +859,13 @@ function figurEntfernenDialog() {
 // kann die Zuege deshalb freigeben; die Spieler bewegen dann direkt.
 function zugFreigabeUmschalten() {
     zuegeFrei = !zuegeFrei;
-    broadcastToPlayers({ type: 'mapZugFreigabe', frei: zuegeFrei });
+    // Nur Spieler auf der aktiven Karte betrifft das — wer auf einer eigenen
+    // Karte sitzt (geteilte Gruppe), bewegt dort ohnehin frei.
+    Object.keys(clientConnections).forEach(peerId => {
+        if (karteIdFuerPeer(peerId) === aktiveKarteId) {
+            sendToPlayer(peerId, { type: 'mapZugFreigabe', frei: zuegeFrei });
+        }
+    });
     renderKartenWerkzeuge();
     const status = document.getElementById('map-status');
     if (status) {
@@ -662,11 +972,9 @@ function figurenAusKampfUebernehmen() {
 // der bei jeder Bewegung übertragen wird.
 function verteileFigurenBilder(nurAn) {
     if (!isGmMode || !karte) return;
-    const bilder = karte.getFigurBilder();
-    if (!Object.keys(bilder).length) return;
-    const nachricht = { type: 'mapPortraits', bilder };
-    if (nurAn) sendToPlayer(nurAn, nachricht);
-    else broadcastToPlayers(nachricht);
+    karteAktuellenStandSpeichern();
+    if (nurAn) { verteileFigurenBilderFuer(nurAn, karteIdFuerPeer(nurAn)); return; }
+    Object.keys(clientConnections).forEach(peerId => verteileFigurenBilderFuer(peerId, karteIdFuerPeer(peerId)));
 }
 
 // --- Zugvorschläge beim Spielleiter ----------------------------------------
@@ -719,8 +1027,13 @@ function zugEntscheiden(id, angenommen) {
 function sendeKartenZustand(zustand) {
     if (!karteOffen) return;
     if (isGmMode) {
-        // Verdeckte Figuren und vorgemerkte Nebelbereiche bleiben beim Spielleiter
-        broadcastToPlayers({ type: 'mapState', zustand: karte.getStateFuerSpieler() });
+        karteAktuellenStandSpeichern();
+        // Dieses Update betrifft die aktive Karte — nur Spieler, die auf ihr
+        // sind, brauchen es. Verdeckte Figuren und vorgemerkter Nebel bleiben
+        // beim Spielleiter (getStateFuerSpieler in verteileKarteFuerPeer).
+        Object.keys(clientConnections).forEach(peerId => {
+            if (karteIdFuerPeer(peerId) === aktiveKarteId) verteileKarteFuerPeer(peerId, false);
+        });
         renderZugVorschlaege();
         renderNebelFreigabe();
         aktualisiereRueckgaengigKnopf();
@@ -853,6 +1166,8 @@ function handleKartenNachricht(payload, vonPeer) {
         // --- beim Spielleiter ---
         case 'mapZugVorschlag': {
             if (!isGmMode || !karte) return true;
+            // Spieler auf einer eigenen Karte bewegen dort frei — kein Vorschlag
+            if (karteIdFuerPeer(vonPeer) !== aktiveKarteId) return true;
             const figur = karte.figuren.find(f => f.id === payload.id);
             if (!figur) return true;
             const spieler = connectedPlayers[vonPeer];
@@ -876,30 +1191,32 @@ function handleKartenNachricht(payload, vonPeer) {
 
         case 'mapToken': {
             if (!isGmMode || !karte) return true;
-            const figur = karte.figuren.find(f => f.id === payload.id);
-            if (!figur) return true;
-            // Nur die eigene Figur des jeweiligen Spielers darf bewegt werden
             const spieler = connectedPlayers[vonPeer];
-            if (!spieler || figur.besitzer !== 'spieler:' + spieler.name) return true;
+            if (!spieler) return true;
+            const kid = karteIdFuerPeer(vonPeer);
+            const figur = figurenListe(kid).find(f => f.id === payload.id);
+            // Nur die eigene Figur des jeweiligen Spielers darf bewegt werden
+            if (!figur || figur.besitzer !== 'spieler:' + spieler.name) return true;
             figur.x = payload.x;
             figur.y = payload.y;
-            karte.zeichnen();
-            broadcastToPlayers({ type: 'mapState', zustand: karte.getStateFuerSpieler() });
+            figur.geplantX = null;
+            figur.geplantY = null;
+            if (kid === aktiveKarteId) {
+                karte.zeichnen();
+            } else if (typeof sitzungSichern === 'function') {
+                sitzungSichern();   // ferne Karte: nur der gespeicherte Stand ändert sich
+            }
+            // an alle Spieler, die auf DIESER Karte sind
+            Object.keys(clientConnections).forEach(pid => {
+                if (karteIdFuerPeer(pid) === kid) verteileKarteFuerPeer(pid, false);
+            });
             return true;
         }
 
         // Ein neu beigetretener Spieler bekommt die Karte nachgereicht
         case 'mapAnfordern':
             if (!isGmMode || !karte) return true;
-            // Mit Hintergrundbild trägt mapImageEnd den Zustand mit. Ohne Bild —
-            // reine Rasterkarte oder Bild nach einem Reload noch nicht wieder
-            // geladen — bekäme der Neuzugang sonst gar nichts und seine Karte
-            // bliebe leer, während alle anderen Figuren und Nebel sehen.
-            if (karteBildDatenUrl) verteileKartenBild(vonPeer);
-            else sendToPlayer(vonPeer, { type: 'mapState', zustand: karte.getStateFuerSpieler() });
-            verteileFigurenBilder(vonPeer);
-            // Wer spaeter dazukommt, muss den Stand der Zug-Freigabe kennen
-            if (zuegeFrei) sendToPlayer(vonPeer, { type: 'mapZugFreigabe', frei: true });
+            kartePeerBegruessen(vonPeer);
             return true;
     }
     return false;

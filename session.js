@@ -24,10 +24,12 @@ function karteDbOeffnen() {
     });
 }
 
-function karteBildSichern(dataUrl) {
+// Jede Karte legt ihr Bild unter ihrer eigenen ID ab. Der Default 'aktuell'
+// hält die Abwärtskompatibilität zu Sitzungen von vor der Mehrkarten-Funktion.
+function karteBildSichern(dataUrl, schluessel = 'aktuell') {
     return karteDbOeffnen().then(db => new Promise((erfuellen, ablehnen) => {
         const t = db.transaction(KARTE_STORE, 'readwrite');
-        t.objectStore(KARTE_STORE).put(dataUrl, 'aktuell');
+        t.objectStore(KARTE_STORE).put(dataUrl, schluessel);
         t.oncomplete = () => { db.close(); erfuellen(true); };
         t.onerror = () => { db.close(); ablehnen(t.error); };
     })).catch(fehler => {
@@ -36,19 +38,28 @@ function karteBildSichern(dataUrl) {
     });
 }
 
-function karteBildLesen() {
+function karteBildLesen(schluessel = 'aktuell') {
     return karteDbOeffnen().then(db => new Promise((erfuellen) => {
         const t = db.transaction(KARTE_STORE, 'readonly');
-        const anfrage = t.objectStore(KARTE_STORE).get('aktuell');
+        const anfrage = t.objectStore(KARTE_STORE).get(schluessel);
         anfrage.onsuccess = () => { db.close(); erfuellen(anfrage.result || null); };
         anfrage.onerror = () => { db.close(); erfuellen(null); };
     })).catch(() => null);
 }
 
-function karteBildVerwerfen() {
+function karteBildVerwerfen(schluessel = 'aktuell') {
     return karteDbOeffnen().then(db => new Promise(erfuellen => {
         const t = db.transaction(KARTE_STORE, 'readwrite');
-        t.objectStore(KARTE_STORE).delete('aktuell');
+        t.objectStore(KARTE_STORE).delete(schluessel);
+        t.oncomplete = () => { db.close(); erfuellen(true); };
+        t.onerror = () => { db.close(); erfuellen(false); };
+    })).catch(() => false);
+}
+
+function karteBildAllesVerwerfen() {
+    return karteDbOeffnen().then(db => new Promise(erfuellen => {
+        const t = db.transaction(KARTE_STORE, 'readwrite');
+        t.objectStore(KARTE_STORE).clear();
         t.oncomplete = () => { db.close(); erfuellen(true); };
         t.onerror = () => { db.close(); erfuellen(false); };
     })).catch(() => false);
@@ -68,6 +79,7 @@ function sitzungSichern() {
 function sitzungJetztSichern() {
     if (!isGmMode) return;
     try {
+        if (typeof karteAktuellenStandSpeichern === 'function') karteAktuellenStandSpeichern();
         const daten = {
             gespeichertAm: Date.now(),
             raumCode: document.getElementById('gm-room-code') ? document.getElementById('gm-room-code').textContent : '',
@@ -78,8 +90,13 @@ function sitzungJetztSichern() {
                 // Spielerfiguren kommen beim Verbinden von selbst zurück
                 teilnehmer: (typeof combatants !== 'undefined' ? combatants : []).filter(c => c.type === 'npc')
             },
-            karte: (typeof karte !== 'undefined' && karte) ? karte.getState() : null,
-            figurBilder: (typeof karte !== 'undefined' && karte) ? karte.getFigurBilder() : null
+            // Bilder liegen NICHT hier drin (localStorage-Quota) — sie stehen je
+            // Karten-ID in IndexedDB.
+            karten: (typeof karten !== 'undefined' ? karten : []).map(k => ({
+                id: k.id, name: k.name, zustand: k.zustand, figurBilder: k.figurBilder || {}
+            })),
+            aktiveKarteId: typeof aktiveKarteId !== 'undefined' ? aktiveKarteId : null,
+            kartenZuweisung: typeof kartenZuweisung !== 'undefined' ? kartenZuweisung : {}
         };
         localStorage.setItem(SL_SITZUNG_KEY, JSON.stringify(daten));
     } catch (fehler) {
@@ -99,7 +116,24 @@ function sitzungLesen() {
 
 function sitzungVerwerfen() {
     try { localStorage.removeItem(SL_SITZUNG_KEY); } catch (e) { /* Speicher evtl. blockiert */ }
-    karteBildVerwerfen();
+    karteBildAllesVerwerfen();
+}
+
+// Karteneinträge aus gespeicherten Daten normalisieren — neue Sitzungen tragen
+// `karten` als Array, alte nur ein einzelnes `karte`-Objekt.
+function kartenAusDaten(daten) {
+    if (Array.isArray(daten.karten)) return daten.karten.map(k => Object.assign({}, k));
+    if (daten.karte) {
+        return [{
+            id: 'karte:' + (typeof uid === 'function' ? uid() : 'legacy'),
+            name: 'Karte 1',
+            zustand: daten.karte,
+            figurBilder: daten.figurBilder || {},
+            bild: daten.kartenBild || null,   // nur bei Datei-Import vorhanden
+            _legacyBild: true
+        }];
+    }
+    return [];
 }
 
 // --- Wiederherstellen -------------------------------------------------------
@@ -111,7 +145,8 @@ function sitzungAnbieten() {
     if (!daten) return;
 
     const nsc = (daten.kampf && daten.kampf.teilnehmer) ? daten.kampf.teilnehmer.length : 0;
-    const figuren = (daten.karte && daten.karte.figuren) ? daten.karte.figuren.length : 0;
+    const figuren = kartenAusDaten(daten).reduce((s, k) =>
+        s + ((k.zustand && Array.isArray(k.zustand.figuren)) ? k.zustand.figuren.length : 0), 0);
     if (!nsc && !figuren) return;
 
     const alter = Math.round((Date.now() - daten.gespeichertAm) / 60000);
@@ -148,9 +183,11 @@ function sitzungSammeln(mitBild) {
         }
     }
 
+    if (typeof karteAktuellenStandSpeichern === 'function') karteAktuellenStandSpeichern();
+
     const daten = {
         art: 'dungeonslayers-sl-sitzung',
-        fassung: 1,
+        fassung: 2,
         gespeichertAm: new Date().toISOString(),
         notizen,
         kampf: {
@@ -164,15 +201,16 @@ function sitzungSammeln(mitBild) {
                 .filter(c => c.type === 'player')
                 .map(c => ({ name: c.name, initiative: c.initiative, lkCurrent: c.lkCurrent, lkMax: c.lkMax }))
         },
-        karte: (typeof karte !== 'undefined' && karte) ? karte.getState() : null,
-        figurBilder: (typeof karte !== 'undefined' && karte) ? karte.getFigurBilder() : null
+        karten: (typeof karten !== 'undefined' ? karten : []).map(k => {
+            const e = { id: k.id, name: k.name, zustand: k.zustand, figurBilder: k.figurBilder || {} };
+            if (mitBild && k.bild) e.bild = k.bild;   // Bilder liegen im RAM je Karte
+            return e;
+        }),
+        aktiveKarteId: typeof aktiveKarteId !== 'undefined' ? aktiveKarteId : null,
+        kartenZuweisung: typeof kartenZuweisung !== 'undefined' ? kartenZuweisung : {}
     };
 
-    if (!mitBild) return Promise.resolve(daten);
-    return karteBildLesen().then(bild => {
-        if (bild) daten.kartenBild = bild;
-        return daten;
-    });
+    return Promise.resolve(daten);
 }
 
 function sitzungExportieren() {
@@ -243,29 +281,67 @@ function sitzungAnwenden(daten) {
         renderCombat();
     }
 
-    // Karte samt Figurenpositionen, Nebel und Markierungen
-    if (daten.karte && typeof karte !== 'undefined' && karte) {
-        karte.applyState(daten.karte, daten.kartenBild || undefined);
-        Object.entries(daten.figurBilder || {}).forEach(([id, url]) => karte.setFigurBild(id, url));
-        if (daten.kartenBild) {
-            karteBildDatenUrl = daten.kartenBild;
-            karteBildSichern(daten.kartenBild);
-            setTimeout(() => karte.einpassen(), 60);
-        }
-    }
+    // Karten samt Figurenpositionen, Nebel und Markierungen (Bilder stecken in der Datei)
+    kartenUebernehmen(daten, false);
 
     renderGmDashboard();
     sitzungHinweisSchliessen(false);
 
-    const fehlendesBild = daten.karte && !daten.kartenBild;
+    const kn = kartenAusDaten(daten);
+    const ohneBild = kn.length && !kn.some(k => k.bild);
     addGmLog('System', 'Sitzung geladen.' +
-        (fehlendesBild ? ' Das Kartenbild war nicht enthalten und muss neu geladen werden.' : ''), 'erfolg');
+        (ohneBild ? ' Kartenbild(er) waren nicht enthalten und müssen neu geladen werden.' : ''), 'erfolg');
 
     const status = document.getElementById('map-status');
-    if (status && daten.karte) {
-        status.textContent = daten.kartenBild
-            ? 'Sitzung geladen — über „Karte laden" erneut an verbundene Spieler senden.'
-            : 'Figuren und Nebel geladen; das Kartenbild fehlt und muss neu gewählt werden.';
+    if (status && kn.length) {
+        status.textContent = ohneBild
+            ? 'Figuren und Nebel geladen; Kartenbild(er) fehlen und müssen neu gewählt werden.'
+            : 'Sitzung geladen — über „📤 Senden" erneut an verbundene Spieler schicken.';
+    }
+}
+
+// Karteneinträge aus geladenen Daten in die Laufzeit übernehmen. `bilderLaden`
+// steuert, ob die Bilder aus IndexedDB nachgeladen werden (Sitzungswiederher-
+// stellung) oder schon in den Daten stecken (Datei-Import).
+function kartenUebernehmen(daten, bilderLaden) {
+    if (typeof karte === 'undefined' || !karte) return;
+    const roh = kartenAusDaten(daten);
+    if (!roh.length) return;
+
+    const fertig = () => {
+        karten = roh.map(k => ({
+            id: k.id, name: k.name,
+            zustand: k.zustand || { raster: {}, figuren: [], formen: [], nebel: { aktiv: false, aufgedeckt: [], entwurf: [] } },
+            bild: k.bild || null,
+            figurBilder: k.figurBilder || {}
+        }));
+        aktiveKarteId = (daten.aktiveKarteId && karten.find(k => k.id === daten.aktiveKarteId))
+            ? daten.aktiveKarteId : (karten[0] && karten[0].id) || null;
+        kartenZuweisung = daten.kartenZuweisung || {};
+
+        const aktiv = karten.find(k => k.id === aktiveKarteId);
+        if (aktiv) {
+            karte.applyState(aktiv.zustand, aktiv.bild || undefined);
+            Object.entries(aktiv.figurBilder || {}).forEach(([id, url]) => karte.setFigurBild(id, url));
+            if (aktiv.bild) { karteBildDatenUrl = aktiv.bild; setTimeout(() => karte.einpassen(), 60); }
+            else karteBildDatenUrl = null;
+        }
+
+        // Bilder dauerhaft je Karten-ID sichern; Legacy-Bild von 'aktuell' umziehen
+        karten.forEach(k => { if (k.bild) karteBildSichern(k.bild, k.id); });
+        roh.forEach(k => { if (k._legacyBild) karteBildVerwerfen('aktuell'); });
+
+        if (typeof renderKartenListe === 'function') renderKartenListe();
+        if (typeof renderKartenZuweisung === 'function') renderKartenZuweisung();
+    };
+
+    if (bilderLaden) {
+        Promise.all(roh.map(k =>
+            (k.bild ? Promise.resolve(k.bild) : karteBildLesen(k._legacyBild ? 'aktuell' : k.id))
+                .then(bild => { k.bild = bild || null; })
+        )).then(fertig);
+    } else {
+        fertig();
     }
 }
 
@@ -293,22 +369,11 @@ function sitzungWiederherstellen() {
         renderCombat();
     }
 
-    // Karte
-    if (daten.karte && typeof karte !== 'undefined' && karte) {
-        karteBildLesen().then(bild => {
-            karte.applyState(daten.karte, bild || undefined);
-            Object.entries(daten.figurBilder || {}).forEach(([id, url]) => karte.setFigurBild(id, url));
-            if (bild) {
-                karteBildDatenUrl = bild;
-                setTimeout(() => karte.einpassen(), 60);
-            }
-            const status = document.getElementById('map-status');
-            if (status) {
-                status.textContent = bild
-                    ? 'Karte wiederhergestellt. Über „Karte laden" erneut an die Spieler senden, sobald sie verbunden sind.'
-                    : 'Figuren wiederhergestellt — das Kartenbild fehlt und muss neu geladen werden.';
-            }
-        });
+    // Karten — Bilder je Karten-ID aus IndexedDB nachladen
+    kartenUebernehmen(daten, true);
+    const status = document.getElementById('map-status');
+    if (status && kartenAusDaten(daten).length) {
+        status.textContent = 'Karten wiederhergestellt. Über „📤 Senden" erneut an die Spieler schicken, sobald sie verbunden sind.';
     }
 
     sitzungHinweisSchliessen(false);

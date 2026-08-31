@@ -538,6 +538,9 @@ const HILFE_THEMEN = {
                  <li><strong>Markierungen</strong> (Freihand, Linie, Kreis, Rechteck) und den
                      <strong>Nebel des Krieges</strong> setzt der Spielleiter. Gegner im noch
                      verdeckten Nebel werden gar nicht erst an die Spieler übertragen.</li>
+                 <li><strong>Mehrere Karten</strong> für getrennte Räume oder Stockwerke, samt
+                     eigener Karte pro Spieler, wenn sich die Gruppe aufteilt — eigenes
+                     Hilfethema (<em>Mehrere Karten</em>).</li>
                </ul>`
     },
     'karte-werkzeuge': {
@@ -597,6 +600,28 @@ const HILFE_THEMEN = {
                auf das Bild passt — die <strong>−/+-Knöpfe kann man gedrückt halten</strong>. Die
                sechs Farbpunkte daneben stellen die <strong>Rasterfarbe</strong> um, falls Gold auf
                dem Kartenbild schlecht zu sehen ist. Das Mausrad zoomt.</p>`
+    },
+    'karte-mehrere': {
+        gruppe: 'runde',
+        titel: 'Mehrere Karten',
+        text: `<p><strong>Der Spielleiter kann mehrere Karten halten</strong> — je ein Raum, ein
+               Stockwerk, ein Ort. Die Leiste <strong>🗺️ Aktive Karte</strong> ganz oben schaltet
+               um: <strong>＋ Karte</strong> legt eine neue an, <strong>✎</strong> benennt um,
+               <strong>🗑️</strong> löscht (die letzte bleibt). Jede Karte merkt sich ihr eigenes
+               Bild, ihre Figuren, ihren Nebel und ihre Markierungen.</p>
+               <p>Wechselst du die aktive Karte, <strong>ziehen alle Spieler automatisch mit</strong>.
+               Bild und Figuren gehen dabei nur an die Spieler, die sie noch nicht haben — ein
+               reiner Kartenwechsel überträgt kein Bild neu.</p>
+               <p><strong>Wenn sich die Gruppe aufteilt:</strong> Sobald es zwei Karten und
+               verbundene Spieler gibt, erscheint die Leiste <strong>👥 Wer sieht was</strong>.
+               Dort weist du jedem Spieler eine Karte zu — die Hälfte der Gruppe bleibt im
+               Erdgeschoss, die andere sieht schon den Keller. Spieler auf einer solchen
+               <em>eigenen</em> Karte bewegen ihre Figur <strong>frei ohne Bestätigung</strong>;
+               ihre Züge landen direkt im gespeicherten Stand dieser Karte, auch wenn du sie
+               gerade nicht offen hast. <strong>↺ Alle zusammen</strong> holt alle zurück auf die
+               aktive Karte.</p>
+               <p>Karten, Zuweisungen und Bilder überstehen einen Reload und lassen sich mit
+               <em>Sitzung exportieren</em> als Datei sichern.</p>`
     },
     'wizard': {
         gruppe: 'runde',

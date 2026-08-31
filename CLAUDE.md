@@ -55,6 +55,16 @@ darf keine DS4- oder multiplayer-spezifischen Annahmen einbauen.
 (`#map-widget`) ist ein einzelnes DOM-Element, das zwischen Spieleransicht, Dashboard und
 Vollbild-Overlay *verschoben* wird (`appendChild`) — es existiert nur eine Canvas-Instanz.
 
+**Mehrere Karten hält `mapui.js`, nicht `battlemap.js`.** Der Spielleiter kann mehrere benannte
+Karten führen (`karten[]` in `mapui.js`); nur die aktive (`aktiveKarteId`) liegt in der einen
+`BattleMap`-Instanz, die übrigen als gespeicherter `getState()`-Zustand plus Bild (im RAM und je
+Karten-ID in IndexedDB). `kartenZuweisung` (Spielername → Karten-ID) gibt einzelnen Spielern eine
+eigene Karte, wenn sich die Gruppe aufteilt; `verteileKarteFuerPeer` schickt jedem Peer die für
+ihn geltende Karte, `peerBildSignatur` verhindert unnötiges Nachschicken des Bildes. Züge auf
+einer nicht-aktiven Karte werden direkt in deren gespeicherten Zustand geschrieben. `battlemap.js`
+weiß von all dem nichts — es bekam nur die reine Hilfsfunktion `BattleMap.fuerSpieler(zustand)`,
+die einen gespeicherten Zustand für die Spieler filtert, ohne ihn in die Leinwand zu laden.
+
 **Multiplayer ist WebRTC/PeerJS, kein Server.** `multiplayer.js` verbindet Spieler und Spielleiter
 direkt; der Spielleiter-Client hält den maßgeblichen Zustand (Kampf, Karte, Nebel) und pusht ihn an
 alle Spieler. `session.js` sichert diesen SL-Zustand zusätzlich lokal und bietet Wiederherstellung

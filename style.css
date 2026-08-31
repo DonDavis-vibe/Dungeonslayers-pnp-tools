@@ -1048,6 +1048,33 @@ select:focus {
 }
 .zug-vorschlag.zu-weit { background: rgba(168, 52, 44, 0.22); }
 
+/* Kartenauswahl des Spielleiters (mehrere Battlemaps) */
+.map-karten { flex: none; }
+.map-karten:empty { display: none; }
+.map-karten {
+    display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap;
+    padding: 0.45rem 0.7rem;
+    font-size: 0.83rem;
+    border-bottom: 1px solid var(--panel-border);
+    background: rgba(0, 0, 0, 0.28);
+}
+.map-karten select { max-width: 14rem; padding: 0.2rem 0.35rem; font-size: 0.83rem; }
+.map-karten .btn { padding: 0.2rem 0.5rem; }
+.map-karten .map-karten-titel { color: var(--text-dim); white-space: nowrap; }
+
+/* Zuweisung Spieler → Karte (geteilte Gruppe) */
+.map-zuweisung { flex: none; }
+.map-zuweisung:empty { display: none; }
+.map-zuweisung {
+    display: flex; align-items: center; gap: 0.5rem 0.7rem; flex-wrap: wrap;
+    padding: 0.45rem 0.7rem;
+    font-size: 0.82rem;
+    border-bottom: 1px solid var(--panel-border);
+    background: rgba(74, 108, 168, 0.14);
+}
+.map-zuweisung .zuw-spieler { display: inline-flex; align-items: center; gap: 0.3rem; }
+.map-zuweisung select { padding: 0.15rem 0.3rem; font-size: 0.8rem; }
+
 .map-status {
     flex: none;
     padding: 0.4rem 0.9rem;

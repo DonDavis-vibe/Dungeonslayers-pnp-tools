@@ -35,6 +35,36 @@ const BattleMap = (() => {
 
     const FIGUR_RADIUS = 0.42;  // in Feldern
 
+    // Liegt ein Feld in einem Nebel-/Aufgedeckt-Bereich? Rein rechnerisch, ohne
+    // Zustand — daher auf Modulebene, damit auch `fuerSpieler` sie nutzen kann.
+    function bereichEnthaelt(bereich, fx, fy) {
+        if (bereich.art === 'kreis') {
+            return Math.hypot(fx - bereich.x, fy - bereich.y) <= bereich.r;
+        }
+        return fx >= bereich.x && fx <= bereich.x + bereich.b &&
+               fy >= bereich.y && fy <= bereich.y + bereich.h;
+    }
+
+    // Einen gespeicherten Kartenzustand für die Spieler aufbereiten, OHNE ihn in
+    // eine Leinwand zu laden — nötig für Karten, die der Spielleiter gerade nicht
+    // offen hat. Gleiche Regeln wie die Instanzmethode `getStateFuerSpieler`:
+    // verdeckte Figuren fallen weg, Gegner im unaufgedeckten Nebel ebenso, und
+    // noch nicht freigegebene Nebelbereiche werden nicht mitgeschickt.
+    function fuerSpieler(zustand) {
+        const z = JSON.parse(JSON.stringify(zustand || {}));
+        if (!z.nebel) z.nebel = { aktiv: false, aufgedeckt: [], entwurf: [] };
+        z.nebel.entwurf = [];
+        const nebelAktiv = !!z.nebel.aktiv;
+        const aufgedeckt = z.nebel.aufgedeckt || [];
+        const imNebel = (fx, fy) => nebelAktiv && !aufgedeckt.some(b => bereichEnthaelt(b, fx, fy));
+        z.figuren = (z.figuren || []).filter(f => {
+            if (f.verdeckt) return false;
+            if (f.besitzer !== 'sl') return true;
+            return !imNebel(f.x, f.y);
+        });
+        return z;
+    }
+
     function create(canvas, optionen = {}) {
         const ctx = canvas.getContext('2d');
 
@@ -629,14 +659,6 @@ const BattleMap = (() => {
             return (bereich.b > 0.2 && bereich.h > 0.2) ? bereich : null;
         }
 
-        function bereichEnthaelt(bereich, fx, fy) {
-            if (bereich.art === 'kreis') {
-                return Math.hypot(fx - bereich.x, fy - bereich.y) <= bereich.r;
-            }
-            return fx >= bereich.x && fx <= bereich.x + bereich.b &&
-                   fy >= bereich.y && fy <= bereich.y + bereich.h;
-        }
-
         // Einen Bereich wieder zudecken. Bereiche, deren Mittelpunkt im Schnitt
         // liegt, fallen ganz weg; Rechtecke werden zusätzlich am Schnitt zerlegt,
         // damit ein Teil-Zudecken möglich bleibt.
@@ -891,20 +913,7 @@ const BattleMap = (() => {
         // sichtbar — die Spieler wissen ja, wo sie stehen. Noch nicht freigegebene
         // Nebelbereiche werden gar nicht erst mitgeschickt.
         function getStateFuerSpieler() {
-            const z = getState();
-            if (z.nebel) z.nebel.entwurf = [];
-            z.figuren = z.figuren.filter(f => {
-                if (f.verdeckt) return false;
-                if (f.besitzer !== 'sl') return true;
-                return !imNebel(f.x, f.y);
-            });
-            return z;
-        }
-
-        // Nur freigegebene Bereiche zählen — vorgemerkte sieht nur der Spielleiter
-        function imNebel(fx, fy) {
-            if (!zustand.nebel.aktiv) return false;
-            return !zustand.nebel.aufgedeckt.some(f => bereichEnthaelt(f, fx, fy));
+            return fuerSpieler(getState());
         }
 
         // --- Werkzeuge ------------------------------------------------------
@@ -1070,5 +1079,5 @@ const BattleMap = (() => {
         });
     }
 
-    return { create, bildVerkleinern };
+    return { create, bildVerkleinern, fuerSpieler };
 })();

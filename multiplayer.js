@@ -245,6 +245,7 @@ function hostMultiplayerSession(preferredCodeArg) {
                 const name = connectedPlayers[conn.peer] ? connectedPlayers[conn.peer].name : 'Ein Spieler';
                 delete clientConnections[conn.peer];
                 delete connectedPlayers[conn.peer];
+                if (typeof peerBildSignatur !== 'undefined') delete peerBildSignatur[conn.peer];
                 renderGmDashboard();
                 // Die Verbliebenen sollen sehen, dass jemand weg ist
                 sendeGruppenliste();
@@ -365,6 +366,9 @@ function handleIncomingData(peerId, payload) {
                 sendToPlayer(peerId, { type: 'hausregeln', regeln: hausregeln });
             }
             if (typeof combatActive !== 'undefined' && combatActive) sendeKampfstand();
+            // Jetzt ist der Spielername bekannt — dem Neuzugang die richtige
+            // (ggf. zugewiesene) Karte schicken, statt nur die aktive.
+            if (typeof kartePeerBegruessen === 'function') kartePeerBegruessen(peerId);
         }
         // Die Runde soll voneinander wissen: jede Aenderung geht als Gruppenliste zurueck
         sendeGruppenliste();
@@ -682,6 +686,10 @@ function renderGmDashboard() {
         const restored = grid.querySelector(`[data-gmnote="${CSS.escape(focusedName)}"]`);
         if (restored) { restored.focus(); restored.setSelectionRange(cursor[0], cursor[1]); }
     }
+
+    // Kartenauswahl und Spieler-Zuweisung haengen von der Spielerliste ab
+    if (typeof renderKartenListe === 'function') renderKartenListe();
+    if (typeof renderKartenZuweisung === 'function') renderKartenZuweisung();
 }
 
 // --- GM Log & Würfel --------------------------------------------------------
