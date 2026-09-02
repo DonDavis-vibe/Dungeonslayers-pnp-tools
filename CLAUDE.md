@@ -5,9 +5,17 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Was das hier ist
 
 **Slayer-Arsenal** — digitaler Charakterbogen und Spielleiter-Dashboard für das deutsche
-Pen-&-Paper-Rollenspiel **Dungeonslayers 4**. Reines HTML/CSS/JavaScript, kein Build-Schritt, keine
-Abhängigkeiten, kein `package.json`. Läuft direkt im Browser, deployed via GitHub Pages von `main`.
+Pen-&-Paper-Rollenspiel **Dungeonslayers 4**. Reines HTML/CSS/JavaScript, keine Abhängigkeiten,
+kein `package.json`, kein lokaler Build-Schritt. Läuft direkt im Browser.
 (Das GitHub-Repo heißt weiter `Dungeonslayers-pnp-tools` — die Pages-URL soll stabil bleiben.)
+
+**Deployment: GitHub Actions**, nicht mehr „von `main`". `.github/workflows/deploy.yml` checkt aus,
+setzt über `.github/inject-kontakt.py` den Impressums-Kontaktblock (Name, Anschrift, Telefon,
+E-Mail) aus dem Repo-Secret `IMPRESSUM_KONTAKT` zwischen die `<!--KONTAKT:START-->` /
+`<!--KONTAKT:END-->`-Marker in `imp/impressum.html` (zwei Vorkommen) und deployt das Ergebnis.
+So stehen die personenbezogenen Pflichtangaben **nicht** im Repo, in Klons, Forks oder der
+Git-History. Im Repo steht dort nur ein Platzhaltertext; lokal (`python -m http.server`) zeigt
+die Impressumsseite entsprechend keinen Kontaktblock — das ist kein Fehler.
 
 ## Entwickeln und testen
 

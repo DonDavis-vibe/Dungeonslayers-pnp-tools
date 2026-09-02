@@ -9,3 +9,7 @@ forenbeitrag*.md
 
 # Werkzeug-Konfiguration der lokalen Entwicklungsumgebung
 .claude/
+
+# Einmal-Werkzeug zum Bereinigen der History (enthaelt die zu entfernenden
+# personenbezogenen Daten im Klartext) — nach Gebrauch loeschen
+/.scrub/

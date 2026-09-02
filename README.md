@@ -565,7 +565,10 @@ Mechanik-Zusammenfassung nennt zu jedem Abschnitt die Seitenzahl im PDF.
 ## Mitmachen
 
 Mitstreiter sind sehr willkommen — das Projekt ist bewusst niedrigschwellig gehalten: reines HTML,
-CSS und JavaScript, kein Framework, kein Build-Schritt. Repository klonen, Datei öffnen, loslegen.
+CSS und JavaScript, kein Framework, kein lokaler Build-Schritt. Repository klonen, Datei öffnen,
+loslegen. (Das Deployment auf GitHub Pages läuft über einen kleinen Actions-Workflow, der lediglich
+die Kontaktdaten des Impressums aus einem Repo-Secret einsetzt — für die Entwicklung spielt das
+keine Rolle.)
 
 Besonders hilfreich wäre:
 
