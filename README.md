@@ -402,6 +402,14 @@ einstellbar, ohne die Regeldateien anzufassen:
     bei einem gelungenen Heilzauber, sonst über den Knopf **★ Heilung** — ob der Kamerad in
     diesem Kampf verletzt wurde, weiß nur der Tisch.
   - Sind Slayende Würfel ohne Slayerpunkte aktiv, weist das Tool auf die Empfehlung des Regelwerks hin.
+- **Heldenklassen ab Stufe 2** — das Fanwerk „Heldenklassen neu" von Zauberlehrling und
+  Sphärenwanderer (DS4-Fanwerk *Classe de héros*). Die Heldenklasse ist schon ab Stufe 2 wählbar,
+  dafür steigt man langsamer auf (eigene EP-Tabelle ab Stufe 3). Talente und Sprüche, die eine
+  Heldenklasse voraussetzen, öffnen ab **Charakterstufe ÷ 2** — ein Stufe-10-Talent also ab
+  Stufe 5, ein Stufe-12-Talent ab Stufe 6. Unter Stufe 5 darf einmalig ein Rang eines
+  Stufe-10-Heldenklassen-Talents gelernt werden; der Bogen zählt das mit und sperrt danach die
+  übrigen bis Stufe 5. Grundtalente bleiben unberührt (Großmeister weiter ab Stufe 20). Beim
+  Paladin liegt der Heiler-Spruchzugang dann bei Charakterstufe ÷ 2 statt Heiler-Stufe + 9.
 - **Eigene Talente, Zauber und Heldenklassen** anlegen — sie erscheinen in den Auswahllisten neben
   den offiziellen, sind als *Hausregel* gekennzeichnet und unterliegen derselben Zugangsprüfung.
 

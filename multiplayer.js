@@ -949,7 +949,7 @@ function buildSharedState() {
         volk: appData.volk ? DS4_RACES[appData.volk].name : '',
         klasse: cls ? (cls.isCaster && appData.subtype ? cls.subtypes[appData.subtype].name : cls.name) : '',
         isCaster: istZauberwirker(),
-        stufe: stufeFuerEp(appData.ep || 0, !!appData.heldenklasse),
+        stufe: stufeFuerEp(appData.ep || 0, heldStufenModus()),
         lkCurrent: appData.lkCurrent || 0,
         lkMax: derived.lebenskraft,
         // Damit der Spielleiter Bewusstlosigkeit und Tod richtig anzeigen kann
@@ -1379,8 +1379,8 @@ function handleGmCommand(payload) {
         }
         case 'ep': {
             appData.ep = (appData.ep || 0) + payload.amount;
-            const vorher = stufeFuerEp((appData.ep || 0) - payload.amount, !!appData.heldenklasse);
-            const nachher = stufeFuerEp(appData.ep, !!appData.heldenklasse);
+            const vorher = stufeFuerEp((appData.ep || 0) - payload.amount, heldStufenModus());
+            const nachher = stufeFuerEp(appData.ep, heldStufenModus());
             refreshBoundInputs();
             renderMeta();
             scheduleSave();

@@ -39,7 +39,35 @@ function talentKlasseKey() {
 }
 
 function charStufe() {
-    return stufeFuerEp(appData.ep || 0, !!appData.heldenklasse);
+    return stufeFuerEp(appData.ep || 0, typeof heldStufenModus === 'function' ? heldStufenModus() : !!appData.heldenklasse);
+}
+
+// Fanwerk "Heldenklassen neu": Talente, die dieser Charakter NUR über die
+// Heldenklasse hat (nicht schon über die Grundklasse auf seiner Stufe). Unter
+// Stufe 5 darf davon genau EINES bis Rang I gelernt werden.
+let _heldTalenteCache = null;
+function heldNurTalente() {
+    const sig = (appData.heldenklasse || '') + '|' + charStufe() + '|' +
+        (appData.talents || []).map(t => t.name).join(',');
+    if (_heldTalenteCache && _heldTalenteCache.sig === sig) return _heldTalenteCache.val;
+
+    const klasse = talentKlasseKey();
+    const stufe = charStufe();
+    const val = [];
+    (appData.talents || []).forEach(t => {
+        const d = talentDaten(t.name);
+        if (!d) return;
+        const perHeld = (d.heldenZugang || []).some(h => h.heldenklasse === appData.heldenklasse);
+        if (!perHeld) return;
+        const perGrund = (d.access || []).some(a => a.klasse === klasse && stufe >= a.minStufe);
+        if (!perGrund && !val.includes(t.name)) val.push(t.name);
+    });
+    _heldTalenteCache = { sig, val };
+    return val;
+}
+function heldFruehEinzeltalentFrei(name) {
+    const gelernt = heldNurTalente();
+    return gelernt.length === 0 || (gelernt.length === 1 && gelernt[0] === name);
 }
 
 // Liefert den für diesen Charakter gültigen Zugang zu einem Talent — oder null.
@@ -57,8 +85,18 @@ function talentZugang(talent) {
         if (a.klasse === klasse) kandidaten.push({ quelle: 'klasse', minStufe: a.minStufe, maxRang: a.maxRang });
     });
     if (appData.heldenklasse) {
+        const frueh = typeof heldenklassenFruehAktiv === 'function' && heldenklassenFruehAktiv();
         (talent.heldenZugang || []).forEach(h => {
-            if (h.heldenklasse === appData.heldenklasse) {
+            if (h.heldenklasse !== appData.heldenklasse) return;
+            if (frueh) {
+                // "Heldenklassen neu": Zugangsstufe = Charakterstufe/2 (Stufe-10-
+                // Talent ab Stufe 5, Stufe-12-Talent ab Stufe 6, ...).
+                kandidaten.push({ quelle: 'held', minStufe: Math.ceil(h.minStufe / 2), maxRang: h.maxRang });
+                // Unter Stufe 5: einmalig Rang I eines Stufe-10-Heldenklassen-Talents
+                if (stufe < 5 && h.minStufe <= 10 && heldFruehEinzeltalentFrei(talent.name)) {
+                    kandidaten.push({ quelle: 'held', minStufe: 1, maxRang: 1 });
+                }
+            } else {
                 kandidaten.push({ quelle: 'held', minStufe: h.minStufe, maxRang: h.maxRang });
             }
         });

@@ -809,20 +809,29 @@ const DS4_KAMPFPATZER = {
 
 // --- Erfahrung / Stufen -----------------------------------------------------
 
-function stufeFuerEp(ep, heldenklasse) {
+// `held` steuert, welche EP-Spalte gilt:
+//   falsy    — keine Heldenklasse, normale ep-Spalte
+//   'frueh'  — Hausregel "Heldenklassen neu": epHeldFrueh (ab Stufe 3)
+//   sonst    — Grundregelwerk-Heldenklasse: epHeld (ab Stufe 11)
+function epSchwelle(row, held) {
+    if (held === 'frueh' && row.epHeldFrueh != null) return row.epHeldFrueh;
+    if (held && held !== 'frueh' && row.epHeld != null) return row.epHeld;
+    return row.ep;
+}
+
+function stufeFuerEp(ep, held) {
     let stufe = 1;
     for (const row of DS4_XP_TABLE) {
-        const needed = (heldenklasse && row.epHeld !== null) ? row.epHeld : row.ep;
-        if (ep >= needed) stufe = row.stufe;
+        if (ep >= epSchwelle(row, held)) stufe = row.stufe;
     }
     return stufe;
 }
 
-function epBisNaechsteStufe(ep, heldenklasse) {
-    const current = stufeFuerEp(ep, heldenklasse);
+function epBisNaechsteStufe(ep, held) {
+    const current = stufeFuerEp(ep, held);
     const next = DS4_XP_TABLE.find(r => r.stufe === current + 1);
     if (!next) return null;
-    const needed = (heldenklasse && next.epHeld !== null) ? next.epHeld : next.ep;
+    const needed = epSchwelle(next, held);
     return { stufe: next.stufe, needed, missing: needed - ep };
 }
 

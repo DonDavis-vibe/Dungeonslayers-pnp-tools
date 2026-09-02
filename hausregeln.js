@@ -31,6 +31,11 @@ const HAUSREGELN_STANDARD = {
     slayendeWuerfel: false,
     slayerpunkte: false,
 
+    // Fanwerk "Heldenklassen neu" (Zauberlehrling/Sphärenwanderer, DS4-Fanwerk
+    // "Classe de héros"): Heldenklasse schon ab Stufe 2, dafür langsamere
+    // EP-Tabelle; Heldenklassen-Talente und -Sprüche ab Charakterstufe/2.
+    heldenklassenFrueh: false,
+
     // Eigene Ergänzungen, die in den Auswahllisten mit auftauchen
     eigeneTalente: [],
     eigeneZauber: [],
@@ -56,8 +61,14 @@ function hausregelnSichern() {
 function hausregelnAktiv() {
     const h = hausregeln;
     return h.lpModell !== 'klasse' || h.tpProStufe !== 1 || h.ntpAktiv ||
-        h.slayendeWuerfel || h.slayerpunkte ||
+        h.slayendeWuerfel || h.slayerpunkte || h.heldenklassenFrueh ||
         h.eigeneTalente.length || h.eigeneZauber.length || h.eigeneHeldenklassen.length;
+}
+
+// Fanwerk "Heldenklassen neu": Heldenklasse ab Stufe 2, Talent-/Spruchzugang
+// der Heldenklasse ab Charakterstufe/2, eigene langsamere EP-Tabelle.
+function heldenklassenFruehAktiv() {
+    return typeof hausregeln !== 'undefined' && !!hausregeln.heldenklassenFrueh;
 }
 
 // --- Auswirkungen auf die Regeln --------------------------------------------
@@ -201,6 +212,20 @@ function renderHausregeln() {
             Bei Probenwerten über 20 zählt dafür nur ein Immersieg des ersten Würfels.
         </p>`}
 
+        <h4 style="color:var(--accent-bright);margin-top:1.2rem">Heldenklassen</h4>
+        <div class="list-row">
+            <label style="flex:1;display:flex;align-items:center;gap:0.5rem;cursor:pointer">
+                <input type="checkbox" id="hr-held-frueh" ${h.heldenklassenFrueh ? 'checked' : ''} style="width:auto">
+                <span><strong>Heldenklassen ab Stufe 2</strong> — Fanwerk „Heldenklassen neu"</span>
+            </label>
+        </div>
+        <p class="hint" style="margin-top:0.4rem">
+            Die Heldenklasse ist schon ab Stufe 2 wählbar. Dafür steigt man langsamer auf (eigene
+            EP-Tabelle). Heldenklassen-Talente und -Sprüche werden ab <strong>Charakterstufe ÷ 2</strong>
+            zugänglich (Stufe-10-Talent also ab Stufe 5). Unter Stufe 5 darf einmalig ein Rang eines
+            Stufe-10-Heldenklassen-Talents gelernt werden. Grundtalente bleiben unberührt.
+        </p>
+
         <h4 style="color:var(--accent-bright);margin-top:1.2rem">Eigene Ergänzungen</h4>
         <div class="grid-3" style="margin-top:0.4rem">
             <div class="budget"><span>Talente</span> <strong>${h.eigeneTalente.length}</strong></div>
@@ -250,6 +275,11 @@ function renderHausregeln() {
             hausregeln[id === 'hr-slayend' ? 'slayendeWuerfel' : 'slayerpunkte'] = el.checked;
             renderHausregeln();
         });
+    });
+    const heldFrueh = document.getElementById('hr-held-frueh');
+    if (heldFrueh) heldFrueh.addEventListener('change', () => {
+        hausregeln.heldenklassenFrueh = heldFrueh.checked;
+        renderHausregeln();
     });
     const ntpSchalter = document.getElementById('hr-ntp-aktiv');
     if (ntpSchalter) ntpSchalter.addEventListener('change', () => {

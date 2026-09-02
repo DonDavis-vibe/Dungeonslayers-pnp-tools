@@ -78,9 +78,12 @@ der Slayerpunkte-Kasten in `app.js`). Ein neues Thema braucht nur einen Eintrag 
 plus `data-hilfe="…"` am Element — keine zusätzliche Verdrahtung.
 
 **Hausregeln sind ein Overlay auf der Engine.** `hausregeln.js` hält ein `hausregeln`-Objekt
-(Steigerungskosten, Talentpunkte-Verteilung, Slayerpunkte/Slayende Würfel an/aus, eigene
-Talente/Zauber/Heldenklassen) und wird vom Spielleiter gesetzt und an die Runde synchronisiert.
-`rules.js` und die Picker fragen dieses Objekt ab, statt Regelwerks-Standardwerte hart zu codieren.
+(Steigerungskosten, Talentpunkte-Verteilung, Slayerpunkte/Slayende Würfel an/aus,
+`heldenklassenFrueh` für das Fanwerk „Heldenklassen neu", eigene Talente/Zauber/Heldenklassen)
+und wird vom Spielleiter gesetzt und an die Runde synchronisiert. Die Picker (`talentPicker.js`,
+`spellPicker.js`) und `app.js` fragen dieses Objekt ab, statt Regelwerks-Standardwerte hart zu
+codieren — `rules.js` selbst bleibt rein und bekommt den Modus als Argument gereicht (z.B.
+`stufeFuerEp(ep, 'frueh')` für die langsamere EP-Spalte `epHeldFrueh`).
 
 ## Commit-Nachrichten
 

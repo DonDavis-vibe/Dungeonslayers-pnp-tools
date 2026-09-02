@@ -314,6 +314,12 @@ const HILFE_THEMEN = {
                      Abwehr löst sofort einen weiteren Wurf aus.</li>
                  <li><strong>Slayerpunkte</strong> (S.45) — ein eigenes Feld unter den Kampfwerten,
                      mit automatischer Vergabe und der Ausgabetabelle des Regelwerks.</li>
+                 <li><strong>Heldenklassen ab Stufe 2</strong> — das Fanwerk „Heldenklassen neu"
+                     (Zauberlehrling/Sphärenwanderer): die Heldenklasse ist schon ab Stufe 2
+                     wählbar, dafür geht der Aufstieg langsamer (eigene EP-Tabelle). Heldenklassen-
+                     Talente und -Sprüche öffnen ab <strong>Charakterstufe ÷ 2</strong> (Stufe-10-
+                     Talent also ab Stufe 5), unter Stufe 5 einmalig ein Rang eines Stufe-10-Talents.
+                     Grundtalente bleiben unberührt.</li>
                  <li><strong>Eigene Talente, Zauber und Heldenklassen</strong> anlegen — sie
                      erscheinen als <em>Hausregel</em> markiert in den Auswahllisten.</li>
                </ul>

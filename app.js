@@ -146,6 +146,19 @@ function activeClass() {
     return DS4_CLASSES[appData.klasse] || null;
 }
 
+// Welche EP-Spalte gilt für die Stufenberechnung? false = keine Heldenklasse,
+// 'frueh' = Hausregel "Heldenklassen neu" (langsamere Tabelle ab Stufe 3),
+// true = Grundregelwerk-Heldenklasse (Aufpreis ab Stufe 11).
+function heldStufenModus() {
+    if (!appData.heldenklasse) return false;
+    return (typeof heldenklassenFruehAktiv === 'function' && heldenklassenFruehAktiv()) ? 'frueh' : true;
+}
+
+// Ab welcher Stufe ist die Heldenklasse wählbar? Regelwerk 10, Hausregel 2.
+function heldenklasseAbStufe() {
+    return (typeof heldenklassenFruehAktiv === 'function' && heldenklassenFruehAktiv()) ? 2 : 10;
+}
+
 // Manche Heldenklassen bringen Zauberzugang mit, obwohl die Grundklasse nicht
 // zaubert — im Regelwerk ist das nur der Paladin (S.16).
 function heldenZauberzugang() {
@@ -967,11 +980,12 @@ function renderPortrait() {
 // --- Rendering: Meta (Stufe, EP, Volk) --------------------------------------
 
 function renderMeta() {
-    const hasHeld = !!appData.heldenklasse;
-    const stufe = stufeFuerEp(appData.ep || 0, hasHeld);
+    const heldModus = heldStufenModus();
+    const hasHeld = !!heldModus;
+    const stufe = stufeFuerEp(appData.ep || 0, heldModus);
     document.getElementById('tag-stufe').textContent = 'Stufe ' + stufe;
 
-    const next = epBisNaechsteStufe(appData.ep || 0, hasHeld);
+    const next = epBisNaechsteStufe(appData.ep || 0, heldModus);
     document.getElementById('ep-progress').textContent = next
         ? `Noch ${next.missing} EP bis Stufe ${next.stufe} (${next.needed} EP)${hasHeld ? ' — Heldenklassen-Tabelle' : ''}`
         : 'Höchststufe 20 erreicht.';
@@ -989,10 +1003,13 @@ function renderMeta() {
     if (addBtn) addBtn.style.display = nurRollen ? 'none' : '';
     if (panelHint) panelHint.style.display = nurRollen ? 'none' : '';
 
-    // Heldenklassen ab Stufe 10
+    // Heldenklassen ab Stufe 10 — mit Hausregel "Heldenklassen neu" schon ab Stufe 2
     const heldField = document.getElementById('field-held');
-    heldField.style.display = stufe >= 10 ? '' : 'none';
-    if (stufe >= 10 && cls) {
+    const abStufe = heldenklasseAbStufe();
+    heldField.style.display = stufe >= abStufe ? '' : 'none';
+    const heldLabel = heldField.querySelector('label');
+    if (heldLabel) heldLabel.textContent = `Heldenklasse (ab Stufe ${abStufe})`;
+    if (stufe >= abStufe && cls) {
         const list = cls.isCaster
             ? ((cls.subtypes[appData.subtype] || {}).heldenklassen || [])
             : cls.heldenklassen;
@@ -2075,7 +2092,7 @@ function renderLevelUp() {
 
     const costs = lpCosts();
     const lp = appData.lp || 0;
-    const stufe = stufeFuerEp(appData.ep || 0, !!appData.heldenklasse);
+    const stufe = stufeFuerEp(appData.ep || 0, heldStufenModus());
 
     const rows = Object.keys(DS4_EIGENSCHAFT_NAMES).map(key => {
         const cost = costs[key];
@@ -2212,7 +2229,7 @@ function gutschriftFuerStufen(stufen) {
 // Wird immer aufgerufen, wenn sich EP oder Heldenklasse ändern — dadurch wirkt
 // ein Herabsetzen der Stufe genauso wie ein Aufstieg, nur in die andere Richtung.
 function stufenAbgleichen(still) {
-    const stufe = stufeFuerEp(appData.ep || 0, !!appData.heldenklasse);
+    const stufe = stufeFuerEp(appData.ep || 0, heldStufenModus());
     const bisher = appData.stufenGutgeschrieben || 1;
     if (stufe === bisher) return false;
 
@@ -2230,8 +2247,7 @@ function stufenAbgleichen(still) {
 function grantLevelUp() {
     // Die Stufe ergibt sich aus den EP — ohne EP-Anpassung bliebe der Charakter
     // sonst formal auf seiner alten Stufe stehen und Talente blieben gesperrt.
-    const hatHeld = !!appData.heldenklasse;
-    const naechste = epBisNaechsteStufe(appData.ep || 0, hatHeld);
+    const naechste = epBisNaechsteStufe(appData.ep || 0, heldStufenModus());
     if (!naechste) { addLog('Höchststufe 20 bereits erreicht.', 'neutral'); return; }
     appData.ep = naechste.needed;
 

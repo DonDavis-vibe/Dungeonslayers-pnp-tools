@@ -35,7 +35,14 @@ function zauberZugang(zauber) {
     const eintrag = (zauber.zugang || []).find(z => z.klasse === klasse);
     if (!eintrag) return null;
     const stufe = charStufe();
-    const minStufe = eintrag.stufe + zauberStufenversatz();
+
+    // Zugang über eine Heldenklasse (Paladin) und Hausregel "Heldenklassen neu":
+    // Spruchzugang ab Charakterstufe/2 statt Heiler-Stufe +9 — Stufe-1-Spruch
+    // also ab Charakterstufe 2.
+    const ueberHeld = appData.klasse !== 'zauberwirker' && !!(typeof heldenZauberzugang === 'function' && heldenZauberzugang());
+    const frueh = ueberHeld && typeof heldenklassenFruehAktiv === 'function' && heldenklassenFruehAktiv();
+    const minStufe = frueh ? eintrag.stufe * 2 : eintrag.stufe + zauberStufenversatz();
+
     return { minStufe, erfuellt: stufe >= minStufe, stufe };
 }
 
@@ -181,7 +188,7 @@ function renderSpellPicker() {
     const klasse = zauberKlasseKey();
 
     if (!klasse) {
-        body.innerHTML = '<div class="empty-hint">Zauber lernen können Zauberwirker (Klasse und Typ wählen) sowie Paladine ab Stufe 10.</div>';
+        body.innerHTML = `<div class="empty-hint">Zauber lernen können Zauberwirker (Klasse und Typ wählen) sowie Paladine ab Stufe ${typeof heldenklasseAbStufe === 'function' ? heldenklasseAbStufe() : 10}.</div>`;
         return;
     }
 

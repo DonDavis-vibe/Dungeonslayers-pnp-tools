@@ -119,28 +119,33 @@ const DS4_HELDEN_ZAUBERZUGANG = {
     }
 };
 
-// EP-Tabelle: Stufe -> {ep, epHeld, lp, tp}. LP/TP sind die Zuwächse BEIM Erreichen der Stufe.
+// EP-Tabelle: Stufe -> {ep, epHeld, epHeldFrueh, lp, tp}. LP/TP sind die Zuwächse
+// BEIM Erreichen der Stufe.
+//   epHeld       — Grundregelwerk: Heldenklasse-Aufpreis erst ab Stufe 11 (S.9)
+//   epHeldFrueh  — Hausregel "Heldenklassen neu" (Zauberlehrling/Sphärenwanderer):
+//                  eigene, langsamere Tabelle ab Stufe 3, weil die Heldenklasse
+//                  schon ab Stufe 2 wählbar ist. Quelle: DS4-Fanwerk "Classe de héros".
 const DS4_XP_TABLE = [
-    { stufe: 1, ep: 0, epHeld: null, lp: 0, tp: 1 },
-    { stufe: 2, ep: 100, epHeld: null, lp: 2, tp: 1 },
-    { stufe: 3, ep: 300, epHeld: null, lp: 2, tp: 1 },
-    { stufe: 4, ep: 600, epHeld: null, lp: 2, tp: 1 },
-    { stufe: 5, ep: 1000, epHeld: null, lp: 2, tp: 1 },
-    { stufe: 6, ep: 1500, epHeld: null, lp: 2, tp: 1 },
-    { stufe: 7, ep: 2100, epHeld: null, lp: 2, tp: 1 },
-    { stufe: 8, ep: 2800, epHeld: null, lp: 2, tp: 1 },
-    { stufe: 9, ep: 3600, epHeld: null, lp: 2, tp: 1 },
-    { stufe: 10, ep: 4500, epHeld: null, lp: 2, tp: 1 },
-    { stufe: 11, ep: 5500, epHeld: 6000, lp: 2, tp: 1 },
-    { stufe: 12, ep: 6600, epHeld: 7600, lp: 2, tp: 1 },
-    { stufe: 13, ep: 7800, epHeld: 9300, lp: 2, tp: 1 },
-    { stufe: 14, ep: 9100, epHeld: 11100, lp: 2, tp: 1 },
-    { stufe: 15, ep: 10500, epHeld: 13000, lp: 2, tp: 1 },
-    { stufe: 16, ep: 12000, epHeld: 15000, lp: 2, tp: 1 },
-    { stufe: 17, ep: 13700, epHeld: 17200, lp: 2, tp: 1 },
-    { stufe: 18, ep: 15600, epHeld: 19600, lp: 2, tp: 1 },
-    { stufe: 19, ep: 17700, epHeld: 22200, lp: 2, tp: 1 },
-    { stufe: 20, ep: 20000, epHeld: 25000, lp: 2, tp: 1 }
+    { stufe: 1, ep: 0, epHeld: null, epHeldFrueh: null, lp: 0, tp: 1 },
+    { stufe: 2, ep: 100, epHeld: null, epHeldFrueh: null, lp: 2, tp: 1 },
+    { stufe: 3, ep: 300, epHeld: null, epHeldFrueh: 400, lp: 2, tp: 1 },
+    { stufe: 4, ep: 600, epHeld: null, epHeldFrueh: 800, lp: 2, tp: 1 },
+    { stufe: 5, ep: 1000, epHeld: null, epHeldFrueh: 1300, lp: 2, tp: 1 },
+    { stufe: 6, ep: 1500, epHeld: null, epHeldFrueh: 1900, lp: 2, tp: 1 },
+    { stufe: 7, ep: 2100, epHeld: null, epHeldFrueh: 2600, lp: 2, tp: 1 },
+    { stufe: 8, ep: 2800, epHeld: null, epHeldFrueh: 3400, lp: 2, tp: 1 },
+    { stufe: 9, ep: 3600, epHeld: null, epHeldFrueh: 4300, lp: 2, tp: 1 },
+    { stufe: 10, ep: 4500, epHeld: null, epHeldFrueh: 5300, lp: 2, tp: 1 },
+    { stufe: 11, ep: 5500, epHeld: 6000, epHeldFrueh: 6400, lp: 2, tp: 1 },
+    { stufe: 12, ep: 6600, epHeld: 7600, epHeldFrueh: 7700, lp: 2, tp: 1 },
+    { stufe: 13, ep: 7800, epHeld: 9300, epHeldFrueh: 9200, lp: 2, tp: 1 },
+    { stufe: 14, ep: 9100, epHeld: 11100, epHeldFrueh: 10900, lp: 2, tp: 1 },
+    { stufe: 15, ep: 10500, epHeld: 13000, epHeldFrueh: 12800, lp: 2, tp: 1 },
+    { stufe: 16, ep: 12000, epHeld: 15000, epHeldFrueh: 14900, lp: 2, tp: 1 },
+    { stufe: 17, ep: 13700, epHeld: 17200, epHeldFrueh: 17200, lp: 2, tp: 1 },
+    { stufe: 18, ep: 15600, epHeld: 19600, epHeldFrueh: 19700, lp: 2, tp: 1 },
+    { stufe: 19, ep: 17700, epHeld: 22200, epHeldFrueh: 22300, lp: 2, tp: 1 },
+    { stufe: 20, ep: 20000, epHeld: 25000, epHeldFrueh: 25000, lp: 2, tp: 1 }
 ];
 
 const DS4_DIFFICULTY_MODIFIERS = [
