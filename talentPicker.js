@@ -481,6 +481,9 @@ function learnTalent(name, gebietVorgabe) {
     if (entry) {
         if ((entry.rang || 1) >= zugang.maxRang) return;
         entry.rang = (entry.rang || 1) + 1;
+        // Der Höchstrang kann sich mit der Stufe heben (Hausregel "Heldenklassen
+        // neu": erst Rang I, ab Stufe 5 der volle Höchstrang).
+        entry.maxRang = zugang.maxRang;
     } else {
         appData.talents.push({ id: uid(), name, gebiet, rang: 1, maxRang: zugang.maxRang, notiz: '', topf });
     }
