@@ -3,11 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Slayer-Arsenal — kostenloser Charakterbogen & Spielleiter-Tool für Dungeonslayers 4</title>
-<meta name="description" content="Das Slayer-Arsenal ist ein kostenloses Tool für das Pen-&amp;-Paper-Rollenspiel Dungeonslayers 4: digitaler Charakterbogen mit Charaktererschaffung, Würfeln mit Immersieg und Patzer, Talente, Zauber und Bestiarium — dazu ein Live-Spielleiter-Dashboard mit Kampf-Tracker und Battlemap. Läuft im Browser, ohne Anmeldung.">
-<meta name="keywords" content="Dungeonslayers, DS4, Pen &amp; Paper, PnP, Rollenspiel, Charakterbogen, Charakterbogen online, Charaktergenerator, OSR, Spielleiter, GM Tool, Kampf-Tracker, Bestiarium, Multiplayer, kostenlos, deutsch">
+<title>Slayer-Arsenal — kostenloser Charakterbogen & Spielleiter-Tool für Dungeonslayers 4 · free character sheet & GM tool</title>
+<meta name="description" content="Das Slayer-Arsenal ist ein kostenloses Tool für das Pen-&amp;-Paper-Rollenspiel Dungeonslayers 4: digitaler Charakterbogen mit Charaktererschaffung, Würfeln mit Immersieg und Patzer, Talente, Zauber und Bestiarium — dazu ein Live-Spielleiter-Dashboard mit Kampf-Tracker und Battlemap. Läuft im Browser, ohne Anmeldung. — Free browser tool for the Dungeonslayers 4 tabletop RPG: character sheet and generator, rules-accurate 1d20 dice roller, talents, spells and bestiary, plus a live game master dashboard with initiative tracker and battlemap. English and German interface, no sign-up.">
+<meta name="keywords" content="Dungeonslayers, DS4, Pen &amp; Paper, PnP, Rollenspiel, Charakterbogen, Charakterbogen online, Charaktergenerator, OSR, Spielleiter, GM Tool, Kampf-Tracker, Bestiarium, Multiplayer, kostenlos, deutsch, Dungeonslayers English, character sheet, character generator, character creator, tabletop RPG, TTRPG, game master screen, GM tool, initiative tracker, virtual tabletop, battlemap, bestiary, free">
 <meta name="author" content="DonDavis — German Redneck Engineering">
 <link rel="canonical" href="https://dondavis-vibe.github.io/Dungeonslayers-pnp-tools/">
+<link rel="alternate" hreflang="de" href="https://dondavis-vibe.github.io/Dungeonslayers-pnp-tools/">
+<link rel="alternate" hreflang="en" href="https://dondavis-vibe.github.io/Dungeonslayers-pnp-tools/?lang=en">
+<link rel="alternate" hreflang="x-default" href="https://dondavis-vibe.github.io/Dungeonslayers-pnp-tools/">
 
 <!-- Vorschau beim Teilen in Forum, Discord & Co. -->
 <meta property="og:type" content="website">
@@ -16,6 +19,7 @@
 <meta property="og:description" content="Charakterbogen, Kampf-Tracker, Battlemap und Live-Multiplayer für Dungeonslayers 4 — im Browser, ohne Anmeldung und ohne Server.">
 <meta property="og:url" content="https://dondavis-vibe.github.io/Dungeonslayers-pnp-tools/">
 <meta property="og:locale" content="de_DE">
+<meta property="og:locale:alternate" content="en_US">
 <meta property="og:image" content="https://dondavis-vibe.github.io/Dungeonslayers-pnp-tools/img/titelbild.jpg">
 <meta property="og:image:alt" content="Eine Heldengruppe am Klippenrand blickt über das Land Caera — Titelbild des Slayer-Arsenals.">
 <meta name="twitter:card" content="summary_large_image">
@@ -32,7 +36,7 @@
   "url": "https://dondavis-vibe.github.io/Dungeonslayers-pnp-tools/",
   "applicationCategory": "GameApplication",
   "operatingSystem": "Webbrowser",
-  "inLanguage": "de",
+  "inLanguage": ["de", "en"],
   "browserRequirements": "Requires JavaScript",
   "isAccessibleForFree": true,
   "author": { "@type": "Person", "name": "DonDavis", "url": "https://github.com/DonDavis-vibe" },
@@ -57,7 +61,7 @@
 <!-- W20 als Favicon, direkt eingebettet (kein zusätzlicher Netzwerkabruf) -->
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%2314100c'/%3E%3Cpath d='M16 3 29 10.5v11L16 29 3 21.5v-11z' fill='none' stroke='%23d4a24c' stroke-width='2' stroke-linejoin='round'/%3E%3Cpath d='M16 3 16 29M3 10.5 29 21.5M29 10.5 3 21.5' stroke='%23d4a24c' stroke-width='1' opacity='.45'/%3E%3Ctext x='16' y='20' font-family='Georgia,serif' font-size='11' font-weight='bold' fill='%23f0c069' text-anchor='middle'%3E20%3C/text%3E%3C/svg%3E">
 
-<link rel="stylesheet" href="style.css?v=20260902d">
+<link rel="stylesheet" href="style.css?v=20260903a">
 </head>
 <body>
 
@@ -92,6 +96,7 @@
         <button class="btn btn-ghost" onclick="openRulesModal()">📖 Regeln</button>
         <button class="btn btn-ghost" onclick="openHausregeln()" title="Steigerungskosten, Talentpunkte und eigene Inhalte">⚙️ Hausregeln</button>
         <button class="btn btn-ghost" onclick="openHilfe()" title="Kurzanleitung: was das Tool kann und wie">❓ Hilfe</button>
+        <button class="btn btn-ghost" type="button" data-lang-toggle aria-label="Switch to English" title="Switch to English">🌐 EN</button>
         <button class="btn btn-ghost" data-sound-knopf onclick="soundStummUmschalten()">🔊</button>
         <input type="range" data-lautstaerke-slider min="0" max="1" step="0.05" value="1"
                oninput="setGeraetLautstaerke(this.value)" title="Deine Lautstärke — gilt für Hinweistöne und das Soundboard des Spielleiters"
@@ -705,6 +710,26 @@
                 </a>
             </p>
         </section>
+        <section lang="en">
+            <h2>In English</h2>
+            <p>
+                <strong>Slayer-Arsenal</strong> is a free, browser-based toolkit for the German
+                tabletop RPG <strong>Dungeonslayers 4</strong>. It walks you through character
+                creation, auto-calculates every combat value and rolls checks by the book on 1d20 —
+                including the perfect roll, the fumble and chained rolls above 20. It ships with the
+                complete talent and spell lists and the bestiary. The game master dashboard shows
+                every hero's health, stats and gear live, runs an initiative and combat tracker and
+                drops monsters straight from the bestiary onto a shared battlemap. No account, no
+                server, no install.
+            </p>
+            <p>
+                The interface is available in <strong>English and German</strong> — use the
+                <span aria-hidden="true">🌐</span> button at the top of the page, or open
+                <a href="?lang=en">?lang=en</a>. Talent, spell and creature names stay in German,
+                matching the rulebook. The rules system <em>Dungeonslayers</em> by Christian Kennig
+                is free at <a href="https://www.dungeonslayers.net/" target="_blank" rel="noopener">dungeonslayers.net</a>.
+            </p>
+        </section>
     </div>
 
     <div class="footer-disclaimer">
@@ -725,6 +750,11 @@
         <a href="https://ko-fi.com/don_davis" target="_blank" rel="noopener">☕ Ko-fi</a> |
         <a href="imp/impressum.html">Impressum &amp; Datenschutz</a><br>
         <span class="footer-tester">Am Tisch getestet von <strong>StCuthbert</strong></span><br>
+        <span class="footer-lang" role="group" aria-label="Sprache / Language">
+            🌐
+            <button type="button" class="lang-btn" data-setlang="de">Deutsch</button>
+            <button type="button" class="lang-btn" data-setlang="en">English</button>
+        </span><br>
         Das Pen-&amp;-Paper-Regelsystem <em>Dungeonslayers</em> wurde geschaffen von
         <strong>Christian Kennig</strong>; seine Texte und Regelmechaniken unterliegen der
         <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.de" target="_blank" rel="noopener">CC BY-NC-SA 4.0</a>
@@ -999,23 +1029,24 @@
     </div>
 </div>
 
-<script src="data.js?v=20260902d"></script>
-<script src="talents.js?v=20260902d"></script>
-<script src="zauber.js?v=20260902d"></script>
-<script src="bestiarium.js?v=20260902d"></script>
-<script src="sounds.js?v=20260902d"></script>
-<script src="hausregeln.js?v=20260902d"></script>
-<script src="rules.js?v=20260902d"></script>
-<script src="app.js?v=20260902d"></script>
-<script src="talentPicker.js?v=20260902d"></script>
-<script src="spellPicker.js?v=20260902d"></script>
-<script src="wizard.js?v=20260902d"></script>
-<script src="combat.js?v=20260902d"></script>
-<script src="battlemap.js?v=20260902d"></script>
-<script src="multiplayer.js?v=20260902d"></script>
-<script src="mapui.js?v=20260902d"></script>
-<script src="session.js?v=20260902d"></script>
-<script src="discord.js?v=20260902d"></script>
-<script src="hilfe.js?v=20260902d"></script>
+<script src="i18n.js?v=20260903a"></script>
+<script src="data.js?v=20260903a"></script>
+<script src="talents.js?v=20260903a"></script>
+<script src="zauber.js?v=20260903a"></script>
+<script src="bestiarium.js?v=20260903a"></script>
+<script src="sounds.js?v=20260903a"></script>
+<script src="hausregeln.js?v=20260903a"></script>
+<script src="rules.js?v=20260903a"></script>
+<script src="app.js?v=20260903a"></script>
+<script src="talentPicker.js?v=20260903a"></script>
+<script src="spellPicker.js?v=20260903a"></script>
+<script src="wizard.js?v=20260903a"></script>
+<script src="combat.js?v=20260903a"></script>
+<script src="battlemap.js?v=20260903a"></script>
+<script src="multiplayer.js?v=20260903a"></script>
+<script src="mapui.js?v=20260903a"></script>
+<script src="session.js?v=20260903a"></script>
+<script src="discord.js?v=20260903a"></script>
+<script src="hilfe.js?v=20260903a"></script>
 </body>
 </html>

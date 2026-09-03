@@ -1100,6 +1100,12 @@ select:focus {
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 2rem;
 }
+/* Der Fußtext liegt zweisprachig vor: die deutschen Abschnitte und ein
+   englischer. Sichtbar ist der zur aktuellen Oberflächensprache — für
+   Suchmaschinen steht der jeweils andere weiter im HTML. */
+.footer-inner > section[lang="en"] { display: none; }
+html[lang="en"] .footer-inner > section:not([lang]) { display: none; }
+html[lang="en"] .footer-inner > section[lang="en"] { display: block; }
 .site-footer h2 {
     font-size: 1rem;
     color: var(--accent-bright);
@@ -1191,6 +1197,31 @@ select:focus {
     opacity: 0.6;
 }
 .footer-tester strong { font-weight: 600; }
+
+.footer-lang {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.72rem;
+    opacity: 0.75;
+}
+.lang-btn {
+    background: none;
+    border: 1px solid var(--panel-border);
+    border-radius: 4px;
+    color: inherit;
+    font: inherit;
+    font-size: 0.72rem;
+    padding: 0.1rem 0.5rem;
+    cursor: pointer;
+}
+.lang-btn:hover { border-color: var(--accent); }
+.lang-btn.aktiv {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #14100c;
+    font-weight: 600;
+}
 
 
 /* ---------- Hilfe: "?"-Symbole und Popover ---------- */

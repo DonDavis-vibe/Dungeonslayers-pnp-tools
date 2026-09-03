@@ -540,6 +540,10 @@ function renderKartenWerkzeuge() {
         const feld = document.getElementById(id);
         if (feld) feld.addEventListener('input', rasterAusFeldern);
     });
+    if (typeof uebersetzeDOM === 'function') {
+        const tb = document.getElementById('map-tools');
+        if (tb) uebersetzeDOM(tb);
+    }
 }
 
 function rasterAusFeldern() {

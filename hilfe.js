@@ -824,6 +824,8 @@ function hilfeAnzeigen(id, knopf) {
             <span>❓ ${escapeHtml(thema.titel)}</span>
             <button class="btn btn-sm btn-ghost" onclick="hilfeSchliessen()" title="Schließen">✕</button>
         </div>
+        ${typeof hilfeNurDeutschHinweis === 'function' && hilfeNurDeutschHinweis()
+            ? `<div class="help-pop-body" style="opacity:.7;font-style:italic">${escapeHtml(hilfeNurDeutschHinweis())}</div>` : ''}
         <div class="help-pop-body">${thema.text}</div>
         <div class="help-pop-foot">
             <button class="btn btn-sm btn-ghost" onclick="openHilfe('${id}')">📖 Ganze Anleitung</button>

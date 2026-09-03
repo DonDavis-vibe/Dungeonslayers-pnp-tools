@@ -2487,6 +2487,7 @@ function renderAll() {
     renderInventory();
     renderGebietWahl();
     renderLog();
+    if (typeof uebersetzeDOM === 'function') uebersetzeDOM(document.body);
 }
 
 function populateStaticSelects() {

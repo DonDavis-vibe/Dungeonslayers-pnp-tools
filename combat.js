@@ -659,6 +659,7 @@ function renderCombat() {
 
     if (!combatants.length) {
         box.innerHTML = header + '<div class="empty-hint">Noch keine Teilnehmer. Gegner anlegen oder verbundene Spieler übernehmen.</div>';
+        if (typeof uebersetzeDOM === 'function') uebersetzeDOM(box);
         return;
     }
 
@@ -747,6 +748,7 @@ function renderCombat() {
 
     box.innerHTML = header + rows;
     wireCombatControls(box);
+    if (typeof uebersetzeDOM === 'function') uebersetzeDOM(box);
 }
 
 function wireCombatControls(box) {

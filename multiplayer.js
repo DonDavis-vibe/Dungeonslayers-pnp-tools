@@ -690,6 +690,7 @@ function renderGmDashboard() {
     // Kartenauswahl und Spieler-Zuweisung haengen von der Spielerliste ab
     if (typeof renderKartenListe === 'function') renderKartenListe();
     if (typeof renderKartenZuweisung === 'function') renderKartenZuweisung();
+    if (typeof uebersetzeDOM === 'function') uebersetzeDOM(document.getElementById('gm-dashboard'));
 }
 
 // --- GM Log & Würfel --------------------------------------------------------

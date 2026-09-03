@@ -121,6 +121,9 @@ function renderWizard() {
     nextBtn.disabled = !wizardStepValid(wizardStep);
     nextBtn.style.opacity = nextBtn.disabled ? '0.45' : '1';
     document.getElementById('wizard-validation').textContent = wizardValidationHint(wizardStep);
+    if (typeof uebersetzeDOM === 'function') {
+        uebersetzeDOM(document.getElementById('wizard-modal') || document.body);
+    }
 }
 
 function wizardStepHtml(id) {
