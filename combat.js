@@ -8,6 +8,26 @@ let currentRound = 0;
 let combatants = [];
 let turnIndex = 0;
 let npcCounter = 0;
+// Wer gerade dran ist — als ID gemerkt, damit die "▶ dran"-Markierung ein
+// Umsortieren und Roster-Änderungen (Spieler tritt bei/geht, Gegner raus)
+// übersteht. turnIndex allein würde dann auf den Falschen zeigen.
+let currentCombatantId = null;
+// Gegen doppeltes Runterzählen von Zuständen/Abwarten, wenn der Spielleiter
+// mit "← Zurück" eine Runde zurück- und wieder vorgeht.
+let lastTickedRound = 0;
+
+// Zieht turnIndex auf den aktiven Teilnehmer nach — nach jeder Änderung an
+// combatants (Sortieren, Hinzufügen, Entfernen).
+function turnIndexAngleichen() {
+    if (!combatActive || !combatants.length) return;
+    if (currentCombatantId) {
+        const i = combatants.findIndex(c => c.id === currentCombatantId);
+        turnIndex = i >= 0 ? i : Math.min(turnIndex, combatants.length - 1);
+    } else {
+        turnIndex = Math.min(turnIndex, combatants.length - 1);
+    }
+    turnIndex = Math.max(0, turnIndex);
+}
 
 function makeNpc(preset = {}) {
     npcCounter++;
@@ -358,6 +378,10 @@ function addFromBestiary(index, auchAufKarte) {
 
 function removeCombatant(id) {
     combatants = combatants.filter(c => c.id !== id);
+    // Wurde der aktuell Aktive entfernt, rückt der nächste an dieselbe Position;
+    // turnIndexAngleichen findet ihn sonst über die ID wieder.
+    if (id === currentCombatantId) currentCombatantId = null;
+    turnIndexAngleichen();
     if (turnIndex >= combatants.length) turnIndex = 0;
     renderCombat();
 }
@@ -373,6 +397,7 @@ function syncPlayersIntoCombat() {
             existing.lkCurrent = p.lkCurrent;
             existing.lkMax = p.lkMax;
             existing.abwehr = p.abwehr;
+            existing.schlagen = p.schlagen;
         } else {
             combatants.push({
                 id: 'pl-' + peerId, peerId, type: 'player',
@@ -390,6 +415,7 @@ function syncPlayersIntoCombat() {
 
 function sortCombatants() {
     combatants.sort((a, b) => (effektiveInitiative(b) - effektiveInitiative(a)) || (b.stechen - a.stechen));
+    turnIndexAngleichen();
 }
 
 function startCombat() {
@@ -400,10 +426,12 @@ function startCombat() {
     }
     // Einmaliges Stechen pro Kampf für Gleichstände
     combatants.forEach(c => { c.stechen = d20(); c.abwarten = 0; });
-    sortCombatants();
     combatActive = true;
     currentRound = 1;
+    lastTickedRound = 1;
+    sortCombatants();
     turnIndex = 0;
+    currentCombatantId = combatants[0] ? combatants[0].id : null;
     broadcastToPlayers({ type: 'round', round: currentRound });
     const reihenfolge = combatants.map(c => escapeHtml(c.name)).join(' → ');
     addGmLog('System', `<strong>Kampf beginnt</strong> — Runde 1. Reihenfolge: ${reihenfolge}`, 'erfolg');
@@ -426,6 +454,8 @@ function endCombat() {
     combatActive = false;
     currentRound = 0;
     turnIndex = 0;
+    currentCombatantId = null;
+    lastTickedRound = 0;
     broadcastToPlayers({ type: 'round', round: 0 });
     addGmLog('System', 'Kampf beendet. Nicht vergessen: <strong>Verschnaufen</strong> heilt die Hälfte der im Kampf verlorenen LK.', 'erfolg');
     if (typeof discordPostEreignis === 'function') {
@@ -436,26 +466,35 @@ function endCombat() {
 
 function nextTurn() {
     if (!combatActive) return;
+    turnIndexAngleichen();          // Liste kann sich seit dem letzten Zug geändert haben
     turnIndex++;
     if (turnIndex >= combatants.length) {
         turnIndex = 0;
         currentRound++;
-        abwartenHochzaehlen();
-        zustaendeRundenTick();
         broadcastToPlayers({ type: 'round', round: currentRound });
         addGmLog('System', `<strong>Runde ${currentRound}</strong>`, 'neutral');
+        // Zustände und Abwarten nur beim ERSTEN Erreichen einer Runde ticken —
+        // "← Zurück" und wieder vor darf nicht doppelt zählen.
+        if (currentRound > lastTickedRound) {
+            lastTickedRound = currentRound;
+            abwartenHochzaehlen();
+            zustaendeRundenTick();
+        }
     }
+    currentCombatantId = combatants[turnIndex] ? combatants[turnIndex].id : null;
     renderCombat();
 }
 
 function prevTurn() {
     if (!combatActive) return;
+    turnIndexAngleichen();
     turnIndex--;
     if (turnIndex < 0) {
         turnIndex = Math.max(0, combatants.length - 1);
         if (currentRound > 1) currentRound--;
         broadcastToPlayers({ type: 'round', round: currentRound });
     }
+    currentCombatantId = combatants[turnIndex] ? combatants[turnIndex].id : null;
     renderCombat();
 }
 
@@ -599,7 +638,7 @@ function renderCombat() {
     // Ältere Sitzungen / frisch übernommene Spieler kennen das Feld evtl. nicht
     combatants.forEach(c => { if (!Array.isArray(c.zustaende)) c.zustaende = []; });
 
-    if (combatActive) syncPlayersIntoCombat();
+    if (combatActive) { syncPlayersIntoCombat(); turnIndexAngleichen(); }
     // Kampfstand über einen versehentlichen Reload retten
     if (typeof sitzungSichern === 'function') sitzungSichern();
     // ... und die Spieler wissen lassen, dass und wie gekämpft wird

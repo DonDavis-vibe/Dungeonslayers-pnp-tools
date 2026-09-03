@@ -274,6 +274,10 @@ function sitzungAnwenden(daten) {
         combatActive = !!daten.kampf.aktiv;
         currentRound = daten.kampf.runde || 0;
         turnIndex = Math.min(daten.kampf.zugIndex || 0, Math.max(0, combatants.length - 1));
+        if (typeof currentCombatantId !== 'undefined') {
+            currentCombatantId = combatActive && combatants[turnIndex] ? combatants[turnIndex].id : null;
+        }
+        if (typeof lastTickedRound !== 'undefined') lastTickedRound = currentRound;
         combatants.forEach(c => {
             const nummer = parseInt(String(c.id).replace('npc-', ''), 10);
             if (Number.isFinite(nummer) && nummer > npcCounter) npcCounter = nummer;
