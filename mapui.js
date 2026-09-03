@@ -177,6 +177,16 @@ function karteWechseln(id) {
 
     karteAktuellenStandSpeichern();
 
+    // Ist die Gruppe schon aufgeteilt (irgendeine Zuweisung gesetzt), dürfen
+    // noch nicht zugewiesene Spieler beim Kartenwechsel NICHT mitgezogen werden —
+    // sie bleiben auf der bisherigen (aktiven) Karte. Ohne aktive Aufteilung
+    // folgen dagegen wie gewohnt alle dem Wechsel.
+    if (Object.keys(kartenZuweisung).length && typeof connectedPlayers !== 'undefined') {
+        Object.values(connectedPlayers).forEach(p => {
+            if (p && !kartenZuweisung[p.name]) kartenZuweisung[p.name] = aktiveKarteId;
+        });
+    }
+
     aktiveKarteId = id;
     karteBildDatenUrl = ziel.bild || null;
     karte.applyState(ziel.zustand || {}, ziel.bild || null);
@@ -1017,7 +1027,14 @@ function zugEntscheiden(id, angenommen) {
     else karte.zugVerwerfen(id);
 
     renderZugVorschlaege();
-    broadcastToPlayers({ type: 'mapZugEntscheidung', id, angenommen, zustand: karte.getStateFuerSpieler() });
+    // Zugvorschläge gibt es nur auf der aktiven Karte — die Entscheidung (samt
+    // Kartenzustand) darf also auch nur an Spieler dieser Karte, sonst bekämen
+    // aufgeteilte Spieler den fremden Kartenzustand aufgespielt.
+    Object.keys(clientConnections).forEach(peerId => {
+        if (karteIdFuerPeer(peerId) === aktiveKarteId) {
+            sendToPlayer(peerId, { type: 'mapZugEntscheidung', id, angenommen, zustand: karte.getStateFuerSpieler() });
+        }
+    });
     addGmLog('Spielleiter', `Bewegung von <strong>${escapeHtml(name)}</strong> ${angenommen ? 'bestätigt' : 'abgelehnt'}.`,
         angenommen ? 'erfolg' : 'fehlschlag');
 }
