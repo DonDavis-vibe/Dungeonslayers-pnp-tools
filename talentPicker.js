@@ -192,6 +192,7 @@ function ausgegebeneTp() {
 
 function renderTalents() {
     const container = document.getElementById('talent-list');
+    const TT = window.t || ((s) => s);
     const tp = appData.tp || 0;
     const ausgegeben = ausgegebeneTp();
     const verdient = verdienteTp();
@@ -200,20 +201,20 @@ function renderTalents() {
     const abweichung = summe - verdient;
 
     const head = `<div class="budget ${abweichung === 0 ? 'done' : (abweichung > 0 ? 'over' : '')}" style="margin-bottom:0.7rem">
-        Talentpunkte: <strong>${ausgegeben}</strong> ausgegeben · <strong>${tp}</strong> offen${ntpAktiv() ? ` · <strong>${appData.ntp || 0}</strong> ${escapeHtml(ntpName())}` : ''}
+        ${TT('Talentpunkte:')} <strong>${ausgegeben}</strong> ${TT('ausgegeben')} · <strong>${tp}</strong> ${TT('offen')}${ntpAktiv() ? ` · <strong>${appData.ntp || 0}</strong> ${escapeHtml(ntpName())}` : ''}
         <span class="hint" style="margin-left:auto">
             ${ntpAktiv()
-                ? `Hausregeln aktiv — zwei getrennte Töpfe`
+                ? TT('Hausregeln aktiv — zwei getrennte Töpfe')
                 : abweichung === 0
-                ? `passt zu Stufe ${charStufe()} (${verdient} TP)`
+                ? `${TT('passt zu Stufe')} ${charStufe()} (${verdient} TP)`
                 : (abweichung > 0
-                    ? `${abweichung} TP mehr als auf Stufe ${charStufe()} verdient (${verdient})`
-                    : `${-abweichung} TP fehlen gegenüber Stufe ${charStufe()} (${verdient})`)}
+                    ? `${abweichung} ${TT('TP mehr als auf Stufe')} ${charStufe()} ${TT('verdient')} (${verdient})`
+                    : `${-abweichung} ${TT('TP fehlen gegenüber Stufe')} ${charStufe()} (${verdient})`)}
         </span>
     </div>`;
 
     if (!appData.talents.length) {
-        container.innerHTML = head + '<div class="empty-hint">Noch keine Talente gewählt. Bei der Erschaffung gibt es 1 Talentpunkt (Menschen 2).</div>';
+        container.innerHTML = head + `<div class="empty-hint">${TT('Noch keine Talente gewählt. Bei der Erschaffung gibt es 1 Talentpunkt (Menschen 2).')}</div>`;
         return;
     }
 
@@ -224,41 +225,42 @@ function renderTalents() {
         const rang = t.rang || 1;
 
         const warn = data && !zugang
-            ? '<span class="tag tag-warn">für diese Klasse nicht verfügbar</span>'
+            ? `<span class="tag tag-warn">${TT('für diese Klasse nicht verfügbar')}</span>`
             : (zugang && !zugang.erfuellt
-                ? `<span class="tag tag-warn">erst ab Stufe ${zugang.minStufe}</span>` : '');
+                ? `<span class="tag tag-warn">${TT('erst ab Stufe')} ${zugang.minStufe}</span>` : '');
 
         const mehrfach = istMehrfachTalent(data);
 
         return `<div class="talent-entry">
             <div class="talent-entry-head">
                 <strong>${escapeHtml(t.name)}${t.gebiet ? ` (${escapeHtml(t.gebiet)})` : ''}</strong>
-                ${mehrfach && !t.gebiet ? '<span class="tag tag-warn">Gebiet fehlt</span>' : ''}
-                ${zugang && zugang.quelle === 'held' ? '<span class="tag">Heldenklasse</span>' : ''}
-                ${data && data.eigen ? '<span class="tag">Hausregel</span>' : ''}
+                ${mehrfach && !t.gebiet ? `<span class="tag tag-warn">${TT('Gebiet fehlt')}</span>` : ''}
+                ${zugang && zugang.quelle === 'held' ? `<span class="tag">${TT('Heldenklasse')}</span>` : ''}
+                ${data && data.eigen ? `<span class="tag">${TT('Hausregel')}</span>` : ''}
                 ${t.topf === 'ntp' ? `<span class="tag">${escapeHtml(ntpName())}</span>` : ''}
                 ${warn}
                 <span class="talent-rank">
-                    <button class="btn btn-sm" data-trank="${t.id}" data-delta="-1" title="Rang senken (TP zurück)">−</button>
-                    <span class="rank-value">Rang ${rang}<span class="eig-abbr"> / ${maxRang}</span></span>
+                    <button class="btn btn-sm" data-trank="${t.id}" data-delta="-1" title="${TT('Rang senken (TP zurück)')}">−</button>
+                    <span class="rank-value">${TT('Rang')} ${rang}<span class="eig-abbr"> / ${maxRang}</span></span>
                     <button class="btn btn-sm" data-trank="${t.id}" data-delta="1"
                         ${(rang >= maxRang || verfuegbarePunkte(t.topf === 'ntp' ? 'ntp' : 'tp') < 1) ? 'disabled style="opacity:0.35"' : ''}
-                        title="${rang >= maxRang ? 'Höchstrang erreicht' : 'Rang steigern (1 ' + (t.topf === 'ntp' ? escapeHtml(ntpName()) : 'TP') + ')'}">+</button>
+                        title="${rang >= maxRang ? TT('Höchstrang erreicht') : TT('Rang steigern') + ' (1 ' + (t.topf === 'ntp' ? escapeHtml(ntpName()) : 'TP') + ')'}">+</button>
                 </span>
-                <button class="icon-btn" data-tremove="${t.id}" title="Talent entfernen">✕</button>
+                <button class="icon-btn" data-tremove="${t.id}" title="${TT('Talent entfernen')}">✕</button>
             </div>
             ${data ? `<div class="talent-effect">${escapeHtml(data.effekt)}</div>` : ''}
-            ${data && data.proRang ? `<div class="talent-perrank">Pro Rang: ${escapeHtml(data.proRang)}</div>` : ''}
-            ${data && data.voraussetzung ? `<div class="talent-perrank" style="color:var(--fail)">Voraussetzung: ${escapeHtml(data.voraussetzung)}</div>` : ''}
+            ${data && data.proRang ? `<div class="talent-perrank">${TT('Pro Rang:')} ${escapeHtml(data.proRang)}</div>` : ''}
+            ${data && data.voraussetzung ? `<div class="talent-perrank" style="color:var(--fail)">${TT('Voraussetzung:')} ${escapeHtml(data.voraussetzung)}</div>` : ''}
             ${mehrfach ? `<div class="talent-perrank" style="display:flex;align-items:center;gap:0.4rem">
-                <label style="font-size:0.72rem;color:var(--text-dim)">${escapeHtml(data.mehrfach)}:</label>
+                <label style="font-size:0.72rem;color:var(--text-dim)">${escapeHtml(TT(data.mehrfach))}:</label>
                 <input type="text" value="${escapeHtml(t.gebiet || '')}" data-tgebiet="${t.id}"
-                       placeholder="z.B. Schmied" style="flex:1;max-width:14rem;font-size:0.8rem">
+                       placeholder="${TT('z.B. Schmied')}" style="flex:1;max-width:14rem;font-size:0.8rem">
             </div>` : ''}
             ${talentWahlHtml(t, data)}
             ${t.notiz ? `<div class="talent-perrank">${escapeHtml(t.notiz)}</div>` : ''}
         </div>`;
     }).join('');
+    if (typeof uebersetzeDOM === 'function') uebersetzeDOM(container);
 
     container.querySelectorAll('[data-trank]').forEach(btn => {
         btn.addEventListener('click', () => changeTalentRank(btn.dataset.trank, parseInt(btn.dataset.delta, 10)));
@@ -351,9 +353,10 @@ function renderTalentPicker() {
     const body = document.getElementById('talent-picker-body');
     const klasse = talentKlasseKey();
     const stufe = charStufe();
+    const TT = window.t || ((s) => s);
 
     if (!klasse) {
-        body.innerHTML = '<div class="empty-hint">Bitte zuerst Klasse (und bei Zauberwirkern den Typ) wählen — davon hängt ab, welche Talente zur Verfügung stehen.</div>';
+        body.innerHTML = `<div class="empty-hint">${TT('Bitte zuerst Klasse (und bei Zauberwirkern den Typ) wählen — davon hängt ab, welche Talente zur Verfügung stehen.')}</div>`;
         return;
     }
 
@@ -373,23 +376,23 @@ function renderTalentPicker() {
 
     const kopf = `
         <div style="display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap;margin-bottom:0.8rem">
-            <input type="text" id="talent-search" placeholder="Talent suchen..." value="${escapeHtml(talentFilter)}" style="flex:1;min-width:160px">
+            <input type="text" id="talent-search" placeholder="${t('Talent suchen...')}" value="${escapeHtml(talentFilter)}" style="flex:1;min-width:160px">
             <label class="radio-pill ${talentShowAll ? 'selected' : ''}" id="talent-showall">
-                auch noch nicht erreichbare
+                ${t('auch noch nicht erreichbare')}
             </label>
         </div>
         <div class="budget" style="margin-bottom:0.8rem">
-            ${escapeHtml(klasseName)}${appData.heldenklasse ? ' / ' + escapeHtml(appData.heldenklasse) : ''} ·
-            Stufe <strong>${stufe}</strong> ·
-            ${ntpAktiv() ? `Bezahlen aus:
+            ${escapeHtml(t(klasseName))}${appData.heldenklasse ? ' / ' + escapeHtml(appData.heldenklasse) : ''} ·
+            ${t('Stufe')} <strong>${stufe}</strong> ·
+            ${ntpAktiv() ? `${t('Bezahlen aus:')}
                 <span class="radio-pill ${talentTopf === 'tp' ? 'selected' : ''}" onclick="talentTopfWaehlen('tp')">TP ${appData.tp || 0}</span>
                 <span class="radio-pill ${talentTopf === 'ntp' ? 'selected' : ''}" onclick="talentTopfWaehlen('ntp')" title="${escapeHtml(hausregeln.ntpHinweis)}">${escapeHtml(ntpName())} ${appData.ntp || 0}</span>`
-              : `Offene TP: <strong>${appData.tp || 0}</strong>`}
-            <span class="hint" style="margin-left:auto">${eintraege.length} Talente</span>
+              : `${t('Offene TP:')} <strong>${appData.tp || 0}</strong>`}
+            <span class="hint" style="margin-left:auto">${tp('{n} Talente', { n: eintraege.length })}</span>
         </div>`;
 
     if (!eintraege.length) {
-        body.innerHTML = kopf + '<div class="empty-hint">Keine passenden Talente gefunden.</div>';
+        body.innerHTML = kopf + `<div class="empty-hint">${t('Keine passenden Talente gefunden.')}</div>`;
         wireTalentPickerHead();
         return;
     }
@@ -406,26 +409,26 @@ function renderTalentPicker() {
         const kannLernen = z.erfuellt && !voll && verfuegbarePunkte(topf) >= 1;
 
         let knopf;
-        if (!z.erfuellt) knopf = `<span class="tag tag-warn">ab Stufe ${z.minStufe}</span>`;
-        else if (voll) knopf = '<span class="tag">Höchstrang</span>';
-        else if (!kannLernen) knopf = '<span class="tag tag-warn">kein TP frei</span>';
-        else knopf = `<button class="btn btn-sm btn-primary" data-tlearn="${escapeHtml(t.name)}">${mehrfach ? 'Gebiet wählen' : (rang ? 'Rang +1' : 'Lernen')} (1 ${topf === 'ntp' ? escapeHtml(ntpName()) : 'TP'})</button>`;
+        if (!z.erfuellt) knopf = `<span class="tag tag-warn">${TT('ab Stufe')} ${z.minStufe}</span>`;
+        else if (voll) knopf = `<span class="tag">${TT('Höchstrang')}</span>`;
+        else if (!kannLernen) knopf = `<span class="tag tag-warn">${TT('kein TP frei')}</span>`;
+        else knopf = `<button class="btn btn-sm btn-primary" data-tlearn="${escapeHtml(t.name)}">${TT(mehrfach ? 'Gebiet wählen' : (rang ? 'Rang +1' : 'Lernen'))} (1 ${topf === 'ntp' ? escapeHtml(ntpName()) : 'TP'})</button>`;
 
         return `<div class="talent-option ${z.erfuellt ? '' : 'locked'}">
             <div class="talent-entry-head">
                 <strong>${escapeHtml(t.name)}</strong>
                 ${mehrfach
-                    ? `<span class="hint">je Gebiet max. Rang ${z.maxRang}${talentGebiete(t.name).length ? ' · ' + talentGebiete(t.name).map(g => `${escapeHtml(g.gebiet)} ${g.rang}`).join(', ') : ''}</span>`
-                    : (rang ? `<span class="tag">Rang ${rang}/${z.maxRang}</span>` : `<span class="hint">max. Rang ${z.maxRang}</span>`)}
-                ${z.quelle === 'held' ? '<span class="tag">Heldenklasse</span>' : ''}
-                ${z.spaeter ? `<span class="hint" title="Die Heldenklasse hebt den Höchstrang später an">ab Stufe ${z.spaeter.minStufe}: bis Rang ${z.spaeter.maxRang}</span>` : ''}
-                ${t.eigen ? '<span class="tag">Hausregel</span>' : ''}
+                    ? `<span class="hint">${TT('je Gebiet max. Rang')} ${z.maxRang}${talentGebiete(t.name).length ? ' · ' + talentGebiete(t.name).map(g => `${escapeHtml(g.gebiet)} ${g.rang}`).join(', ') : ''}</span>`
+                    : (rang ? `<span class="tag">${TT('Rang')} ${rang}/${z.maxRang}</span>` : `<span class="hint">${TT('max. Rang')} ${z.maxRang}</span>`)}
+                ${z.quelle === 'held' ? `<span class="tag">${TT('Heldenklasse')}</span>` : ''}
+                ${z.spaeter ? `<span class="hint" title="${TT('Die Heldenklasse hebt den Höchstrang später an')}">${TT('ab Stufe')} ${z.spaeter.minStufe}: ${TT('bis Rang')} ${z.spaeter.maxRang}</span>` : ''}
+                ${t.eigen ? `<span class="tag">${TT('Hausregel')}</span>` : ''}
                 <span style="margin-left:auto">${knopf}</span>
             </div>
             <div class="talent-effect">${escapeHtml(t.effekt)}</div>
-            ${t.proRang ? `<div class="talent-perrank">Pro Rang: ${escapeHtml(t.proRang)}</div>` : ''}
-            ${t.mehrfach ? `<div class="talent-perrank">Mehrfach wählbar: ${escapeHtml(t.mehrfach)}</div>` : ''}
-            ${t.voraussetzung ? `<div class="talent-perrank" style="color:var(--fail)">Voraussetzung: ${escapeHtml(t.voraussetzung)}</div>` : ''}
+            ${t.proRang ? `<div class="talent-perrank">${TT('Pro Rang:')} ${escapeHtml(t.proRang)}</div>` : ''}
+            ${t.mehrfach ? `<div class="talent-perrank">${TT('Mehrfach wählbar:')} ${escapeHtml(t.mehrfach)}</div>` : ''}
+            ${t.voraussetzung ? `<div class="talent-perrank" style="color:var(--fail)">${TT('Voraussetzung:')} ${escapeHtml(t.voraussetzung)}</div>` : ''}
         </div>`;
     }).join('') + '</div>';
 
@@ -434,6 +437,7 @@ function renderTalentPicker() {
     body.querySelectorAll('[data-tlearn]').forEach(btn => {
         btn.addEventListener('click', () => learnTalent(btn.dataset.tlearn));
     });
+    if (typeof uebersetzeDOM === 'function') uebersetzeDOM(body);
 }
 
 function wireTalentPickerHead() {
@@ -510,16 +514,19 @@ function renderVolksfaehigkeiten() {
         ? DS4_VOLKSFAEHIGKEITEN[appData.volk]
         : null;
 
+    const TT = window.t || ((s) => s);
+    const label = `<strong>${TT('Volksfähigkeiten:')}</strong> `;
+
     if (!faehigkeiten) {
         const race = DS4_RACES[appData.volk];
-        box.innerHTML = race ? '<strong>Volksfähigkeiten:</strong> ' + race.traits.map(escapeHtml).join(' · ') : '';
+        box.innerHTML = race ? label + race.traits.map(tr => escapeHtml(TT(tr))).join(' · ') : '';
         return;
     }
 
-    box.innerHTML = '<strong>Volksfähigkeiten:</strong> ' + faehigkeiten
-        .map(f => `<span title="${escapeHtml(f.effekt)}">${escapeHtml(f.name)}</span>`)
+    box.innerHTML = label + faehigkeiten
+        .map(f => `<span title="${escapeHtml(TT(f.effekt))}">${escapeHtml(TT(f.name))}</span>`)
         .join(' · ') +
         '<div style="margin-top:0.3rem">' + faehigkeiten
-        .map(f => `<div>• <strong>${escapeHtml(f.name)}:</strong> ${escapeHtml(f.effekt)}</div>`)
+        .map(f => `<div>• <strong>${escapeHtml(TT(f.name))}:</strong> ${escapeHtml(TT(f.effekt))}</div>`)
         .join('') + '</div>';
 }

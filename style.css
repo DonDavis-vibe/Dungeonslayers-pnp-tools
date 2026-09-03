@@ -1106,6 +1106,12 @@ select:focus {
 .footer-inner > section[lang="en"] { display: none; }
 html[lang="en"] .footer-inner > section:not([lang]) { display: none; }
 html[lang="en"] .footer-inner > section[lang="en"] { display: block; }
+
+/* Allgemein: prosalastige Blöcke (Willkommen, Multiplayer-Hilfe) liegen
+   zweisprachig parallel vor. i18n.js setzt <html lang>. */
+[data-only-lang="en"] { display: none; }
+html[lang="en"] [data-only-lang="de"] { display: none; }
+html[lang="en"] [data-only-lang="en"] { display: block; }
 .site-footer h2 {
     font-size: 1rem;
     color: var(--accent-bright);

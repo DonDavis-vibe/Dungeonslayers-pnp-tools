@@ -235,18 +235,18 @@ function renderBestiary() {
         .filter(c => !suche || c.name.toLowerCase().includes(suche) || (c.kategorie || '').toLowerCase().includes(suche))
         .sort((a, b) => (a.gh - b.gh) || a.name.localeCompare(b.name, 'de'));
 
+    const TT = window.t || ((s) => s);
     const kopf = `
         <div style="display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap;margin-bottom:0.8rem">
-            <input type="text" id="bestiary-search" placeholder="Kreatur oder Kategorie suchen..." value="${escapeHtml(bestiaryFilter)}" style="flex:1;min-width:180px">
-            <span class="hint">${treffer.length} von ${DS4_BESTIARIUM.length}</span>
+            <input type="text" id="bestiary-search" placeholder="${TT('Kreatur oder Kategorie suchen...')}" value="${escapeHtml(bestiaryFilter)}" style="flex:1;min-width:180px">
+            <span class="hint">${treffer.length} / ${DS4_BESTIARIUM.length}</span>
         </div>
         <p class="hint-rule" style="margin-bottom:0.8rem">
-            <strong>GH</strong> = Gegnerhärte: die zusammengerechnete Heldenstufe einer Gruppe, die gegen
-            <em>ein</em> Exemplar gute Chancen haben sollte.
+            ${TT('<strong>GH</strong> = Gegnerhärte: die zusammengerechnete Heldenstufe einer Gruppe, die gegen <em>ein</em> Exemplar gute Chancen haben sollte.')}
         </p>`;
 
     if (!treffer.length) {
-        body.innerHTML = kopf + '<div class="empty-hint">Keine Kreatur gefunden.</div>';
+        body.innerHTML = kopf + `<div class="empty-hint">${TT('Keine Kreatur gefunden.')}</div>`;
         wireBestiarySearch();
         return;
     }
@@ -254,14 +254,14 @@ function renderBestiary() {
     body.innerHTML = kopf + '<div class="talent-picker-list">' + treffer.map((c, i) => {
         const idx = DS4_BESTIARIUM.indexOf(c);
         const werte = [
-            c.lk != null ? `LK ${c.lk}` : null,
-            c.abwehr != null ? `Abwehr ${c.abwehr}` : null,
-            c.initiative != null ? `Ini ${c.initiative}` : null,
-            c.laufen != null ? `Laufen ${c.laufen}m` : null,
-            c.schlagen != null ? `Schlagen ${c.schlagen}` : null,
-            c.schiessen != null ? `Schießen ${c.schiessen}` : null,
-            c.zaubern != null ? `Zaubern ${c.zaubern}` : null,
-            c.zielzauber != null ? `Zielzauber ${c.zielzauber}` : null
+            c.lk != null ? `${TT('LK')} ${c.lk}` : null,
+            c.abwehr != null ? `${TT('Abwehr')} ${c.abwehr}` : null,
+            c.initiative != null ? `${TT('Ini')} ${c.initiative}` : null,
+            c.laufen != null ? `${TT('Laufen')} ${c.laufen}m` : null,
+            c.schlagen != null ? `${TT('Schlagen')} ${c.schlagen}` : null,
+            c.schiessen != null ? `${TT('Schießen')} ${c.schiessen}` : null,
+            c.zaubern != null ? `${TT('Zaubern')} ${c.zaubern}` : null,
+            c.zielzauber != null ? `${TT('Zielzauber')} ${c.zielzauber}` : null
         ].filter(Boolean).join(' · ');
 
         const faehigkeiten = (c.besonderes || []).map(b => b.name).join(', ');
@@ -271,17 +271,17 @@ function renderBestiary() {
                 <strong>${escapeHtml(c.name)}</strong>
                 <span class="tag">GH ${c.gh}</span>
                 <span class="tag">${escapeHtml(c.kategorie)}</span>
-                <span class="tag" title="Größenkategorie — je Kategorie Unterschied ±2 auf den Angriff (S.44)">${escapeHtml(groessenName(c.gk))}</span>
-                ${c.ep != null ? `<span class="hint">${c.ep} EP</span>` : ''}
+                <span class="tag" title="${TT('Größenkategorie — je Kategorie Unterschied ±2 auf den Angriff (S.44)')}">${escapeHtml(TT(groessenName(c.gk)))}</span>
+                ${c.ep != null ? `<span class="hint">${c.ep} ${TT('EP')}</span>` : ''}
                 <span style="margin-left:auto;display:flex;gap:0.3rem">
-                    <button class="btn btn-sm btn-primary" data-badd="${idx}">In den Kampf</button>
+                    <button class="btn btn-sm btn-primary" data-badd="${idx}">${TT('In den Kampf')}</button>
                     <button class="btn btn-sm" data-badd-karte="${idx}"
-                            title="In den Kampf und zugleich als Figur auf die Karte, in passender Größe">+ Karte</button>
+                            title="${TT('In den Kampf und zugleich als Figur auf die Karte, in passender Größe')}">${TT('+ Karte')}</button>
                 </span>
             </div>
             <div class="talent-perrank">${escapeHtml(werte)}</div>
             ${c.bewaffnung || c.panzerung ? `<div class="talent-effect">${escapeHtml([c.bewaffnung, c.panzerung].filter(Boolean).join(' · '))}</div>` : ''}
-            ${faehigkeiten ? `<div class="talent-effect">Besonderes: ${escapeHtml(faehigkeiten)}</div>` : ''}
+            ${faehigkeiten ? `<div class="talent-effect">${TT('Besonderes:')} ${escapeHtml(faehigkeiten)}</div>` : ''}
         </div>`;
     }).join('') + '</div>';
 
@@ -292,6 +292,7 @@ function renderBestiary() {
     body.querySelectorAll('[data-badd-karte]').forEach(btn => {
         btn.addEventListener('click', () => addFromBestiary(parseInt(btn.dataset.baddKarte, 10), true));
     });
+    if (typeof uebersetzeDOM === 'function') uebersetzeDOM(body);
 }
 
 function wireBestiarySearch() {

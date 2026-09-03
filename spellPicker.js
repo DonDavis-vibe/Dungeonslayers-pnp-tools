@@ -55,6 +55,7 @@ function kenntZauber(name) {
 function renderSpells() {
     const container = document.getElementById('spell-list');
     if (!container) return;
+    const TT = window.t || ((s) => s);
 
     // Meisterdieb mit "Zauber auslösen": eigener, schlanker Kasten — er lernt
     // keine Sprüche, sondern liest sie von Schriftrollen und aus Zauberbüchern.
@@ -79,13 +80,13 @@ function renderSpells() {
     const routineMax = typeof routineKapazitaet === 'function' ? routineKapazitaet() : 0;
     const routineAnzahl = appData.spells.filter(s => s.routine).length;
     const kopf = `<div style="display:flex;gap:0.5rem;align-items:center;margin-bottom:0.7rem;flex-wrap:wrap">
-        <span class="budget">Bekannte Zauber: <strong>${appData.spells.length}</strong></span>
-        ${routineMax ? `<span class="budget">Gebundene Zauber: <strong>${routineAnzahl}/${routineMax}</strong></span>` : ''}
-        <span class="hint" style="margin-left:auto">Nur ein Zauber kann vorbereitet sein${routineMax ? ` — zu den ${routineMax} gebundenen Sprüchen (Zauberroutine / Stabbindung / Zauberwaffe) wechselst du ohne Aktion und ohne Probe` : ''}</span>
+        <span class="budget">${TT('Bekannte Zauber:')} <strong>${appData.spells.length}</strong></span>
+        ${routineMax ? `<span class="budget">${TT('Gebundene Zauber:')} <strong>${routineAnzahl}/${routineMax}</strong></span>` : ''}
+        <span class="hint" style="margin-left:auto">${TT('Nur ein Zauber kann vorbereitet sein')}${routineMax ? TT(' — zu den gebundenen Sprüchen wechselst du ohne Aktion und ohne Probe') : ''}</span>
     </div>`;
 
     if (!appData.spells.length) {
-        container.innerHTML = kopf + '<div class="empty-hint">Noch keine Zauber. Zauberwirker starten mit einem Zauber der Stufe 1.</div>';
+        container.innerHTML = kopf + `<div class="empty-hint">${TT('Noch keine Zauber. Zauberwirker starten mit einem Zauber der Stufe 1.')}</div>`;
         return;
     }
 
@@ -93,7 +94,7 @@ function renderSpells() {
         const data = typeof DS4_ZAUBER !== 'undefined' ? zauberListe().find(z => z.name === s.name) : null;
         const onCooldown = s.cooldownUntil && typeof currentRound === 'number' && currentRound > 0 && currentRound < s.cooldownUntil;
         const typ = data ? data.typ : (s.typ || 'normal');
-        const probe = typ === 'ziel' ? 'Zielzauber' : 'Zaubern';
+        const probe = typ === 'ziel' ? TT('Zielzauber') : TT('Zaubern');
         // Formelhafte Zauberboni ("−(KÖR+VE)/2 des Ziels") kann der Bogen nicht
         // vorausberechnen — er rechnet mit 0 und weist darauf hin.
         const zbText = String(s.zb != null && s.zb !== '' ? s.zb : (data ? data.zb : 0)).trim();
@@ -103,31 +104,32 @@ function renderSpells() {
             <div class="talent-entry-head">
                 <button class="btn btn-sm ${s.prepared ? 'btn-primary' : 'btn-ghost'}" data-prepare="${escapeHtml(s.name)}"
                         title="${s.routine
-                            ? 'Vorbereiteten Zauber setzen — als gebundener Spruch ohne Aktion und ohne GEI+VE-Probe'
-                            : 'Vorbereiteten Zauber setzen — Wechseln kostet im Kampf eine Aktion und eine GEI+VE-Probe'}">
-                    ${s.prepared ? '★ vorbereitet' : '☆ vorbereiten'}
+                            ? TT('Vorbereiteten Zauber setzen — als gebundener Spruch ohne Aktion und ohne GEI+VE-Probe')
+                            : TT('Vorbereiteten Zauber setzen — Wechseln kostet im Kampf eine Aktion und eine GEI+VE-Probe')}">
+                    ${s.prepared ? TT('★ vorbereitet') : TT('☆ vorbereiten')}
                 </button>
                 ${routineMax ? `<button class="btn btn-sm ${s.routine ? 'btn-primary' : 'btn-ghost'}" data-routine="${escapeHtml(s.name)}"
-                        title="An diesen Spruch binden (Zauberroutine / Stabbindung / Zauberwaffe) — dann ohne Aktion und ohne Probe hierher wechseln. Beim Wirken zählt sein eigener ZB, er addiert sich nicht dauerhaft.">
-                    ${s.routine ? '⚙ gebunden' : '⚙ binden'}
+                        title="${TT('An diesen Spruch binden — dann ohne Aktion und ohne Probe hierher wechseln. Beim Wirken zählt sein eigener ZB.')}">
+                    ${s.routine ? TT('⚙ gebunden') : TT('⚙ binden')}
                 </button>` : ''}
                 <strong>${escapeHtml(s.name)}</strong>
                 <span class="tag">${probe}</span>
-                ${zbUnklar ? '<span class="tag tag-warn" title="Der Bogen rechnet mit ZB 0 — der tatsächliche Wert hängt vom Ziel ab und gehört als Modifikator in den Wurf">ZB formelhaft</span>' : ''}
-                ${data && data.geistesbeeinflussend ? '<span class="tag">geistesbeeinflussend</span>' : ''}
-                ${onCooldown ? `<span class="tag tag-warn">abklingend bis Runde ${s.cooldownUntil}</span>` : ''}
+                ${zbUnklar ? `<span class="tag tag-warn" title="${TT('Der Bogen rechnet mit ZB 0 — der tatsächliche Wert hängt vom Ziel ab und gehört als Modifikator in den Wurf')}">${TT('ZB formelhaft')}</span>` : ''}
+                ${data && data.geistesbeeinflussend ? `<span class="tag">${TT('geistesbeeinflussend')}</span>` : ''}
+                ${onCooldown ? `<span class="tag tag-warn">${TT('abklingend bis Runde')} ${s.cooldownUntil}</span>` : ''}
                 <span style="margin-left:auto;display:flex;gap:0.3rem;align-items:center">
                     <span class="hint">ZB ${escapeHtml(String(s.zb ?? (data ? data.zb : 0)))}</span>
-                    <button class="icon-btn" data-sremove="${escapeHtml(s.name)}" title="Zauber entfernen">✕</button>
+                    <button class="icon-btn" data-sremove="${escapeHtml(s.name)}" title="${TT('Zauber entfernen')}">✕</button>
                 </span>
             </div>
             <div class="talent-effect">${escapeHtml(data ? data.effekt : (s.effekt || ''))}</div>
             <div class="talent-perrank">
-                ${data ? `Dauer: ${escapeHtml(data.dauer)} · Distanz: ${escapeHtml(data.distanz)} · Abklingzeit: ${escapeHtml(data.abklingzeit)}`
-                       : `Abklingzeit: ${escapeHtml(s.abklingzeit || '—')}`}
+                ${data ? `${TT('Dauer:')} ${escapeHtml(data.dauer)} · ${TT('Distanz:')} ${escapeHtml(data.distanz)} · ${TT('Abklingzeit:')} ${escapeHtml(data.abklingzeit)}`
+                       : `${TT('Abklingzeit:')} ${escapeHtml(s.abklingzeit || '—')}`}
             </div>
         </div>`;
     }).join('');
+    if (typeof uebersetzeDOM === 'function') uebersetzeDOM(container);
 
     container.querySelectorAll('[data-prepare]').forEach(btn => {
         btn.addEventListener('click', () => {
@@ -186,9 +188,10 @@ function addSpell() {
 function renderSpellPicker() {
     const body = document.getElementById('spell-picker-body');
     const klasse = zauberKlasseKey();
+    const TT = window.t || ((s) => s);
 
     if (!klasse) {
-        body.innerHTML = `<div class="empty-hint">Zauber lernen können Zauberwirker (Klasse und Typ wählen) sowie Paladine ab Stufe ${typeof heldenklasseAbStufe === 'function' ? heldenklasseAbStufe() : 10}.</div>`;
+        body.innerHTML = `<div class="empty-hint">${TT('Zauber lernen können Zauberwirker (Klasse und Typ wählen) sowie Paladine ab Stufe {n}.').replace('{n}', typeof heldenklasseAbStufe === 'function' ? heldenklasseAbStufe() : 10)}</div>`;
         return;
     }
 
@@ -205,24 +208,22 @@ function renderSpellPicker() {
 
     const kopf = `
         <div style="display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap;margin-bottom:0.8rem">
-            <input type="text" id="spell-search" placeholder="Zauber suchen..." value="${escapeHtml(spellFilter)}" style="flex:1;min-width:160px">
-            <label class="radio-pill ${spellShowAll ? 'selected' : ''}" id="spell-showall">auch höherstufige</label>
+            <input type="text" id="spell-search" placeholder="${TT('Zauber suchen...')}" value="${escapeHtml(spellFilter)}" style="flex:1;min-width:160px">
+            <label class="radio-pill ${spellShowAll ? 'selected' : ''}" id="spell-showall">${TT('auch höherstufige')}</label>
         </div>
         <div class="budget" style="margin-bottom:0.8rem">
-            ${escapeHtml(versatz ? `${appData.heldenklasse} — ${typName}-Sprüche` : typName)} ·
-            Stufe <strong>${charStufe()}</strong>
-            <span class="hint" style="margin-left:auto">${eintraege.length} Zauber</span>
+            ${escapeHtml(versatz ? `${appData.heldenklasse} — ${typName}` : TT(typName))} ·
+            ${TT('Stufe')} <strong>${charStufe()}</strong>
+            <span class="hint" style="margin-left:auto">${(window.tp ? window.tp('{n} Zauber', { n: eintraege.length }) : eintraege.length + ' Zauber')}</span>
         </div>
         ${held ? `<p class="hint-rule" style="margin-bottom:0.8rem">${escapeHtml(held.hinweis)}
-            Die angezeigten Stufen sind bereits umgerechnet.</p>` : ''}
+            ${TT('Die angezeigten Stufen sind bereits umgerechnet.')}</p>` : ''}
         <p class="hint-rule" style="margin-bottom:0.8rem">
-            Zauber kosten keine Lern- oder Talentpunkte. Pro Stufenaufstieg dürfen Zauber gelernt werden,
-            deren Zauberstufen zusammen die neue Charakterstufe ergeben — der Spielleiter entscheidet,
-            ob der Spruch überhaupt aufzutreiben ist.
+            ${TT('Zauber kosten keine Lern- oder Talentpunkte. Pro Stufenaufstieg dürfen Zauber gelernt werden, deren Zauberstufen zusammen die neue Charakterstufe ergeben — der Spielleiter entscheidet, ob der Spruch überhaupt aufzutreiben ist.')}
         </p>`;
 
     if (!eintraege.length) {
-        body.innerHTML = kopf + '<div class="empty-hint">Keine passenden Zauber gefunden.</div>';
+        body.innerHTML = kopf + `<div class="empty-hint">${TT('Keine passenden Zauber gefunden.')}</div>`;
         wireSpellPickerHead();
         return;
     }
@@ -233,23 +234,23 @@ function renderSpellPicker() {
         const bekannt = kenntZauber(z.name);
 
         let knopf;
-        if (!zg.erfuellt) knopf = `<span class="tag tag-warn">ab Stufe ${zg.minStufe}</span>`;
-        else if (bekannt) knopf = '<span class="tag">bekannt</span>';
-        else knopf = `<button class="btn btn-sm btn-primary" data-slearn="${escapeHtml(z.name)}">Lernen</button>`;
+        if (!zg.erfuellt) knopf = `<span class="tag tag-warn">${TT('ab Stufe')} ${zg.minStufe}</span>`;
+        else if (bekannt) knopf = `<span class="tag">${TT('bekannt')}</span>`;
+        else knopf = `<button class="btn btn-sm btn-primary" data-slearn="${escapeHtml(z.name)}">${TT('Lernen')}</button>`;
 
         return `<div class="talent-option ${zg.erfuellt ? '' : 'locked'}">
             <div class="talent-entry-head">
                 <strong>${escapeHtml(z.name)}</strong>
-                <span class="tag">Stufe ${zg.minStufe}</span>
-                <span class="tag">${z.typ === 'ziel' ? 'Zielzauber' : 'Zaubern'}</span>
-                ${z.geistesbeeinflussend ? '<span class="tag">geistesbeeinflussend</span>' : ''}
-                ${z.eigen ? '<span class="tag">Hausregel</span>' : ''}
+                <span class="tag">${TT('Stufe')} ${zg.minStufe}</span>
+                <span class="tag">${z.typ === 'ziel' ? TT('Zielzauber') : TT('Zaubern')}</span>
+                ${z.geistesbeeinflussend ? `<span class="tag">${TT('geistesbeeinflussend')}</span>` : ''}
+                ${z.eigen ? `<span class="tag">${TT('Hausregel')}</span>` : ''}
                 <span style="margin-left:auto">${knopf}</span>
             </div>
             <div class="talent-effect">${escapeHtml(z.effekt)}</div>
             <div class="talent-perrank">
-                ZB ${escapeHtml(String(z.zb))} · Dauer: ${escapeHtml(z.dauer)} · Distanz: ${escapeHtml(z.distanz)} ·
-                Abklingzeit: ${escapeHtml(z.abklingzeit)} · Preis: ${escapeHtml(String(z.preis))} GM
+                ZB ${escapeHtml(String(z.zb))} · ${TT('Dauer:')} ${escapeHtml(z.dauer)} · ${TT('Distanz:')} ${escapeHtml(z.distanz)} ·
+                ${TT('Abklingzeit:')} ${escapeHtml(z.abklingzeit)} · ${TT('Preis:')} ${escapeHtml(String(z.preis))} GM
             </div>
         </div>`;
     }).join('') + '</div>';
@@ -258,6 +259,7 @@ function renderSpellPicker() {
     body.querySelectorAll('[data-slearn]').forEach(btn => {
         btn.addEventListener('click', () => learnSpell(btn.dataset.slearn));
     });
+    if (typeof uebersetzeDOM === 'function') uebersetzeDOM(body);
 }
 
 function wireSpellPickerHead() {

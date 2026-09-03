@@ -569,16 +569,17 @@ function renderDerived() {
     const koerper = appData.attribute.koerper || 0;
     const todAb = todesGrenze(koerper);
 
+    const TTd = window.t || ((s) => s);
+    const rep = (str, o) => { let r = str; Object.keys(o).forEach(k => { r = r.split('{' + k + '}').join(o[k]); }); return r; };
     if (cur <= todAb) {
-        hint.innerHTML = `<span style="color:var(--patzer);font-weight:bold">☠ Tot.</span>
-            <span style="color:var(--fail)">Der Schaden unter 0 übersteigt den Körperwert (${koerper}) — Tod ab ${todAb} LK.
-            Eine Wiederbelebung kostet dauerhaft 1 Punkt Körper.</span>`;
+        hint.innerHTML = `<span style="color:var(--patzer);font-weight:bold">${TTd('☠ Tot.')}</span>
+            <span style="color:var(--fail)">${rep(TTd('Der Schaden unter 0 übersteigt den Körperwert ({k}) — Tod ab {t} LK. Eine Wiederbelebung kostet dauerhaft 1 Punkt Körper.'), { k: koerper, t: todAb })}</span>`;
     } else if (bewusstlos) {
-        hint.innerHTML = `<span style="color:var(--fail)"><strong>Bewusstlos.</strong> Erwacht nach 1W20 Stunden mit 1 LK. Tod ab ${todAb} LK (unter −KÖR ${koerper}).</span>`;
+        hint.innerHTML = `<span style="color:var(--fail)"><strong>${TTd('Bewusstlos.')}</strong> ${rep(TTd('Erwacht nach 1W20 Stunden mit 1 LK. Tod ab {t} LK (unter −KÖR {k}).'), { k: koerper, t: todAb })}</span>`;
     } else if (cur <= 0) {
-        hint.innerHTML = `<span style="color:var(--accent-bright)"><strong>Noch bei Bewusstsein</strong> dank Standhaft — bewusstlos erst ab ${grenze} LK, Tod ab ${todAb} LK.</span>`;
+        hint.innerHTML = `<span style="color:var(--accent-bright)"><strong>${TTd('Noch bei Bewusstsein')}</strong> ${rep(TTd('dank Standhaft — bewusstlos erst ab {g} LK, Tod ab {t} LK.'), { g: grenze, t: todAb })}</span>`;
     } else {
-        hint.textContent = `Bewusstlos bei ${grenze} LK · Tod ab ${todAb} LK (unter −KÖR ${koerper})`;
+        hint.textContent = rep(TTd('Bewusstlos bei {g} LK · Tod ab {t} LK (unter −KÖR {k})'), { g: grenze, t: todAb, k: koerper });
     }
 
     // Kampfwert-Karten
@@ -619,18 +620,19 @@ function renderDerived() {
             }
         }
 
+        const TT = window.t || ((s) => s);
         const card = document.createElement('div');
         card.className = 'kw-card' + (def.rollable ? ' rollable' : '');
         card.innerHTML = `
-            <div class="kw-label">${def.label}</div>
+            <div class="kw-label">${TT(def.label)}</div>
             <div class="kw-value">${value}${def.unit || ''}</div>
-            <div class="kw-formula">${def.formula}${talentQuellen.length ? ' <span class="kw-talent">+ Talent</span>' : ''}</div>
-            ${zbHinweis ? `<div class="kw-zb">${escapeHtml(zbHinweis)}</div>` : ''}`;
+            <div class="kw-formula">${def.formula}${talentQuellen.length ? ` <span class="kw-talent">${TT('+ Talent')}</span>` : ''}</div>
+            ${zbHinweis ? `<div class="kw-zb">${escapeHtml(TT(zbHinweis))}</div>` : ''}`;
 
-        const talentText = (talentQuellen.length ? `\nTalente: ${talentQuellen.join(', ')}` : '') +
-                           (zbHinweis ? `\n${zbHinweis}` : '');
+        const talentText = (talentQuellen.length ? `\n${TT('Talente:')} ${talentQuellen.join(', ')}` : '') +
+                           (zbHinweis ? `\n${TT(zbHinweis)}` : '');
         if (def.rollable) {
-            card.title = `${def.label}-Probe würfeln (PW ${raw})${talentText}`;
+            card.title = `${TT('Probe würfeln')}: ${TT(def.label)} (${TT('PW')} ${raw})${talentText}`;
             card.addEventListener('click', () => rollKampfwert(def.key, def.label, raw));
         } else if (talentText) {
             card.title = talentText.trim();
@@ -982,13 +984,16 @@ function renderPortrait() {
 function renderMeta() {
     const heldModus = heldStufenModus();
     const hasHeld = !!heldModus;
+    const TT = window.t || ((s) => s);
     const stufe = stufeFuerEp(appData.ep || 0, heldModus);
-    document.getElementById('tag-stufe').textContent = 'Stufe ' + stufe;
+    document.getElementById('tag-stufe').textContent = TT('Stufe') + ' ' + stufe;
 
     const next = epBisNaechsteStufe(appData.ep || 0, heldModus);
     document.getElementById('ep-progress').textContent = next
-        ? `Noch ${next.missing} EP bis Stufe ${next.stufe} (${next.needed} EP)${hasHeld ? ' — Heldenklassen-Tabelle' : ''}`
-        : 'Höchststufe 20 erreicht.';
+        ? TT('Noch {m} EP bis Stufe {s} ({n} EP)')
+            .replace('{m}', next.missing).replace('{s}', next.stufe).replace('{n}', next.needed)
+          + (hasHeld ? TT(' — Heldenklassen-Tabelle') : '')
+        : TT('Höchststufe 20 erreicht.');
 
     // Zauberwirker-Untertyp nur für Zauberwirker
     const cls = activeClass();
@@ -1950,7 +1955,7 @@ function addLog(message, status = 'neutral') {
 function renderLog() {
     const list = document.getElementById('log-list');
     if (!appData.log.length) {
-        list.innerHTML = '<div class="empty-hint">Noch keine Würfe.</div>';
+        list.innerHTML = `<div class="empty-hint">${(window.t || (s => s))('Noch keine Würfe.')}</div>`;
         return;
     }
     list.innerHTML = appData.log.map(e =>
@@ -1994,20 +1999,23 @@ function menschCapHtml() {
     const pills = Object.keys(DS4_EIGENSCHAFT_NAMES).map(key => {
         const anzahl = gewaehlt.filter(c => c === key).length;
         return `<span class="radio-pill ${anzahl ? 'selected' : ''}" data-mcap="${key}"
-                title="Klicken schaltet durch: kein Bonus → +1 → +2 → kein Bonus">
-            ${DS4_EIGENSCHAFT_NAMES[key]}${anzahl ? ` +${anzahl}` : ''}
+                title="${(window.t || (s => s))('Klicken schaltet durch: kein Bonus → +1 → +2 → kein Bonus')}">
+            ${(window.t || (s => s))(DS4_EIGENSCHAFT_NAMES[key])}${anzahl ? ` +${anzahl}` : ''}
         </span>`;
     }).join('');
 
+    const TT = window.t || ((s) => s);
     return `<div class="budget ${offen === 0 ? 'done' : ''}" style="display:block;margin-bottom:0.9rem">
             <div style="margin-bottom:0.4rem">
-                <strong>Höchstwert-Bonus (Mensch)</strong> —
-                ${offen > 0 ? `noch <strong>${offen}</strong> Punkt${offen === 1 ? '' : 'e'} zu vergeben`
-                            : 'vollständig vergeben'}
+                <strong>${TT('Höchstwert-Bonus (Mensch)')}</strong> —
+                ${offen > 0 ? (aktuelleSprache && aktuelleSprache() === 'en'
+                        ? `<strong>${offen}</strong> point${offen === 1 ? '' : 's'} left to assign`
+                        : `noch <strong>${offen}</strong> Punkt${offen === 1 ? '' : 'e'} zu vergeben`)
+                            : TT('vollständig vergeben')}
             </div>
             <div class="radio-row">${pills}</div>
             <div class="hint" style="margin-top:0.35rem">
-                2 beliebige Eigenschaften +1 oder 1 Eigenschaft +2 auf den Grundwert 12.
+                ${TT('2 beliebige Eigenschaften +1 oder 1 Eigenschaft +2 auf den Grundwert 12.')}
             </div>
         </div>`;
 }
@@ -2084,9 +2092,10 @@ function steigerungZuruecknehmen(art, key) {
 
 function renderLevelUp() {
     const body = document.getElementById('levelup-body');
+    const TT = window.t || ((s) => s);
     const cls = activeClass();
     if (!cls) {
-        body.innerHTML = '<div class="empty-hint">Bitte zuerst eine Klasse wählen — die Steigerungskosten hängen davon ab.</div>';
+        body.innerHTML = `<div class="empty-hint">${TT('Bitte zuerst eine Klasse wählen — die Steigerungskosten hängen davon ab.')}</div>`;
         return;
     }
 
@@ -2103,15 +2112,15 @@ function renderLevelUp() {
         // Zurücknehmen geht nur, soweit hier auch gekauft wurde
         const gekauft = gekaufteStufen(key);
         return `<div class="list-row">
-            <span style="flex:1">${DS4_EIGENSCHAFT_NAMES[key]}
-                <span class="eig-abbr">${eff} → ${eff + 1} (max ${max})${gekauft ? ` · ${gekauft} gekauft` : ''}</span></span>
+            <span style="flex:1">${TT(DS4_EIGENSCHAFT_NAMES[key])}
+                <span class="eig-abbr">${eff} → ${eff + 1} (max ${max})${gekauft ? ` · ${gekauft} ${TT('gekauft')}` : ''}</span></span>
             <span class="tag">${cost} LP</span>
             <button class="btn btn-sm" data-refund="eig" data-key="${key}"
                     ${gekauft ? '' : 'disabled style="opacity:0.3"'}
-                    title="${gekauft ? `Steigerung zurücknehmen, ${cost} LP zurück` : 'Hier wurde nichts mit Lernpunkten gekauft'}">−</button>
+                    title="${gekauft ? TT('Steigerung zurücknehmen, LP zurück') : TT('Hier wurde nichts mit Lernpunkten gekauft')}">−</button>
             <button class="btn btn-sm ${affordable ? 'btn-primary' : ''}" ${affordable ? '' : 'disabled style="opacity:0.4"'}
                     data-buy="eig" data-key="${key}" data-cost="${cost}">
-                ${blocked ? 'Höchstwert' : 'Steigern'}
+                ${blocked ? TT('Höchstwert') : TT('Steigern')}
             </button>
         </div>`;
     }).join('');
@@ -2121,49 +2130,49 @@ function renderLevelUp() {
 
     body.innerHTML = menschCapHtml() + `
         <div class="grid-2" style="margin-bottom:0.9rem">
-            <div class="budget"><span>Stufe</span> <strong>${stufe}</strong></div>
-            <div class="budget ${lp > 0 ? 'done' : ''}"><span>Lernpunkte</span> <strong>${lp}</strong></div>
-            <div class="budget ${(appData.tp || 0) > 0 ? 'done' : ''}"><span>Talentpunkte</span> <strong>${appData.tp || 0}</strong></div>
+            <div class="budget"><span>${TT('Stufe')}</span> <strong>${stufe}</strong></div>
+            <div class="budget ${lp > 0 ? 'done' : ''}"><span>${TT('Lernpunkte')}</span> <strong>${lp}</strong></div>
+            <div class="budget ${(appData.tp || 0) > 0 ? 'done' : ''}"><span>${TT('Talentpunkte')}</span> <strong>${appData.tp || 0}</strong></div>
         </div>
         <p class="hint-rule" style="margin-bottom:0.8rem">
-            Pro Stufe gibt es <strong>+2 Lernpunkte</strong> und <strong>+1 Talentpunkt</strong>.
-            Klasse ${escapeHtml(cls.name)}: günstige Eigenschaften kosten 2 LP, die übrigen 3 LP.
+            ${TT('Pro Stufe gibt es <strong>+2 Lernpunkte</strong> und <strong>+1 Talentpunkt</strong>.')}
+            ${escapeHtml(TT(cls.name))}: ${TT('günstige Eigenschaften kosten 2 LP, die übrigen 3 LP.')}
         </p>
 
-        <h4 style="color:var(--accent);font-size:0.9rem;margin-bottom:0.4rem">Eigenschaften</h4>
+        <h4 style="color:var(--accent);font-size:0.9rem;margin-bottom:0.4rem">${TT('Eigenschaften')}</h4>
         ${rows}
 
-        <h4 style="color:var(--accent);font-size:0.9rem;margin:0.9rem 0 0.4rem">Sonstiges</h4>
+        <h4 style="color:var(--accent);font-size:0.9rem;margin:0.9rem 0 0.4rem">${TT('Sonstiges')}</h4>
         <div class="list-row">
-            <span style="flex:1">Lebenskraft
-                <span class="eig-abbr">dauerhaft +1${gekaufteStufen('lk') ? ` · ${gekaufteStufen('lk')} gekauft` : ''}</span></span>
+            <span style="flex:1">${TT('Lebenskraft')}
+                <span class="eig-abbr">${TT('dauerhaft +1')}${gekaufteStufen('lk') ? ` · ${gekaufteStufen('lk')} ${TT('gekauft')}` : ''}</span></span>
             <span class="tag">${costs.lk} LP</span>
             <button class="btn btn-sm" data-refund="lk"
                     ${gekaufteStufen('lk') ? '' : 'disabled style="opacity:0.3"'}
-                    title="${gekaufteStufen('lk') ? `Steigerung zurücknehmen, ${costs.lk} LP zurück` : 'Noch keine Lebenskraft gekauft'}">−</button>
+                    title="${gekaufteStufen('lk') ? TT('Steigerung zurücknehmen, LP zurück') : TT('Noch keine Lebenskraft gekauft')}">−</button>
             <button class="btn btn-sm ${lkAffordable ? 'btn-primary' : ''}" ${lkAffordable ? '' : 'disabled style="opacity:0.4"'}
-                    data-buy="lk" data-cost="${costs.lk}">Steigern</button>
+                    data-buy="lk" data-cost="${costs.lk}">${TT('Steigern')}</button>
         </div>
         <div class="list-row">
-            <span style="flex:1">Zusätzlicher Talentpunkt
-                <span class="eig-abbr">${gekaufteStufen('tp') ? `${gekaufteStufen('tp')} gekauft` : ''}</span></span>
+            <span style="flex:1">${TT('Zusätzlicher Talentpunkt')}
+                <span class="eig-abbr">${gekaufteStufen('tp') ? `${gekaufteStufen('tp')} ${TT('gekauft')}` : ''}</span></span>
             <span class="tag">${costs.tp} LP</span>
             <button class="btn btn-sm" data-refund="tp"
                     ${gekaufteStufen('tp') ? '' : 'disabled style="opacity:0.3"'}
-                    title="${gekaufteStufen('tp') ? `Kauf zurücknehmen, ${costs.tp} LP zurück` : 'Noch keinen Talentpunkt gekauft'}">−</button>
+                    title="${gekaufteStufen('tp') ? TT('Kauf zurücknehmen, LP zurück') : TT('Noch keinen Talentpunkt gekauft')}">−</button>
             <button class="btn btn-sm ${tpAffordable ? 'btn-primary' : ''}" ${tpAffordable ? '' : 'disabled style="opacity:0.4"'}
-                    data-buy="tp" data-cost="${costs.tp}">Kaufen</button>
+                    data-buy="tp" data-cost="${costs.tp}">${TT('Kaufen')}</button>
         </div>
 
         <div style="margin-top:1rem;display:flex;gap:0.5rem;flex-wrap:wrap">
-            <button class="btn btn-sm" onclick="grantLevelUp()">+1 Stufe gutschreiben (+2 LP, +1 TP)</button>
+            <button class="btn btn-sm" onclick="grantLevelUp()">${TT('+1 Stufe gutschreiben (+2 LP, +1 TP)')}</button>
         </div>
         <p class="hint" style="margin-top:0.6rem">
-            Ein Lernpunkt kann stattdessen auch eine neue Sprache oder Schrift kaufen.
-            Neue Zaubersprüche kosten weder LP noch TP.
+            ${TT('Ein Lernpunkt kann stattdessen auch eine neue Sprache oder Schrift kaufen. Neue Zaubersprüche kosten weder LP noch TP.')}
         </p>`;
 
     wireMenschCap(body);
+    if (typeof uebersetzeDOM === 'function') uebersetzeDOM(body);
 
     body.querySelectorAll('[data-refund]').forEach(btn => {
         btn.addEventListener('click', () => steigerungZuruecknehmen(btn.dataset.refund, btn.dataset.key));
@@ -2377,6 +2386,13 @@ function openRulesModal() {
         <p class="hint-rule" style="margin-top:1rem">
             Vollständige Regeln: <code>regeln/Dungeonslayers4.pdf</code> (kostenlos von dungeonslayers.net).
         </p>`;
+    if (typeof aktuelleSprache === 'function' && aktuelleSprache() === 'en') {
+        body.insertAdjacentHTML('afterbegin',
+            '<p class="hint-rule" style="margin-bottom:0.8rem;font-style:italic;opacity:.8">' +
+            'This cheat sheet mirrors the German rulebook and is kept in German. ' +
+            'An English rulebook is available free at dungeonslayers.net.</p>');
+    }
+    if (typeof uebersetzeDOM === 'function') uebersetzeDOM(body);
     openModal('rules-modal');
 }
 function closeRulesModal() { closeModal('rules-modal'); }
@@ -2491,14 +2507,15 @@ function renderAll() {
 }
 
 function populateStaticSelects() {
+    const tt = (s) => (typeof t === 'function' ? t(s) : s);
     const diff = document.getElementById('f-difficulty');
     diff.innerHTML = DS4_DIFFICULTY_MODIFIERS.map(d =>
-        `<option value="${d.mod}"${d.mod === 0 ? ' selected' : ''}>${d.label} (${d.mod > 0 ? '+' : ''}${d.mod})</option>`
+        `<option value="${d.mod}"${d.mod === 0 ? ' selected' : ''}>${tt(d.label)} (${d.mod > 0 ? '+' : ''}${d.mod})</option>`
     ).join('');
 
     const probe = document.getElementById('f-typische-probe');
     probe.innerHTML = DS4_TYPISCHE_PROBEN.map((p, i) =>
-        `<option value="${i}">${p.name} — ${p.formula}</option>`
+        `<option value="${i}">${tt(p.name)} — ${p.formula}</option>`
     ).join('');
     probe.addEventListener('change', renderGebietWahl);
 

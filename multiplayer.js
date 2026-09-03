@@ -99,8 +99,12 @@ function openMultiplayerModal() {
         drin.style.display = isGmMode ? '' : 'none';
         if (isGmMode) {
             const code = document.getElementById('gm-room-code');
-            const ziel = document.getElementById('mp-modal-room');
-            if (code && ziel) ziel.textContent = code.textContent;
+            if (code) {
+                ['mp-modal-room', 'mp-modal-room-en'].forEach(id => {
+                    const ziel = document.getElementById(id);
+                    if (ziel) ziel.textContent = code.textContent;
+                });
+            }
         }
     }
 

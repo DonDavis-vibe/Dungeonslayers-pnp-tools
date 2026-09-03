@@ -133,9 +133,9 @@ function wizardStepHtml(id) {
                 <div class="choice-grid">` +
                 Object.entries(DS4_RACES).map(([key, race]) => `
                     <div class="choice-card ${wizardDraft.volk === key ? 'selected' : ''}" data-choice="volk" data-value="${key}">
-                        <h4>${race.name}</h4>
-                        <p>Bonus: ${race.bonusOptions.map(b => DS4_EIGENSCHAFT_NAMES[b]).join(' / ')} +1</p>
-                        <ul>${race.traits.map(t => `<li>${escapeHtml(t)}</li>`).join('')}</ul>
+                        <h4>${t(race.name)}</h4>
+                        <p>${t('Bonus:')} ${race.bonusOptions.map(b => t(DS4_EIGENSCHAFT_NAMES[b])).join(' / ')} +1</p>
+                        <ul>${race.traits.map(tr => `<li>${escapeHtml(t(tr))}</li>`).join('')}</ul>
                     </div>`).join('') + '</div>';
 
         case 'klasse': {
@@ -143,18 +143,18 @@ function wizardStepHtml(id) {
                 <div class="choice-grid">` +
                 Object.entries(DS4_CLASSES).map(([key, cls]) => `
                     <div class="choice-card ${wizardDraft.klasse === key ? 'selected' : ''}" data-choice="klasse" data-value="${key}">
-                        <h4>${cls.name}</h4>
-                        <p>${escapeHtml(cls.role)}</p>
-                        <p style="margin-top:0.3rem">Bonus: ${cls.bonusOptions.map(b => DS4_EIGENSCHAFT_NAMES[b]).join(' / ')} +1</p>
+                        <h4>${t(cls.name)}</h4>
+                        <p>${escapeHtml(t(cls.role))}</p>
+                        <p style="margin-top:0.3rem">${t('Bonus:')} ${cls.bonusOptions.map(b => t(DS4_EIGENSCHAFT_NAMES[b])).join(' / ')} +1</p>
                     </div>`).join('') + '</div>';
 
             if (wizardDraft.klasse === 'zauberwirker') {
-                html += `<h4 style="margin:1rem 0 0.5rem;color:var(--accent)">Zauberwirker-Typ</h4>
+                html += `<h4 style="margin:1rem 0 0.5rem;color:var(--accent)">${t('Zauberwirker-Typ')}</h4>
                     <div class="choice-grid">` +
                     Object.entries(DS4_CLASSES.zauberwirker.subtypes).map(([key, sub]) => `
                         <div class="choice-card ${wizardDraft.subtype === key ? 'selected' : ''}" data-choice="subtype" data-value="${key}">
-                            <h4>${sub.name}</h4>
-                            <p>${escapeHtml(sub.role)}</p>
+                            <h4>${t(sub.name)}</h4>
+                            <p>${escapeHtml(t(sub.role))}</p>
                         </div>`).join('') + '</div>';
             }
             return html;
@@ -164,17 +164,17 @@ function wizardStepHtml(id) {
             const sum = attrSum();
             const rest = ATTRIBUT_BUDGET - sum;
             return `<p class="hint" style="margin-bottom:0.8rem">
-                    Verteile <strong>${ATTRIBUT_BUDGET} Punkte</strong> auf die drei Attribute. Kein Attribut darf über <strong>${ATTRIBUT_MAX}</strong> liegen.
+                    ${tp('Verteile <strong>{n} Punkte</strong> auf die drei Attribute. Kein Attribut darf über <strong>{max}</strong> liegen.', { n: ATTRIBUT_BUDGET, max: ATTRIBUT_MAX })}
                 </p>
                 <div class="budget ${rest === 0 ? 'done' : (rest < 0 ? 'over' : '')}" style="margin-bottom:0.9rem">
-                    Verteilt: <strong>${sum}</strong> / ${ATTRIBUT_BUDGET} &nbsp;·&nbsp; Übrig: <strong>${rest}</strong>
+                    ${t('Verteilt:')} <strong>${sum}</strong> / ${ATTRIBUT_BUDGET} &nbsp;·&nbsp; ${t('Übrig:')} <strong>${rest}</strong>
                 </div>
                 <div class="grid-3">` +
                 Object.entries(DS4_ATTRIBUT_NAMES).map(([key, name]) => {
                     const v = wizardDraft.attribute[key];
                     return `<div class="attr-block">
                         <div class="attr-head">
-                            <span class="attr-name">${name}</span>
+                            <span class="attr-name">${t(name)}</span>
                         </div>
                         <div style="display:flex;align-items:center;justify-content:center;gap:0.5rem">
                             <span class="stepper"><button data-wstep="attribute" data-key="${key}" data-delta="-1" ${v <= 0 ? 'disabled' : ''}>−</button></span>
@@ -182,7 +182,7 @@ function wizardStepHtml(id) {
                             <span class="stepper"><button data-wstep="attribute" data-key="${key}" data-delta="1" ${(v >= ATTRIBUT_MAX || rest <= 0) ? 'disabled' : ''}>+</button></span>
                         </div>
                         <div class="hint" style="text-align:center;margin-top:0.4rem">
-                            ${DS4_EIGENSCHAFTEN_BY_ATTRIBUT[key].map(e => DS4_EIGENSCHAFT_NAMES[e]).join(', ')}
+                            ${DS4_EIGENSCHAFTEN_BY_ATTRIBUT[key].map(e => t(DS4_EIGENSCHAFT_NAMES[e])).join(', ')}
                         </div>
                     </div>`;
                 }).join('') + '</div>';
@@ -192,22 +192,20 @@ function wizardStepHtml(id) {
             const sum = eigSum();
             const rest = EIGENSCHAFT_BUDGET - sum;
             return `<p class="hint" style="margin-bottom:0.8rem">
-                    Verteile <strong>${EIGENSCHAFT_BUDGET} Punkte</strong> auf die sechs Eigenschaften.
-                    Höchstens <strong>${EIGENSCHAFT_MAX_START}</strong> je Eigenschaft — 0 ist erlaubt.
-                    Volks- und Klassenbonus kommen im nächsten Schritt obendrauf.
+                    ${tp('Verteile <strong>{n} Punkte</strong> auf die sechs Eigenschaften. Höchstens <strong>{max}</strong> je Eigenschaft — 0 ist erlaubt. Volks- und Klassenbonus kommen im nächsten Schritt obendrauf.', { n: EIGENSCHAFT_BUDGET, max: EIGENSCHAFT_MAX_START })}
                 </p>
                 <div class="budget ${rest === 0 ? 'done' : (rest < 0 ? 'over' : '')}" style="margin-bottom:0.9rem">
-                    Verteilt: <strong>${sum}</strong> / ${EIGENSCHAFT_BUDGET} &nbsp;·&nbsp; Übrig: <strong>${rest}</strong>
+                    ${t('Verteilt:')} <strong>${sum}</strong> / ${EIGENSCHAFT_BUDGET} &nbsp;·&nbsp; ${t('Übrig:')} <strong>${rest}</strong>
                 </div>
                 <div class="grid-3">` +
                 Object.entries(DS4_EIGENSCHAFTEN_BY_ATTRIBUT).map(([attrKey, eigKeys]) => `
                     <div class="attr-block">
-                        <div class="attr-head"><span class="attr-name">${DS4_ATTRIBUT_NAMES[attrKey]}</span>
+                        <div class="attr-head"><span class="attr-name">${t(DS4_ATTRIBUT_NAMES[attrKey])}</span>
                             <span class="hint">${wizardDraft.attribute[attrKey]}</span></div>
                         ${eigKeys.map(eigKey => {
                             const v = wizardDraft.eigenschaften[eigKey];
                             return `<div class="eig-row">
-                                <span class="eig-name">${DS4_EIGENSCHAFT_NAMES[eigKey]}<span class="eig-abbr">${DS4_EIGENSCHAFT_ABBR[eigKey]}</span></span>
+                                <span class="eig-name">${t(DS4_EIGENSCHAFT_NAMES[eigKey])}<span class="eig-abbr">${DS4_EIGENSCHAFT_ABBR[eigKey]}</span></span>
                                 <span class="stepper"><button data-wstep="eigenschaften" data-key="${eigKey}" data-delta="-1" ${v <= 0 ? 'disabled' : ''}>−</button></span>
                                 <span class="eig-value">${v}</span>
                                 <span class="stepper"><button data-wstep="eigenschaften" data-key="${eigKey}" data-delta="1" ${(v >= EIGENSCHAFT_MAX_START || rest <= 0) ? 'disabled' : ''}>+</button></span>
@@ -221,15 +219,15 @@ function wizardStepHtml(id) {
             const cls = DS4_CLASSES[wizardDraft.klasse];
             const pill = (group, key, selected) =>
                 `<span class="radio-pill ${selected ? 'selected' : ''}" data-choice="${group}" data-value="${key}">
-                    ${DS4_EIGENSCHAFT_NAMES[key]} +1 <span class="eig-abbr">(${wizardDraft.eigenschaften[key]} → ${wizardDraft.eigenschaften[key] + 1})</span>
+                    ${t(DS4_EIGENSCHAFT_NAMES[key])} +1 <span class="eig-abbr">(${wizardDraft.eigenschaften[key]} → ${wizardDraft.eigenschaften[key] + 1})</span>
                 </span>`;
 
             return `<p class="hint" style="margin-bottom:0.8rem">
-                    Jetzt kommen Volks- und Klassenbonus obendrauf — hier dürfen Eigenschaften erstmals über 4 steigen.
+                    ${t('Jetzt kommen Volks- und Klassenbonus obendrauf — hier dürfen Eigenschaften erstmals über 4 steigen.')}
                 </p>
-                <h4 style="color:var(--accent);margin-bottom:0.4rem">Volksbonus (${race.name})</h4>
+                <h4 style="color:var(--accent);margin-bottom:0.4rem">${t('Volksbonus')} (${t(race.name)})</h4>
                 <div class="radio-row">${race.bonusOptions.map(k => pill('volksbonus', k, wizardDraft.volksbonus === k)).join('')}</div>
-                <h4 style="color:var(--accent);margin:1rem 0 0.4rem">Klassenbonus (${cls.name})</h4>
+                <h4 style="color:var(--accent);margin:1rem 0 0.4rem">${t('Klassenbonus')} (${t(cls.name)})</h4>
                 <div class="radio-row">${cls.bonusOptions.map(k => pill('klassenbonus', k, wizardDraft.klassenbonus === k)).join('')}</div>`;
         }
 
@@ -274,17 +272,17 @@ function wizardStepHtml(id) {
             const startTp = wizardDraft.volk === 'mensch' ? 2 : 1;
 
             return `<div class="grid-2" style="margin-bottom:1rem">
-                    <div class="field"><label>Name des Helden</label><input type="text" data-wfield="name" value="${escapeHtml(wizardDraft.name)}"></div>
-                    <div class="field"><label>Spieler</label><input type="text" data-wfield="spieler" value="${escapeHtml(wizardDraft.spieler)}"></div>
+                    <div class="field"><label>${t('Name des Helden')}</label><input type="text" data-wfield="name" value="${escapeHtml(wizardDraft.name)}"></div>
+                    <div class="field"><label>${t('Spieler')}</label><input type="text" data-wfield="spieler" value="${escapeHtml(wizardDraft.spieler)}"></div>
                 </div>
                 <div class="panel" style="background:rgba(0,0,0,0.25)">
-                    <div class="panel-head"><h3>Übersicht</h3>
-                        <div class="panel-actions"><span class="tag">Stufe 1 · 0 EP · ${startTp} TP</span></div>
+                    <div class="panel-head"><h3>${t('Übersicht')}</h3>
+                        <div class="panel-actions"><span class="tag">${t('Stufe 1')} · 0 ${t('EP')} · ${startTp} ${t('TP')}</span></div>
                     </div>
                     <div class="panel-body">
                         <p style="margin-bottom:0.7rem">
-                            <strong style="color:var(--accent-bright)">${escapeHtml(wizardDraft.name || 'Namenloser Held')}</strong> —
-                            ${race.name} ${cls.isCaster ? cls.subtypes[wizardDraft.subtype].name : cls.name}
+                            <strong style="color:var(--accent-bright)">${escapeHtml(wizardDraft.name || t('Namenloser Held'))}</strong> —
+                            ${t(race.name)} ${cls.isCaster ? t(cls.subtypes[wizardDraft.subtype].name) : t(cls.name)}
                         </p>
                         <div class="kampfwerte">
                             <div class="kw-card"><div class="kw-label">Lebenskraft</div><div class="kw-value">${preview.lebenskraft}</div></div>

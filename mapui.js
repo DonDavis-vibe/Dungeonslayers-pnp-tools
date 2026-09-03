@@ -462,13 +462,15 @@ function renderKartenWerkzeuge() {
 
     const wz = karte.getWerkzeug();
     const aktiv = name => wz === name ? 'selected' : '';
+    const TT = window.t || ((s) => s);
 
     if (!isGmMode) {
         leiste.innerHTML = `
-            <label class="radio-pill ${aktiv('zeigen')}" onclick="werkzeugWaehlen('zeigen')">✋ Bewegen</label>
-            <label class="radio-pill ${aktiv('messen')}" onclick="werkzeugWaehlen('messen')">📏 Messen</label>
-            <button class="btn btn-sm btn-ghost" onclick="karte.einpassen()">Einpassen</button>
-            <span class="hint">Mausrad zoomt · deine Figur ziehen meldet einen Zug beim Spielleiter an</span>`;
+            <label class="radio-pill ${aktiv('zeigen')}" onclick="werkzeugWaehlen('zeigen')">${TT('✋ Bewegen')}</label>
+            <label class="radio-pill ${aktiv('messen')}" onclick="werkzeugWaehlen('messen')">${TT('📏 Messen')}</label>
+            <button class="btn btn-sm btn-ghost" onclick="karte.einpassen()">${TT('Einpassen')}</button>
+            <span class="hint">${TT('Mausrad zoomt · deine Figur ziehen meldet einen Zug beim Spielleiter an')}</span>`;
+        if (typeof uebersetzeDOM === 'function') uebersetzeDOM(leiste);
         return;
     }
 

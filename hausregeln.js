@@ -131,124 +131,118 @@ function renderHausregeln() {
     const h = hausregeln;
     const cls = typeof activeClass === 'function' ? activeClass() : null;
 
+    const TT = window.t || ((s) => s);
     const eigenschaftZeilen = Object.entries(DS4_EIGENSCHAFT_NAMES).map(([k, name]) => `
         <div class="list-row">
-            <span style="flex:1">${name}</span>
+            <span style="flex:1">${TT(name)}</span>
             <input type="number" min="1" max="9" value="${h.lpEigen[k]}" data-lpeigen="${k}" style="width:3.5rem">
             <span class="row-sub">LP</span>
         </div>`).join('');
 
     body.innerHTML = `
         <p class="hint-rule" style="margin-bottom:1rem">
-            Diese Einstellungen gelten nur für diesen Browser. Als Spielleiter kannst du sie unten
-            an alle verbundenen Spieler schicken, damit die ganze Runde gleich rechnet.
+            ${TT('Diese Einstellungen gelten nur für diesen Browser. Als Spielleiter kannst du sie unten an alle verbundenen Spieler schicken, damit die ganze Runde gleich rechnet.')}
         </p>
 
-        <h4 style="color:var(--accent-bright)">Steigerungskosten (Lernpunkte)</h4>
+        <h4 style="color:var(--accent-bright)">${TT('Steigerungskosten (Lernpunkte)')}</h4>
         <div class="radio-row" style="margin:0.5rem 0">
             ${[['klasse', 'Nach Regelwerk'], ['einheitlich', 'Einheitlich'], ['eigen', 'Frei einstellbar']]
-                .map(([wert, text]) => `<span class="radio-pill ${h.lpModell === wert ? 'selected' : ''}" data-lpmodell="${wert}">${text}</span>`).join('')}
+                .map(([wert, text]) => `<span class="radio-pill ${h.lpModell === wert ? 'selected' : ''}" data-lpmodell="${wert}">${TT(text)}</span>`).join('')}
         </div>
         ${h.lpModell === 'klasse' ? `<p class="hint">
-            Günstige Eigenschaften der Klasse kosten 2 LP, die übrigen 3 LP.
-            ${cls ? `Für ${escapeHtml(cls.name)}: ${Object.entries(cls.lpCosts).filter(([k]) => DS4_EIGENSCHAFT_NAMES[k]).map(([k, v]) => DS4_EIGENSCHAFT_ABBR[k] + ' ' + v).join(' · ')}` : ''}
+            ${TT('Günstige Eigenschaften der Klasse kosten 2 LP, die übrigen 3 LP.')}
+            ${cls ? `${escapeHtml(TT(cls.name))}: ${Object.entries(cls.lpCosts).filter(([k]) => DS4_EIGENSCHAFT_NAMES[k]).map(([k, v]) => DS4_EIGENSCHAFT_ABBR[k] + ' ' + v).join(' · ')}` : ''}
         </p>` : ''}
         ${h.lpModell === 'einheitlich' ? `
             <div class="list-row">
-                <span style="flex:1">Jede Eigenschaft kostet</span>
+                <span style="flex:1">${TT('Jede Eigenschaft kostet')}</span>
                 <input type="number" id="hr-lp-einheitlich" min="1" max="9" value="${h.lpEinheitlich}" style="width:3.5rem">
                 <span class="row-sub">LP</span>
             </div>
-            <p class="hint" style="margin-top:0.4rem">Die häufigste Hausregel: alle Eigenschaften gleich teuer.</p>` : ''}
+            <p class="hint" style="margin-top:0.4rem">${TT('Die häufigste Hausregel: alle Eigenschaften gleich teuer.')}</p>` : ''}
         ${h.lpModell === 'eigen' ? eigenschaftZeilen + `
-            <div class="list-row"><span style="flex:1">Lebenskraft</span>
+            <div class="list-row"><span style="flex:1">${TT('Lebenskraft')}</span>
                 <input type="number" min="1" max="9" value="${h.lpEigen.lk}" data-lpeigen="lk" style="width:3.5rem"><span class="row-sub">LP</span></div>
-            <div class="list-row"><span style="flex:1">zusätzlicher Talentpunkt</span>
+            <div class="list-row"><span style="flex:1">${TT('zusätzlicher Talentpunkt')}</span>
                 <input type="number" min="1" max="9" value="${h.lpEigen.tp}" data-lpeigen="tp" style="width:3.5rem"><span class="row-sub">LP</span></div>` : ''}
 
-        <h4 style="color:var(--accent-bright);margin-top:1.2rem">Talentpunkte je Stufe</h4>
+        <h4 style="color:var(--accent-bright);margin-top:1.2rem">${TT('Talentpunkte je Stufe')}</h4>
         <div class="list-row">
-            <span style="flex:1">Talentpunkte (TP)</span>
+            <span style="flex:1">${TT('Talentpunkte (TP)')}</span>
             <input type="number" id="hr-tp" min="0" max="5" value="${h.tpProStufe}" style="width:3.5rem">
         </div>
         <div class="list-row">
             <label style="flex:1;display:flex;align-items:center;gap:0.5rem;cursor:pointer">
                 <input type="checkbox" id="hr-ntp-aktiv" ${h.ntpAktiv ? 'checked' : ''} style="width:auto">
-                Zweiten Talentpunkt-Topf führen
+                ${TT('Zweiten Talentpunkt-Topf führen')}
             </label>
         </div>
         ${h.ntpAktiv ? `
             <div class="grid-2" style="margin-top:0.4rem">
-                <div class="field"><label>Kurzname</label><input type="text" id="hr-ntp-name" value="${escapeHtml(h.ntpName)}" maxlength="6"></div>
-                <div class="field"><label>Anzahl je Stufe</label><input type="number" id="hr-ntp-zahl" min="0" max="5" value="${h.ntpProStufe}"></div>
+                <div class="field"><label>${TT('Kurzname')}</label><input type="text" id="hr-ntp-name" value="${escapeHtml(h.ntpName)}" maxlength="6"></div>
+                <div class="field"><label>${TT('Anzahl je Stufe')}</label><input type="number" id="hr-ntp-zahl" min="0" max="5" value="${h.ntpProStufe}"></div>
             </div>
             <div class="field" style="margin-top:0.4rem">
-                <label>Wofür ist er gedacht?</label>
+                <label>${TT('Wofür ist er gedacht?')}</label>
                 <input type="text" id="hr-ntp-hinweis" value="${escapeHtml(h.ntpHinweis)}" maxlength="120">
             </div>
             <p class="hint" style="margin-top:0.4rem">
-                Beide Töpfe werden getrennt gezählt. Beim Lernen eines Talents wählst du, aus welchem
-                du bezahlst — welche Talente aus welchem Topf erlaubt sind, entscheidet eure Runde.
+                ${TT('Beide Töpfe werden getrennt gezählt. Beim Lernen eines Talents wählst du, aus welchem du bezahlst — welche Talente aus welchem Topf erlaubt sind, entscheidet eure Runde.')}
             </p>` : ''}
 
-        <h4 style="color:var(--accent-bright);margin-top:1.2rem">Optionale Kampfregeln (Regelwerk S.45)</h4>
+        <h4 style="color:var(--accent-bright);margin-top:1.2rem">${TT('Optionale Kampfregeln (Regelwerk S.45)')}</h4>
         <div class="list-row">
             <label style="flex:1;display:flex;align-items:center;gap:0.5rem;cursor:pointer">
                 <input type="checkbox" id="hr-slayend" ${h.slayendeWuerfel ? 'checked' : ''} style="width:auto">
-                <span><strong>Slayende Würfel</strong> — Immersieg löst sofort einen weiteren Angriff aus</span>
+                <span><strong>${TT('Slayende Würfel')}</strong> ${TT('— Immersieg löst sofort einen weiteren Angriff aus')}</span>
             </label>
         </div>
         <div class="list-row">
             <label style="flex:1;display:flex;align-items:center;gap:0.5rem;cursor:pointer">
                 <input type="checkbox" id="hr-slayerpunkte" ${h.slayerpunkte ? 'checked' : ''} style="width:auto">
-                <span><strong>Slayerpunkte</strong> — 1 SP je Runde mit Schaden, höchstens 3, für freie Aktionen und Boni</span>
+                <span><strong>${TT('Slayerpunkte')}</strong> ${TT('— 1 SP je Runde mit Schaden, höchstens 3, für freie Aktionen und Boni')}</span>
             </label>
         </div>
         ${h.slayendeWuerfel && !h.slayerpunkte ? `<p class="hint" style="color:var(--accent-bright);margin-top:0.4rem">
-            Das Regelwerk empfiehlt, Slayende Würfel <strong>nicht ohne Slayerpunkte</strong> zu
-            verwenden — Kämpfe werden damit deutlich unberechenbarer und tödlicher.
+            ${TT('Das Regelwerk empfiehlt, Slayende Würfel <strong>nicht ohne Slayerpunkte</strong> zu verwenden — Kämpfe werden damit deutlich unberechenbarer und tödlicher.')}
         </p>` : `<p class="hint" style="margin-top:0.4rem">
-            Slayende Würfel gelten auch für Abwehrproben und stehen ausdrücklich auch NSC zu.
-            Bei Probenwerten über 20 zählt dafür nur ein Immersieg des ersten Würfels.
+            ${TT('Slayende Würfel gelten auch für Abwehrproben und stehen ausdrücklich auch NSC zu. Bei Probenwerten über 20 zählt dafür nur ein Immersieg des ersten Würfels.')}
         </p>`}
 
-        <h4 style="color:var(--accent-bright);margin-top:1.2rem">Heldenklassen</h4>
+        <h4 style="color:var(--accent-bright);margin-top:1.2rem">${TT('Heldenklassen')}</h4>
         <div class="list-row">
             <label style="flex:1;display:flex;align-items:center;gap:0.5rem;cursor:pointer">
                 <input type="checkbox" id="hr-held-frueh" ${h.heldenklassenFrueh ? 'checked' : ''} style="width:auto">
-                <span><strong>Heldenklassen ab Stufe 2</strong> — Fanwerk „Heldenklassen neu"</span>
+                <span><strong>${TT('Heldenklassen ab Stufe 2')}</strong> ${TT('— Fanwerk „Heldenklassen neu"')}</span>
             </label>
         </div>
         <p class="hint" style="margin-top:0.4rem">
-            Die Heldenklasse ist schon ab Stufe 2 wählbar. Dafür steigt man langsamer auf (eigene
-            EP-Tabelle). Heldenklassen-Talente und -Sprüche werden ab <strong>Charakterstufe ÷ 2</strong>
-            zugänglich (Stufe-10-Talent also ab Stufe 5). Unter Stufe 5 darf einmalig ein Rang eines
-            Stufe-10-Heldenklassen-Talents gelernt werden. Grundtalente bleiben unberührt.
+            ${TT('Die Heldenklasse ist schon ab Stufe 2 wählbar. Dafür steigt man langsamer auf (eigene EP-Tabelle). Heldenklassen-Talente und -Sprüche werden ab <strong>Charakterstufe ÷ 2</strong> zugänglich (Stufe-10-Talent also ab Stufe 5). Unter Stufe 5 darf einmalig ein Rang eines Stufe-10-Heldenklassen-Talents gelernt werden. Grundtalente bleiben unberührt.')}
         </p>
 
-        <h4 style="color:var(--accent-bright);margin-top:1.2rem">Eigene Ergänzungen</h4>
+        <h4 style="color:var(--accent-bright);margin-top:1.2rem">${TT('Eigene Ergänzungen')}</h4>
         <div class="grid-3" style="margin-top:0.4rem">
-            <div class="budget"><span>Talente</span> <strong>${h.eigeneTalente.length}</strong></div>
-            <div class="budget"><span>Zauber</span> <strong>${h.eigeneZauber.length}</strong></div>
-            <div class="budget"><span>Heldenklassen</span> <strong>${h.eigeneHeldenklassen.length}</strong></div>
+            <div class="budget"><span>${TT('Talente')}</span> <strong>${h.eigeneTalente.length}</strong></div>
+            <div class="budget"><span>${TT('Zauber')}</span> <strong>${h.eigeneZauber.length}</strong></div>
+            <div class="budget"><span>${TT('Heldenklassen')}</span> <strong>${h.eigeneHeldenklassen.length}</strong></div>
         </div>
         <div style="display:flex;gap:0.4rem;flex-wrap:wrap;margin-top:0.6rem">
-            <button class="btn btn-sm" onclick="eigenesTalentAnlegen()">+ Talent</button>
-            <button class="btn btn-sm" onclick="eigenenZauberAnlegen()">+ Zauber</button>
-            <button class="btn btn-sm" onclick="eigeneHeldenklasseAnlegen()">+ Heldenklasse</button>
+            <button class="btn btn-sm" onclick="eigenesTalentAnlegen()">${TT('+ Talent')}</button>
+            <button class="btn btn-sm" onclick="eigenenZauberAnlegen()">${TT('+ Zauber')}</button>
+            <button class="btn btn-sm" onclick="eigeneHeldenklasseAnlegen()">${TT('+ Heldenklasse')}</button>
             ${(h.eigeneTalente.length || h.eigeneZauber.length || h.eigeneHeldenklassen.length)
-                ? '<button class="btn btn-sm btn-danger" onclick="eigeneEintraegeLeeren()">Eigene löschen</button>' : ''}
+                ? `<button class="btn btn-sm btn-danger" onclick="eigeneEintraegeLeeren()">${TT('Eigene löschen')}</button>` : ''}
         </div>
         <div id="hr-eigene-liste" style="margin-top:0.6rem">${eigeneListeHtml()}</div>
 
         <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-top:1.2rem;padding-top:0.9rem;border-top:1px solid var(--panel-border)">
-            <button class="btn btn-primary" onclick="hausregelnUebernehmen()">Übernehmen</button>
+            <button class="btn btn-primary" onclick="hausregelnUebernehmen()">${TT('Übernehmen')}</button>
             ${typeof isGmMode !== 'undefined' && isGmMode
-                ? '<button class="btn" onclick="hausregelnVerteilen()">📤 An Spieler senden</button>' : ''}
-            <button class="btn btn-ghost" onclick="hausregelnExportieren()">💾 Als Datei</button>
-            <button class="btn btn-ghost" onclick="document.getElementById('hr-datei').click()">📂 Laden</button>
+                ? `<button class="btn" onclick="hausregelnVerteilen()">${TT('📤 An Spieler senden')}</button>` : ''}
+            <button class="btn btn-ghost" onclick="hausregelnExportieren()">${TT('💾 Als Datei')}</button>
+            <button class="btn btn-ghost" onclick="document.getElementById('hr-datei').click()">${TT('📂 Laden')}</button>
             <input type="file" id="hr-datei" accept=".json" style="display:none" onchange="hausregelnImportieren(event)">
-            <button class="btn btn-ghost" style="margin-left:auto" onclick="hausregelnZuruecksetzen()">Auf Regelwerk zurücksetzen</button>
+            <button class="btn btn-ghost" style="margin-left:auto" onclick="hausregelnZuruecksetzen()">${TT('Auf Regelwerk zurücksetzen')}</button>
         </div>
         <div id="hr-status" class="hint" style="margin-top:0.6rem;min-height:1.2rem"></div>`;
 
@@ -289,6 +283,7 @@ function renderHausregeln() {
     body.querySelectorAll('[data-lpeigen]').forEach(el => el.addEventListener('input', () => {
         hausregeln.lpEigen[el.dataset.lpeigen] = parseInt(el.value, 10) || 1;
     }));
+    if (typeof uebersetzeDOM === 'function') uebersetzeDOM(body);
 }
 
 function eigeneListeHtml() {
