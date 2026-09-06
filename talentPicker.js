@@ -180,10 +180,16 @@ function talentWahlHtml(t, data) {
 
 // Insgesamt verdiente Talentpunkte: 1 bei Erschaffung (Menschen 2) + 1 je Stufe.
 // Über Lernpunkte zusätzlich gekaufte TP zählt der Bogen über `extraTp` mit.
+// Die Hausregel `tpProStufe` muss hier mitgerechnet werden — grantLevelUp()
+// vergibt danach, also meldete der Abgleich sonst dauerhaft "zu viele TP",
+// sobald die Runde von 1 TP je Stufe abweicht. Der Startwert bleibt der des
+// Regelwerks, denn die Hausregel gilt dem Aufstieg, nicht der Erschaffung.
 function verdienteTp() {
     const stufe = charStufe();
     const start = appData.volk === 'mensch' ? 2 : 1;
-    return start + (stufe - 1) + (appData.extraTp || 0);
+    const jeStufe = (typeof hausregeln !== 'undefined' && hausregeln.tpProStufe != null)
+        ? hausregeln.tpProStufe : 1;
+    return start + (stufe - 1) * jeStufe + (appData.extraTp || 0);
 }
 
 function ausgegebeneTp() {

@@ -212,7 +212,9 @@ function renderSpellPicker() {
             <label class="radio-pill ${spellShowAll ? 'selected' : ''}" id="spell-showall">${TT('auch höherstufige')}</label>
         </div>
         <div class="budget" style="margin-bottom:0.8rem">
-            ${escapeHtml(versatz ? `${appData.heldenklasse} — ${typName}` : TT(typName))} ·
+            ${escapeHtml(versatz
+                ? TT('{held} — {typ}-Sprüche').replace('{held}', appData.heldenklasse).replace('{typ}', TT(typName))
+                : TT(typName))} ·
             ${TT('Stufe')} <strong>${charStufe()}</strong>
             <span class="hint" style="margin-left:auto">${(window.tp ? window.tp('{n} Zauber', { n: eintraege.length }) : eintraege.length + ' Zauber')}</span>
         </div>

@@ -151,7 +151,7 @@ function renderHausregeln() {
         </div>
         ${h.lpModell === 'klasse' ? `<p class="hint">
             ${TT('Günstige Eigenschaften der Klasse kosten 2 LP, die übrigen 3 LP.')}
-            ${cls ? `${escapeHtml(TT(cls.name))}: ${Object.entries(cls.lpCosts).filter(([k]) => DS4_EIGENSCHAFT_NAMES[k]).map(([k, v]) => DS4_EIGENSCHAFT_ABBR[k] + ' ' + v).join(' · ')}` : ''}
+            ${cls ? `${TT('Für die Klasse')} ${escapeHtml(TT(cls.name))}: ${Object.entries(cls.lpCosts).filter(([k]) => DS4_EIGENSCHAFT_NAMES[k]).map(([k, v]) => DS4_EIGENSCHAFT_ABBR[k] + ' ' + v).join(' · ')}` : ''}
         </p>` : ''}
         ${h.lpModell === 'einheitlich' ? `
             <div class="list-row">

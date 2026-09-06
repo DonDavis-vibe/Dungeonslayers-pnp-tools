@@ -351,6 +351,79 @@ function saveGmGeneralNotes(value) {
 
 // --- Datenempfang beim Spielleiter -----------------------------------------
 
+// Was über die Leitung kommt, ist Fremddaten: Wer den Raum-Code hat, kann jedes
+// Feld frei setzen. Beides ist damit passiert:
+//   - Die Werte landeten roh im HTML von Dashboard und Gruppenliste. Ein
+//     präpariertes `stufe` wie `3<img src=x onerror=…>` hat beim Spielleiter
+//     Skriptcode ausgeführt — und über die weitergereichte Gruppenliste auch
+//     bei allen Mitspielern. Im localStorage liegen u.a. die Discord-Webhook-URL
+//     und die SL-Notizen.
+//   - Fehlte ein Feld (`attribute`), warf der Dashboard-Render mitten im
+//     Beitritt. Damit blieben Begrüßung, Hausregeln, Kampfstand und Karte für
+//     diesen Spieler aus, und das Dashboard blieb kaputt.
+// Deshalb wird der Zustand hier EINMAL beim Eintreffen normalisiert, statt an
+// jeder Render-Stelle einzeln: Zahlen werden zu echten Zahlen, Texte gekappt,
+// fehlende Objekte aufgefüllt. Die Render-Funktionen bleiben dadurch schlicht.
+
+function mpZahl(wert, standard = 0) {
+    const n = typeof wert === 'number' ? wert : parseFloat(wert);
+    return Number.isFinite(n) ? n : standard;
+}
+
+function mpText(wert, maxLaenge = 80) {
+    return String(wert == null ? '' : wert).slice(0, maxLaenge);
+}
+
+// Portraits nur als eingebettetes Bild oder https-Adresse — ein roher String
+// landet sonst ungeprüft in einem src-Attribut.
+function mpPortrait(wert) {
+    const s = String(wert == null ? '' : wert);
+    if (s.length > 2000000) return '';
+    return /^(data:image\/(png|jpeg|jpg|gif|webp);base64,[A-Za-z0-9+/=]+|https:\/\/[^\s"'<>]+)$/.test(s) ? s : '';
+}
+
+const MP_ZAHLFELDER = ['stufe', 'lkCurrent', 'lkMax', 'bewusstlosAb', 'abwehr', 'initiative',
+    'schlagen', 'schiessen', 'laufen', 'zaubern', 'zielzauber', 'panzerung',
+    'ep', 'lp', 'tp', 'gold', 'silber', 'kupfer'];
+
+const MP_AUSRUESTUNGSPLAETZE = ['melee', 'ranged', 'koerper', 'helm', 'schienen', 'schild'];
+
+function sichererSpielerzustand(roh) {
+    const d = (roh && typeof roh === 'object') ? roh : {};
+    const sauber = {
+        name: mpText(d.name || 'Namenlos', 60),
+        spieler: mpText(d.spieler, 60),
+        volk: mpText(d.volk, 40),
+        klasse: mpText(d.klasse, 40),
+        preparedSpell: mpText(d.preparedSpell, 80),
+        isCaster: !!d.isCaster,
+        tot: !!d.tot,
+        portrait: mpPortrait(d.portrait),
+        attribute: {}, eigenschaften: {}, equipment: {},
+        talents: [], spells: [], inventory: []
+    };
+    MP_ZAHLFELDER.forEach(k => { sauber[k] = mpZahl(d[k]); });
+    ['koerper', 'agilitaet', 'geist'].forEach(k => {
+        sauber.attribute[k] = mpZahl(d.attribute && d.attribute[k]);
+    });
+    Object.keys(DS4_EIGENSCHAFT_NAMES).forEach(k => {
+        sauber.eigenschaften[k] = mpZahl(d.eigenschaften && d.eigenschaften[k]);
+    });
+    MP_AUSRUESTUNGSPLAETZE.forEach(k => {
+        sauber.equipment[k] = mpText(d.equipment && d.equipment[k], 60);
+    });
+    if (Array.isArray(d.talents)) sauber.talents = d.talents.slice(0, 80)
+        .map(t => ({ name: mpText(t && t.name, 60), rang: mpZahl(t && t.rang, 1) }));
+    if (Array.isArray(d.spells)) sauber.spells = d.spells.slice(0, 80)
+        .map(s => ({
+            name: mpText(s && s.name, 60), prepared: !!(s && s.prepared),
+            routine: !!(s && s.routine), cooldownUntil: mpZahl(s && s.cooldownUntil)
+        }));
+    if (Array.isArray(d.inventory)) sauber.inventory = d.inventory.slice(0, 120)
+        .map(i => ({ name: mpText(i && i.name, 80), menge: mpZahl(i && i.menge) }));
+    return sauber;
+}
+
 function handleIncomingData(peerId, payload) {
     if (!payload || typeof payload !== 'object') return;
 
@@ -359,10 +432,12 @@ function handleIncomingData(peerId, payload) {
 
     if (payload.type === 'state') {
         const isNew = !connectedPlayers[peerId];
-        connectedPlayers[peerId] = payload.data;
-        renderGmDashboard();
+        connectedPlayers[peerId] = sichererSpielerzustand(payload.data);
+        // Ein Render-Fehler darf den Beitritt nicht abbrechen: sonst bekäme
+        // dieser Spieler weder Hausregeln noch Kampfstand noch Karte.
+        try { renderGmDashboard(); } catch (e) { console.error('Dashboard-Render:', e); }
         // Laufender Kampf: aktualisierte LK/Initiative sofort in die Reihenfolge übernehmen
-        if (combatActive) renderCombat();
+        if (combatActive) { try { renderCombat(); } catch (e) { console.error('Kampf-Render:', e); } }
         if (isNew) {
             addGmLog('System', `${escapeHtml(payload.data.name || 'Ein Held')} ist beigetreten.`, 'erfolg');
             // Neu Beigetretene bekommen die Hausregeln der Runde gleich mit
@@ -1412,7 +1487,15 @@ function handleGmCommand(payload) {
             if (typeof hausregelnEmpfangen === 'function') hausregelnEmpfangen(payload.regeln);
             break;
         case 'party':
-            gruppenStand = payload.gruppe || [];
+            // Auch die Gruppenliste geht durch die Normalisierung: die Werte
+            // stammen ursprünglich von Mitspielern und landen hier im HTML.
+            gruppenStand = Array.isArray(payload.gruppe)
+                ? payload.gruppe.slice(0, 30).map(p => {
+                    const s = sichererSpielerzustand(p);
+                    s.bewusstlos = !!(p && p.bewusstlos);
+                    return s;
+                })
+                : [];
             renderGruppe();
             break;
         case 'combat': {

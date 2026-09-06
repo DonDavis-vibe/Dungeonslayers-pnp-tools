@@ -758,6 +758,19 @@ const I18N_EN = {
         'Unconscious at {g} HP · death at {t} HP (below −BOD {k})',
     'Der Schaden unter 0 übersteigt den Körperwert.': 'The damage below 0 exceeds the Body value.',
 
+    // ---- Mehrere Gegner (Schlagen aufteilen) ----
+    'Der Schlagen-Wert lässt sich auf bis zu <strong>vier angrenzende Gegner</strong> aufteilen. Mit den Teilwerten wird je ein eigener Angriff gewürfelt, und die eigene Abwehr sinkt um <strong>2 je Gegner</strong>, bis du in der nächsten Runde wieder an der Reihe bist.':
+        'The Melee value can be split across up to <strong>four adjacent opponents</strong>. Each partial value is rolled as its own attack, and your own Defense drops by <strong>2 per opponent</strong> until your next turn.',
+    'Schlagen gesamt:': 'Melee total:',
+    'Abwehr in dieser Runde:': 'Defense this round:',
+    'Gegner': 'Opponent',
+    'Alle Angriffe würfeln': 'Roll all attacks',
+    ' — mehr als der Schlagen-Wert hergibt': ' — more than the Melee value allows',
+
+    // ---- Zauber-Auswahl: Heldenklassen-Spruchliste ----
+    '{held} — {typ}-Sprüche': '{held} — {typ} spells',
+    'Für die Klasse': 'For the class',
+
     // ---- Stufenaufstiegs-Dialog ----
     'Bitte zuerst eine Klasse wählen — die Steigerungskosten hängen davon ab.':
         'Please choose a class first — advancement costs depend on it.',

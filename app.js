@@ -1413,31 +1413,30 @@ function renderMehrereGegner() {
     const rest = gesamt - basis * n;
     const vorschlag = Array.from({ length: n }, (_, i) => basis + (i < rest ? 1 : 0));
 
+    const TT = window.t || ((s) => s);
     body.innerHTML = `
         <p class="hint-rule" style="margin-bottom:0.9rem">
-            Der Schlagen-Wert lässt sich auf bis zu <strong>vier angrenzende Gegner</strong> aufteilen.
-            Mit den Teilwerten wird je ein eigener Angriff gewürfelt, und die eigene Abwehr sinkt
-            um <strong>2 je Gegner</strong>, bis du in der nächsten Runde wieder an der Reihe bist.
+            ${TT('Der Schlagen-Wert lässt sich auf bis zu <strong>vier angrenzende Gegner</strong> aufteilen. Mit den Teilwerten wird je ein eigener Angriff gewürfelt, und die eigene Abwehr sinkt um <strong>2 je Gegner</strong>, bis du in der nächsten Runde wieder an der Reihe bist.')}
         </p>
         <div class="budget" style="margin-bottom:0.8rem">
-            Schlagen gesamt: <strong>${gesamt}</strong>
-            <span style="margin-left:auto">Abwehr in dieser Runde: <strong style="color:var(--fail)">−${2 * n}</strong></span>
+            ${TT('Schlagen gesamt:')} <strong>${gesamt}</strong>
+            <span style="margin-left:auto">${TT('Abwehr in dieser Runde:')} <strong style="color:var(--fail)">−${2 * n}</strong></span>
         </div>
         <div class="radio-row" style="margin-bottom:0.8rem">
-            ${[2, 3, 4].map(z => `<span class="radio-pill ${n === z ? 'selected' : ''}" data-mgegner="${z}">${z} Gegner</span>`).join('')}
+            ${[2, 3, 4].map(z => `<span class="radio-pill ${n === z ? 'selected' : ''}" data-mgegner="${z}">${z} ${TT('Gegner')}</span>`).join('')}
         </div>
         ${vorschlag.map((wert, i) => `
             <div class="list-row">
-                <span style="flex:1">Gegner ${i + 1}</span>
+                <span style="flex:1">${TT('Gegner')} ${i + 1}</span>
                 <span class="num-stepper"><button type="button" data-dir="-1" title="−1">−</button>
                     <input type="number" class="mg-wert" value="${wert}" min="0" max="${gesamt}" style="width:2.6rem">
                     <button type="button" data-dir="1" title="+1">+</button></span>
-                <span class="row-sub">Schlagen</span>
+                <span class="row-sub">${TT('Schlagen')}</span>
             </div>`).join('')}
         <div class="hint" id="mg-summe" style="margin-top:0.5rem"></div>
         <div style="display:flex;gap:0.5rem;margin-top:1rem">
-            <button class="btn btn-primary" id="mg-roll">Alle Angriffe würfeln</button>
-            <button class="btn btn-ghost" onclick="closeModal('mehrere-modal')">Abbrechen</button>
+            <button class="btn btn-primary" id="mg-roll">${TT('Alle Angriffe würfeln')}</button>
+            <button class="btn btn-ghost" onclick="closeModal('mehrere-modal')">${TT('Abbrechen')}</button>
         </div>`;
 
     const werte = () => [...body.querySelectorAll('.mg-wert')].map(el => parseInt(el.value, 10) || 0);
@@ -1445,8 +1444,8 @@ function renderMehrereGegner() {
         const summe = werte().reduce((a, b) => a + b, 0);
         const box = document.getElementById('mg-summe');
         const zuviel = summe > gesamt;
-        box.innerHTML = `Verteilt: <strong style="color:${zuviel ? 'var(--fail)' : 'var(--success)'}">${summe}</strong> / ${gesamt}` +
-            (zuviel ? ' — mehr als der Schlagen-Wert hergibt' : '');
+        box.innerHTML = `${TT('Verteilt:')} <strong style="color:${zuviel ? 'var(--fail)' : 'var(--success)'}">${summe}</strong> / ${gesamt}` +
+            (zuviel ? TT(' — mehr als der Schlagen-Wert hergibt') : '');
         document.getElementById('mg-roll').disabled = zuviel;
         document.getElementById('mg-roll').style.opacity = zuviel ? '0.4' : '1';
     };
@@ -2506,30 +2505,51 @@ function renderAll() {
     if (typeof uebersetzeDOM === 'function') uebersetzeDOM(document.body);
 }
 
+// Baut die festen Auswahllisten neu auf. Läuft nicht nur beim Start, sondern
+// auch beim Sprachwechsel — deshalb wird die getroffene Auswahl gesichert und
+// wieder gesetzt (diese Felder hängen an keinem data-bind, refreshBoundInputs
+// stellt sie also nicht wieder her), und der change-Handler wird einmalig
+// außerhalb verdrahtet, damit er sich nicht bei jedem Aufruf stapelt.
 function populateStaticSelects() {
     const tt = (s) => (typeof t === 'function' ? t(s) : s);
-    const diff = document.getElementById('f-difficulty');
-    diff.innerHTML = DS4_DIFFICULTY_MODIFIERS.map(d =>
-        `<option value="${d.mod}"${d.mod === 0 ? ' selected' : ''}>${tt(d.label)} (${d.mod > 0 ? '+' : ''}${d.mod})</option>`
-    ).join('');
+    const merken = (id, fuellen) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        const vorher = el.value;
+        fuellen(el);
+        if (vorher !== '' && [...el.options].some(o => o.value === vorher)) el.value = vorher;
+    };
 
-    const probe = document.getElementById('f-typische-probe');
-    probe.innerHTML = DS4_TYPISCHE_PROBEN.map((p, i) =>
-        `<option value="${i}">${tt(p.name)} — ${p.formula}</option>`
-    ).join('');
-    probe.addEventListener('change', renderGebietWahl);
+    merken('f-difficulty', el => {
+        el.innerHTML = DS4_DIFFICULTY_MODIFIERS.map(d =>
+            `<option value="${d.mod}"${d.mod === 0 ? ' selected' : ''}>${tt(d.label)} (${d.mod > 0 ? '+' : ''}${d.mod})</option>`
+        ).join('');
+    });
+
+    merken('f-typische-probe', el => {
+        el.innerHTML = DS4_TYPISCHE_PROBEN.map((p, i) =>
+            `<option value="${i}">${tt(p.name)} — ${p.formula}</option>`
+        ).join('');
+    });
 
     // Freie Wahl für die Handwerksprobe
-    document.getElementById('f-hw-attr').innerHTML = Object.entries(DS4_ATTRIBUT_NAMES)
-        .map(([k, n]) => `<option value="${k}">${n}</option>`).join('');
-    document.getElementById('f-hw-eig').innerHTML = Object.entries(DS4_EIGENSCHAFT_NAMES)
-        .map(([k, n]) => `<option value="${k}"${k === 'geschick' ? ' selected' : ''}>${n}</option>`).join('');
+    merken('f-hw-attr', el => {
+        el.innerHTML = Object.entries(DS4_ATTRIBUT_NAMES)
+            .map(([k, n]) => `<option value="${k}">${tt(n)}</option>`).join('');
+    });
+    merken('f-hw-eig', el => {
+        el.innerHTML = Object.entries(DS4_EIGENSCHAFT_NAMES)
+            .map(([k, n]) => `<option value="${k}"${k === 'geschick' ? ' selected' : ''}>${tt(n)}</option>`).join('');
+    });
 
     populateEquipmentSelects();
 }
 
 document.addEventListener('DOMContentLoaded', () => {
     populateStaticSelects();
+    // Einmalig verdrahten — populateStaticSelects() läuft auch beim Sprachwechsel
+    const probeSelect = document.getElementById('f-typische-probe');
+    if (probeSelect) probeSelect.addEventListener('change', renderGebietWahl);
     bindInputs();
     wireCombatModifiers();
     renderCombatModifiers();
