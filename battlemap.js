@@ -86,6 +86,28 @@ const BattleMap = (() => {
         let malArt = 'freihand';     // 'freihand' | 'linie' | 'kreis' | 'rechteck'
         let nebelForm = 'rechteck';  // Form fürs Auf- und Zudecken
         let malFarbe = '#a3342b';
+
+        // Die Leinwand nimmt ihre Farben aus dem Stylesheet (--karte-*), damit
+        // sie den Papier- bzw. Nachtmodus mitmacht. Faellt eine Variable aus,
+        // bleiben die Papierwerte stehen — das Modul funktioniert also auch
+        // ohne die Anwendung drumherum.
+        const FARB_ERSATZ = {
+            blatt: '#f3eee2', tinte: '#1b1714', stempel: '#a3342b', mess: '#3f6b2e',
+            raster: 'rgba(27,23,20,0.18)', schleier: 'rgba(27,23,20,0.10)',
+            beschriftung: 'rgba(243,238,226,0.92)', umriss: 'rgba(27,23,20,0.7)',
+            nebelVoll: '#b7afa0', nebelHalb: 'rgba(150,142,128,0.66)'
+        };
+        const farbe = Object.assign({}, FARB_ERSATZ);
+        function farbenLesen() {
+            try {
+                const stil = getComputedStyle(document.documentElement);
+                Object.keys(FARB_ERSATZ).forEach(k => {
+                    const v = stil.getPropertyValue('--karte-' + k).trim();
+                    farbe[k] = v || FARB_ERSATZ[k];
+                });
+            } catch (e) { /* Ersatzwerte behalten */ }
+        }
+        farbenLesen();
         let entwurf = null;          // Form, die gerade gezogen wird
 
         const ansicht = { zoom: 1, x: 0, y: 0 };   // Verschiebung in Bildschirmpixeln
@@ -160,11 +182,12 @@ const BattleMap = (() => {
         }
 
         function zeichnen() {
+            farbenLesen();
             anpassenAnGroesse();
             const breite = canvas.clientWidth, hoehe = canvas.clientHeight;
 
             ctx.clearRect(0, 0, breite, hoehe);
-            ctx.fillStyle = '#f3eee2';
+            ctx.fillStyle = farbe.blatt;
             ctx.fillRect(0, 0, breite, hoehe);
 
             // Hintergrundbild
@@ -175,7 +198,7 @@ const BattleMap = (() => {
                 ctx.drawImage(bildObjekt, 0, 0);
                 ctx.restore();
             } else {
-                ctx.fillStyle = 'rgba(27,23,20,0.10)';
+                ctx.fillStyle = farbe.schleier;
                 ctx.font = '14px "Segoe UI", sans-serif';
                 ctx.textAlign = 'center';
                 ctx.fillText('Noch keine Karte geladen', breite / 2, hoehe / 2);
@@ -251,7 +274,7 @@ const BattleMap = (() => {
             ctx.setLineDash([]);
             ctx.font = 'bold 12px "Segoe UI", sans-serif';
             const b = ctx.measureText(text).width;
-            ctx.fillStyle = 'rgba(243,238,226,0.92)';
+            ctx.fillStyle = farbe.beschriftung;
             ctx.fillRect(x - b / 2 - 5, y - 9, b + 10, 18);
             ctx.fillStyle = farbe;
             ctx.textAlign = 'center';
@@ -297,7 +320,7 @@ const BattleMap = (() => {
             nctx.setTransform(dpr, 0, 0, dpr, 0, 0);
             nctx.clearRect(0, 0, breite, hoehe);
 
-            nctx.fillStyle = nebelDeckend ? '#b7afa0' : 'rgba(150,142,128,0.66)';
+            nctx.fillStyle = nebelDeckend ? farbe.nebelVoll : farbe.nebelHalb;
             nctx.fillRect(0, 0, breite, hoehe);
 
             // Freigegebene Bereiche ausstanzen. Beim Spielleiter zusätzlich die
@@ -320,7 +343,7 @@ const BattleMap = (() => {
             // nicht freigegeben und für die Spieler unsichtbar.
             if (!nebelDeckend && (zustand.nebel.entwurf || []).length) {
                 ctx.save();
-                ctx.strokeStyle = '#3f6b2e';
+                ctx.strokeStyle = farbe.mess;
                 ctx.lineWidth = 2;
                 ctx.setLineDash([7, 5]);
                 zustand.nebel.entwurf.forEach(bereich => {
@@ -343,7 +366,7 @@ const BattleMap = (() => {
             const r = zustand.raster;
 
             ctx.save();
-            ctx.strokeStyle = f.farbe || '#1b1714';
+            ctx.strokeStyle = f.farbe || farbe.tinte;
             ctx.lineWidth = 2;
             ctx.setLineDash([5, 4]);
             ctx.beginPath();
@@ -354,7 +377,7 @@ const BattleMap = (() => {
             ctx.globalAlpha = 0.45;
             ctx.beginPath();
             ctx.arc(zu.x, zu.y, radius, 0, Math.PI * 2);
-            ctx.fillStyle = f.farbe || '#1b1714';
+            ctx.fillStyle = f.farbe || farbe.tinte;
             ctx.fill();
             ctx.globalAlpha = 1;
             ctx.beginPath();
@@ -366,9 +389,9 @@ const BattleMap = (() => {
                 const text = `${felder} Feld${felder === 1 ? '' : 'er'} · ${(felder * r.einheit).toLocaleString('de-DE')}${r.einheitName}`;
                 ctx.font = 'bold 12px "Segoe UI", sans-serif';
                 const tb = ctx.measureText(text).width;
-                ctx.fillStyle = 'rgba(243,238,226,0.92)';
+                ctx.fillStyle = farbe.beschriftung;
                 ctx.fillRect(zu.x - tb / 2 - 5, zu.y - radius - 22, tb + 10, 18);
-                ctx.fillStyle = f.farbe || '#1b1714';
+                ctx.fillStyle = f.farbe || farbe.tinte;
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
                 ctx.fillText(text, zu.x, zu.y - radius - 13);
@@ -382,7 +405,7 @@ const BattleMap = (() => {
             if (schritt < 6) return;   // zu fein, würde nur flimmern
 
             ctx.save();
-            ctx.strokeStyle = r.rasterFarbe || 'rgba(27,23,20,0.18)';
+            ctx.strokeStyle = r.rasterFarbe || farbe.raster;
             ctx.lineWidth = 1;
             ctx.beginPath();
 
@@ -424,11 +447,11 @@ const BattleMap = (() => {
             } else {
                 ctx.beginPath();
                 ctx.arc(mitte.x, mitte.y, radius, 0, Math.PI * 2);
-                ctx.fillStyle = f.farbe || '#1b1714';
+                ctx.fillStyle = f.farbe || farbe.tinte;
                 ctx.fill();
 
                 const kuerzel = (f.name || '?').trim().slice(0, 2).toUpperCase();
-                ctx.fillStyle = '#f3eee2';
+                ctx.fillStyle = farbe.blatt;
                 ctx.font = `bold ${Math.max(8, radius * 0.85)}px "Segoe UI", sans-serif`;
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
@@ -439,7 +462,7 @@ const BattleMap = (() => {
             ctx.beginPath();
             ctx.arc(mitte.x, mitte.y, radius, 0, Math.PI * 2);
             ctx.lineWidth = Math.max(1.5, radius * (portrait ? 0.16 : 0.12));
-            ctx.strokeStyle = portrait ? (f.farbe || '#1b1714') : 'rgba(27,23,20,0.7)';
+            ctx.strokeStyle = portrait ? (f.farbe || farbe.tinte) : farbe.umriss;
             ctx.stroke();
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
@@ -450,9 +473,9 @@ const BattleMap = (() => {
                 ctx.font = `${schrift}px "Segoe UI", sans-serif`;
                 const text = f.name || '';
                 const breite = ctx.measureText(text).width;
-                ctx.fillStyle = 'rgba(243,238,226,0.9)';
+                ctx.fillStyle = farbe.beschriftung;
                 ctx.fillRect(mitte.x - breite / 2 - 3, mitte.y + radius + 2, breite + 6, schrift + 4);
-                ctx.fillStyle = '#1b1714';
+                ctx.fillStyle = farbe.tinte;
                 ctx.textBaseline = 'top';
                 ctx.fillText(text, mitte.x, mitte.y + radius + 4);
             }
@@ -466,7 +489,7 @@ const BattleMap = (() => {
             const r = zustand.raster;
 
             ctx.save();
-            ctx.strokeStyle = '#a3342b';
+            ctx.strokeStyle = farbe.stempel;
             ctx.lineWidth = 2;
             ctx.setLineDash([6, 4]);
             ctx.beginPath();
@@ -479,12 +502,12 @@ const BattleMap = (() => {
             ctx.font = 'bold 13px "Segoe UI", sans-serif';
             const tb = ctx.measureText(text).width;
             const mx = (von.x + zu.x) / 2, my = (von.y + zu.y) / 2;
-            ctx.fillStyle = 'rgba(243,238,226,0.92)';
+            ctx.fillStyle = farbe.beschriftung;
             ctx.fillRect(mx - tb / 2 - 6, my - 22, tb + 12, 20);
-            ctx.strokeStyle = '#1b1714';
+            ctx.strokeStyle = farbe.tinte;
             ctx.lineWidth = 1;
             ctx.strokeRect(mx - tb / 2 - 6, my - 22, tb + 12, 20);
-            ctx.fillStyle = '#a3342b';
+            ctx.fillStyle = farbe.stempel;
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             ctx.fillText(text, mx, my - 12);

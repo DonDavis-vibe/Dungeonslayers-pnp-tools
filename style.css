@@ -19,22 +19,93 @@
     --fail: #a3342b;
     --crit: #1b1714;            /* Immersieg wirkt durch Gewicht, nicht durch Farbe */
     --patzer: #8c2b22;
-    --shadow: 3px 3px 0 rgba(27, 23, 20, 0.0375);
+    --shadow: 3px 3px 0 rgba(var(--tint-rgb), 0.0375);
     --radius: 0px;
 
     /* Druck statt Leuchten: harter Versatz wie ein gesetzter Block, keine
        Verlaeufe, kein Glow. --ink hiess frueher "tiefer als bg" und meint
        jetzt die leicht abgesetzte, eingelassene Flaeche. */
+    /* Grundtoene als Zahlentripel, damit rgba() sie mit eigener Deckung nutzen
+       kann. --tint kippt im Nachtmodus (Tinte auf Papier wird Licht auf Tinte),
+       --schatten bleibt in beiden Modi dunkel. */
+    --tint-rgb: 27, 23, 20;
+    --papier-rgb: 243, 238, 226;
+    --schatten-rgb: 27, 23, 20;
+
+    /* Leinwandfarben — battlemap.js liest genau diese Namen aus. */
+    --karte-blatt: #f3eee2;
+    --karte-tinte: #1b1714;
+    --karte-stempel: #a3342b;
+    --karte-mess: #3f6b2e;
+    --karte-raster: rgba(27, 23, 20, 0.18);
+    --karte-schleier: rgba(27, 23, 20, 0.10);
+    --karte-beschriftung: rgba(243, 238, 226, 0.92);
+    --karte-umriss: rgba(27, 23, 20, 0.7);
+    --karte-nebelVoll: #b7afa0;
+    --karte-nebelHalb: rgba(150, 142, 128, 0.66);
+
     --schrift: Georgia, 'Times New Roman', serif;
     --schrift-eng: 'Courier New', Courier, monospace;
 
     --ink: #e4ddcd;
-    --sheen: rgba(27, 23, 20, 0.0125);
+    --sheen: rgba(var(--tint-rgb), 0.0125);
     --gold-line: #1b1714;
     --glow-gold: none;
-    --shadow-panel: 3px 3px 0 rgba(27, 23, 20, 0.14);
-    --inset-deep: inset 0 1px 3px rgba(27, 23, 20, 0.10);
+    --shadow-panel: 3px 3px 0 rgba(var(--tint-rgb), 0.14);
+    --inset-deep: inset 0 1px 3px rgba(var(--tint-rgb), 0.10);
 }
+
+/* ---------- Nachtmodus: dieselbe Typografie, dasselbe Raster, dieselben
+   Symbole — nur andere Tinte. Am abgedunkelten Spieltisch blendet ein helles
+   Blatt; hier liegt derselbe Bogen dann in dunklem Papier vor. Umgeschaltet
+   wird ueber <html data-ton="nacht">, gesetzt von ton.js. ---------- */
+
+html[data-ton="nacht"] {
+    --bg: #131110;
+    --bg-alt: #1a1715;
+    --panel: #1c1917;
+    --panel-border: #3a332c;
+    --panel-border-strong: #4d443a;
+    --text: #e9e1d3;
+    --text-dim: #8a8175;
+    --accent: #c0392b;
+    --accent-bright: #d8543f;
+    --blood: #c0392b;
+    --success: #6a9c4e;
+    --fail: #c0392b;
+    --crit: #e9e1d3;
+    --patzer: #d8543f;
+    --shadow: 3px 3px 0 rgba(0, 0, 0, 0.40);
+    --shadow-panel: 3px 3px 0 rgba(0, 0, 0, 0.38);
+    --inset-deep: inset 0 1px 3px rgba(0, 0, 0, 0.45);
+    --ink: #16130f;
+    --sheen: rgba(233, 225, 211, 0.05);
+    --gold-line: #4d443a;
+
+    --tint-rgb: 233, 225, 211;
+    --papier-rgb: 28, 25, 23;
+    --schatten-rgb: 0, 0, 0;
+
+    --karte-blatt: #16130f;
+    --karte-tinte: #e9e1d3;
+    --karte-stempel: #c0392b;
+    --karte-mess: #6a9c4e;
+    --karte-raster: rgba(233, 225, 211, 0.16);
+    --karte-schleier: rgba(233, 225, 211, 0.08);
+    --karte-beschriftung: rgba(20, 17, 15, 0.92);
+    --karte-umriss: rgba(233, 225, 211, 0.55);
+    --karte-nebelVoll: #0d0b09;
+    --karte-nebelHalb: rgba(10, 8, 6, 0.66);
+}
+
+/* Das Kopfbild traegt nachts einen dunklen Schleier statt eines hellen. */
+html[data-ton="nacht"] .hero {
+    background:
+        linear-gradient(90deg, var(--panel) 0 24%, rgba(28, 25, 23, 0.86) 46%, rgba(28, 25, 23, 0.42) 100%),
+        url('img/titelbild.jpg?v=20260830l') 25% 70% / cover no-repeat,
+        var(--panel);
+}
+
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -44,8 +115,8 @@ body {
     /* Papiernarbe statt Vignette: feine Laufrichtung wie bei geschoepftem
        Papier, so schwach, dass sie nur als Textur wirkt. */
     background-image:
-        repeating-linear-gradient(0deg, rgba(27, 23, 20, 0.014) 0 1px, transparent 1px 3px),
-        radial-gradient(ellipse at 50% 0%, rgba(27, 23, 20, 0.03), transparent 60%);
+        repeating-linear-gradient(0deg, rgba(var(--tint-rgb), 0.014) 0 1px, transparent 1px 3px),
+        radial-gradient(ellipse at 50% 0%, rgba(var(--tint-rgb), 0.03), transparent 60%);
     background-attachment: fixed;
     color: var(--text);
     min-height: 100vh;
@@ -82,19 +153,19 @@ button { font-family: inherit; cursor: pointer; }
 
 input, select, textarea {
     font-family: inherit;
-    background: rgba(27, 23, 20, 0.14);
+    background: rgba(var(--tint-rgb), 0.14);
     border: 1px solid var(--panel-border);
     color: var(--text);
     padding: 0.4rem 0.55rem;
     border-radius: 0;
     outline: none;
     font-size: 0.92rem;
-    box-shadow: inset 0 1px 4px rgba(27, 23, 20, 0.126);
+    box-shadow: inset 0 1px 4px rgba(var(--schatten-rgb), 0.126);
     transition: border-color 0.15s, box-shadow 0.15s;
 }
 input:focus, select:focus, textarea:focus {
     border-color: var(--accent);
-    box-shadow: inset 0 1px 4px rgba(27, 23, 20, 0.126), 0 0 0 3px rgba(163, 52, 43, 0.18);
+    box-shadow: inset 0 1px 4px rgba(var(--schatten-rgb), 0.126), 0 0 0 3px rgba(163, 52, 43, 0.18);
 }
 input[type=number] { width: 100%; }
 /* Die winzigen nativen Hoch/Runter-Pfeile sind schlecht lesbar und je nach
@@ -123,7 +194,7 @@ select:focus {
 .num-stepper { display: inline-flex; align-items: stretch; }
 .num-stepper button {
     flex: none; width: 1.7rem; padding: 0; line-height: 1; font-size: 1rem;
-    background: rgba(27, 23, 20, 0.12); border: 1px solid var(--panel-border);
+    background: rgba(var(--tint-rgb), 0.12); border: 1px solid var(--panel-border);
     color: var(--text); cursor: pointer;
 }
 .num-stepper button:hover:not(:disabled) { background: rgba(120, 92, 46, 0.9); }
@@ -151,7 +222,7 @@ select:focus {
        Papierton entfaerbt (luminosity), nach links hin unter einem Papierschleier
        weggeblendet. So steht der Kopf auf Papier statt im Bild. */
     background:
-        linear-gradient(90deg, var(--panel) 0 24%, rgba(243, 238, 226, 0.86) 46%, rgba(243, 238, 226, 0.40) 100%),
+        linear-gradient(90deg, var(--panel) 0 24%, rgba(var(--papier-rgb), 0.86) 46%, rgba(var(--papier-rgb), 0.40) 100%),
         url('img/titelbild.jpg?v=20260830l') 25% 70% / cover no-repeat,
         var(--panel);
     background-blend-mode: normal, luminosity, normal;
@@ -182,7 +253,7 @@ select:focus {
     padding: 0.6rem 1.1rem;
     background: var(--panel), var(--bg-alt);
     border-bottom: 1px solid var(--gold-line);
-    box-shadow: 0 6px 20px rgba(27, 23, 20, 0.126);
+    box-shadow: 0 6px 20px rgba(var(--schatten-rgb), 0.126);
     position: sticky;
     top: 0;
     z-index: 50;
@@ -212,7 +283,7 @@ select:focus {
     padding: 0.45rem 0.85rem;
     border-radius: 0;
     font-size: 0.85rem;
-    box-shadow: inset 0 1px 0 rgba(27, 23, 20, 0.05), 0 1px 3px rgba(27, 23, 20, 0.112);
+    box-shadow: inset 0 1px 0 rgba(var(--schatten-rgb), 0.05), 0 1px 3px rgba(var(--schatten-rgb), 0.112);
     transition: background 0.15s, border-color 0.15s, box-shadow 0.15s, transform 0.1s;
     white-space: nowrap;
     display: inline-flex;
@@ -220,9 +291,9 @@ select:focus {
     gap: 0.42em;
 }
 .btn:hover {
-    background: linear-gradient(180deg, rgba(126, 96, 48, 0.97), rgba(27, 23, 20, 0.12));
+    background: linear-gradient(180deg, rgba(126, 96, 48, 0.97), rgba(var(--tint-rgb), 0.12));
     border-color: var(--accent);
-    box-shadow: inset 0 1px 0 rgba(27, 23, 20, 0.07), 0 2px 8px rgba(27, 23, 20, 0.126);
+    box-shadow: inset 0 1px 0 rgba(var(--schatten-rgb), 0.07), 0 2px 8px rgba(var(--schatten-rgb), 0.126);
 }
 .btn:active { transform: translateY(1px); }
 .btn:focus-visible { outline: 2px solid var(--accent-bright); outline-offset: 2px; }
@@ -232,7 +303,7 @@ select:focus {
     color: var(--panel);
     font-weight: 600;
 }
-.btn-primary:hover { background: #2f2822; border-color: #2f2822; }
+.btn-primary:hover { background: var(--text-dim); border-color: var(--text-dim); }
 .btn-danger { background: var(--accent); border-color: var(--accent); color: var(--panel); }
 .btn-danger:hover { background: var(--accent-bright); border-color: var(--accent-bright); }
 .btn-sm { padding: 0.25rem 0.55rem; font-size: 0.78rem; }
@@ -264,7 +335,7 @@ select:focus {
     gap: 0.6rem;
     flex-wrap: wrap;
     padding: 0.62rem 0.95rem;
-    background: linear-gradient(180deg, rgba(27, 23, 20, 0.12), rgba(27, 23, 20, 0.075));
+    background: linear-gradient(180deg, rgba(var(--tint-rgb), 0.12), rgba(var(--tint-rgb), 0.075));
     border-bottom: 1px solid var(--gold-line);
 }
 .panel-head h2, .panel-head h3 {
@@ -320,7 +391,7 @@ select:focus {
     width: 3rem; text-align: center; font-size: 1.3rem; font-weight: bold;
     background: var(--ink); border: 1px solid var(--panel-border-strong);
     padding: 0.15rem; border-radius: 0; color: var(--accent-bright);
-    box-shadow: inset 0 2px 6px rgba(27, 23, 20, 0.168);
+    box-shadow: inset 0 2px 6px rgba(var(--schatten-rgb), 0.168);
 }
 .eig-row { display: flex; align-items: center; gap: 0.5rem; padding: 0.28rem 0; }
 .eig-name { flex: 1; font-size: 0.88rem; }
@@ -337,7 +408,7 @@ select:focus {
 .stepper { display: inline-flex; }
 .stepper button {
     width: 1.5rem; height: 1.5rem; line-height: 1;
-    background: rgba(27, 23, 20, 0.12); border: 1px solid var(--panel-border);
+    background: rgba(var(--tint-rgb), 0.12); border: 1px solid var(--panel-border);
     color: var(--text); font-size: 0.95rem; border-radius: 0;
 }
 .stepper button:hover:not(:disabled) { background: rgba(120, 92, 46, 0.9); }
@@ -373,7 +444,7 @@ select:focus {
 .kw-card.rollable:hover {
     border-color: var(--accent);
     transform: translateY(-2px);
-    box-shadow: var(--inset-deep), 0 6px 18px rgba(27, 23, 20, 0.126), var(--glow-gold);
+    box-shadow: var(--inset-deep), 0 6px 18px rgba(var(--schatten-rgb), 0.126), var(--glow-gold);
 }
 .kw-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-dim); }
 .kw-value {
@@ -398,14 +469,14 @@ select:focus {
     height: 16px; border-radius: 0; overflow: hidden;
     background: var(--ink);
     border: 1px solid var(--panel-border);
-    box-shadow: inset 0 2px 5px rgba(27, 23, 20, 0.18);
+    box-shadow: inset 0 2px 5px rgba(var(--schatten-rgb), 0.18);
 }
 .lk-bar-fill {
     height: 100%;
     background: var(--accent);
     box-shadow:
-        inset 0 7px 7px -6px rgba(27, 23, 20, 0.1),
-        inset 0 -6px 8px -6px rgba(27, 23, 20, 0.154);
+        inset 0 7px 7px -6px rgba(var(--tint-rgb), 0.1),
+        inset 0 -6px 8px -6px rgba(var(--tint-rgb), 0.154);
     transition: width 0.35s ease, background 0.35s ease;
 }
 .lk-numbers { display: flex; align-items: center; gap: 0.3rem; }
@@ -540,12 +611,12 @@ select:focus {
 
 .log-list { list-style: none; max-height: 320px; overflow-y: auto; display: flex; flex-direction: column; gap: 0.4rem; }
 .log-list li {
-    background: linear-gradient(90deg, rgba(27, 23, 20, 0.015), transparent 60%), rgba(27, 23, 20, 0.0896);
+    background: linear-gradient(90deg, rgba(var(--tint-rgb), 0.015), transparent 60%), rgba(var(--tint-rgb), 0.0896);
     border-left: 3px solid var(--panel-border-strong);
     padding: 0.4rem 0.6rem;
     border-radius: 0 3px 3px 0;
     font-size: 0.82rem;
-    box-shadow: inset 0 1px 0 rgba(27, 23, 20, 0.015);
+    box-shadow: inset 0 1px 0 rgba(var(--schatten-rgb), 0.015);
 }
 .log-list li.immersieg { border-left-color: var(--crit); }
 .log-list li.patzer { border-left-color: var(--patzer); }
@@ -560,11 +631,11 @@ select:focus {
     padding: 0.42rem 0.55rem; border-radius: 0;
     background: var(--ink);
     border: 1px solid var(--panel-border);
-    box-shadow: inset 0 1px 0 rgba(27, 23, 20, 0.015);
+    box-shadow: inset 0 1px 0 rgba(var(--schatten-rgb), 0.015);
     transition: border-color 0.15s, background 0.15s;
 }
 .list-row + .list-row { margin-top: 0.35rem; }
-.list-row:hover { border-color: var(--panel-border-strong); background: rgba(27, 23, 20, 0.1); }
+.list-row:hover { border-color: var(--panel-border-strong); background: rgba(var(--tint-rgb), 0.1); }
 .list-row input[type=text] { flex: 1; min-width: 0; }
 .list-row .row-sub { font-size: 0.75rem; color: var(--text-dim); }
 .icon-btn {
@@ -580,7 +651,7 @@ select:focus {
     font-size: 0.72rem; letter-spacing: 0.02em;
     background: var(--panel);
     border: 1px solid var(--panel-border-strong); color: var(--text);
-    box-shadow: inset 0 1px 0 rgba(27, 23, 20, 0.04);
+    box-shadow: inset 0 1px 0 rgba(var(--schatten-rgb), 0.04);
 }
 .tag-warn { background: rgba(163, 52, 43, 0.12); border-color: var(--fail); color: var(--accent); }
 
@@ -596,7 +667,7 @@ select:focus {
 
 .modal-overlay {
     display: none; position: fixed; inset: 0; z-index: 260;
-    background: radial-gradient(ellipse at 50% 30%, rgba(27, 23, 20, 0.12), rgba(27, 23, 20, 0.18));
+    background: radial-gradient(ellipse at 50% 30%, rgba(var(--tint-rgb), 0.12), rgba(var(--tint-rgb), 0.18));
     -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px);
     align-items: center; justify-content: center; padding: 1rem;
     opacity: 0; transition: opacity 0.25s;
@@ -607,7 +678,7 @@ select:focus {
         var(--bg-alt);
     border: 1px solid var(--panel-border-strong);
     border-radius: var(--radius);
-    box-shadow: 0 24px 70px rgba(27, 23, 20, 0.18), 0 0 0 1px rgba(27, 23, 20, 0.14), inset 0 1px 0 var(--sheen);
+    box-shadow: 0 24px 70px rgba(var(--schatten-rgb), 0.18), 0 0 0 1px rgba(var(--schatten-rgb), 0.14), inset 0 1px 0 var(--sheen);
     max-width: 640px; width: 100%; max-height: 88vh; overflow-y: auto;
     transform: translateY(8px) scale(0.985);
     transition: transform 0.25s cubic-bezier(0.2, 0.9, 0.3, 1.1);
@@ -669,14 +740,14 @@ select:focus {
 .wizard-steps { display: flex; gap: 0.3rem; padding: 0.7rem 0.9rem; flex-wrap: wrap; border-bottom: 1px solid var(--panel-border); }
 .wizard-step {
     font-size: 0.72rem; padding: 0.24rem 0.65rem; border-radius: 0;
-    background: linear-gradient(180deg, rgba(27, 23, 20, 0.1), rgba(27, 23, 20, 0.098));
+    background: linear-gradient(180deg, rgba(var(--tint-rgb), 0.1), rgba(var(--tint-rgb), 0.098));
     border: 1px solid var(--panel-border); color: var(--text-dim);
-    box-shadow: inset 0 1px 0 rgba(27, 23, 20, 0.02);
+    box-shadow: inset 0 1px 0 rgba(var(--schatten-rgb), 0.02);
 }
 .wizard-step.active {
     background: var(--text);
     border-color: var(--panel); color: var(--panel);
-    box-shadow: inset 0 1px 0 rgba(27, 23, 20, 0.1);
+    box-shadow: inset 0 1px 0 rgba(var(--schatten-rgb), 0.1);
 }
 .wizard-step.done { border-color: var(--success); color: var(--success); }
 
@@ -685,11 +756,11 @@ select:focus {
     border: 1px solid var(--panel-border); border-radius: var(--radius);
     padding: 0.8rem;
     background: var(--ink);
-    box-shadow: inset 0 1px 0 rgba(27, 23, 20, 0.02);
+    box-shadow: inset 0 1px 0 rgba(var(--schatten-rgb), 0.02);
     cursor: pointer; transition: border-color 0.15s, transform 0.15s, box-shadow 0.15s;
 }
-.choice-card:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: inset 0 1px 0 rgba(27, 23, 20, 0.03), 0 6px 16px rgba(27, 23, 20, 0.112), var(--glow-gold); }
-.choice-card.selected { border-color: var(--accent-bright); background: rgba(163, 52, 43, 0.12); box-shadow: 0 0 18px rgba(163, 52, 43, 0.28), inset 0 1px 0 rgba(27, 23, 20, 0.05); }
+.choice-card:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: inset 0 1px 0 rgba(var(--schatten-rgb), 0.03), 0 6px 16px rgba(var(--schatten-rgb), 0.112), var(--glow-gold); }
+.choice-card.selected { border-color: var(--accent-bright); background: rgba(163, 52, 43, 0.12); box-shadow: 0 0 18px rgba(163, 52, 43, 0.28), inset 0 1px 0 rgba(var(--schatten-rgb), 0.05); }
 .choice-card h4 { color: var(--accent-bright); font-size: 1rem; margin-bottom: 0.25rem; }
 .choice-card p { font-size: 0.78rem; color: var(--text-dim); }
 .choice-card ul { font-size: 0.75rem; color: var(--text-dim); margin: 0.4rem 0 0 1rem; }
@@ -697,15 +768,15 @@ select:focus {
 .radio-row { display: flex; gap: 0.5rem; flex-wrap: wrap; }
 .radio-pill {
     padding: 0.3rem 0.75rem; border-radius: 0; font-size: 0.82rem;
-    background: linear-gradient(180deg, rgba(27, 23, 20, 0.1), rgba(27, 23, 20, 0.098)); border: 1px solid var(--panel-border);
-    box-shadow: inset 0 1px 0 rgba(27, 23, 20, 0.025);
+    background: linear-gradient(180deg, rgba(var(--tint-rgb), 0.1), rgba(var(--tint-rgb), 0.098)); border: 1px solid var(--panel-border);
+    box-shadow: inset 0 1px 0 rgba(var(--schatten-rgb), 0.025);
     cursor: pointer; transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
 }
 .radio-pill:hover { border-color: var(--accent); }
 .radio-pill.selected {
     background: var(--text);
     border-color: var(--text); color: var(--panel);
-    box-shadow: inset 0 1px 0 rgba(27, 23, 20, 0.1);
+    box-shadow: inset 0 1px 0 rgba(var(--schatten-rgb), 0.1);
 }
 
 /* ---------- Multiplayer-Statusanzeige ---------- */
@@ -725,7 +796,7 @@ select:focus {
     background: var(--ink);
     transition: border-color 0.2s, background 0.2s;
 }
-.mp-badge.visible:hover { background: rgba(27, 23, 20, 0.14); }
+.mp-badge.visible:hover { background: rgba(var(--tint-rgb), 0.14); }
 .mp-badge:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
 .mp-dot {
@@ -758,7 +829,7 @@ select:focus {
     border: 1px solid var(--panel-border);
     border-radius: var(--radius);
     padding: 0.55rem 0.7rem;
-    box-shadow: inset 0 1px 0 rgba(27, 23, 20, 0.02);
+    box-shadow: inset 0 1px 0 rgba(var(--schatten-rgb), 0.02);
 }
 .talent-entry + .talent-entry { margin-top: 0.45rem; }
 .talent-entry-head { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
@@ -773,10 +844,10 @@ select:focus {
     border: 1px solid var(--panel-border);
     border-radius: var(--radius);
     padding: 0.55rem 0.7rem;
-    box-shadow: inset 0 1px 0 rgba(27, 23, 20, 0.02);
+    box-shadow: inset 0 1px 0 rgba(var(--schatten-rgb), 0.02);
     transition: border-color 0.15s, box-shadow 0.15s;
 }
-.talent-option:hover { border-color: var(--accent); box-shadow: inset 0 1px 0 rgba(27, 23, 20, 0.03), var(--glow-gold); }
+.talent-option:hover { border-color: var(--accent); box-shadow: inset 0 1px 0 rgba(var(--schatten-rgb), 0.03), var(--glow-gold); }
 .talent-option.locked { opacity: 0.5; }
 
 /* ---------- Kampf-Tracker ---------- */
@@ -787,14 +858,14 @@ select:focus {
     padding: 0.55rem 0.6rem 0.55rem 0.75rem; border-radius: var(--radius);
     background: var(--ink);
     border: 1px solid var(--panel-border);
-    box-shadow: inset 0 1px 0 rgba(27, 23, 20, 0.02);
+    box-shadow: inset 0 1px 0 rgba(var(--schatten-rgb), 0.02);
     transition: border-color 0.2s, box-shadow 0.2s, background 0.2s, opacity 0.2s;
 }
 .combat-row + .combat-row { margin-top: 0.45rem; }
 .combat-row.active-turn {
     border-color: var(--accent-bright);
     background: rgba(163, 52, 43, 0.12);
-    box-shadow: 0 0 22px rgba(163, 52, 43, 0.28), inset 0 1px 0 rgba(27, 23, 20, 0.06);
+    box-shadow: 0 0 22px rgba(163, 52, 43, 0.28), inset 0 1px 0 rgba(var(--schatten-rgb), 0.06);
 }
 .combat-row.active-turn::before {
     content: "";
@@ -826,7 +897,7 @@ select:focus {
     padding: 0.1rem 0.2rem 0.1rem 0.5rem;
     border-radius: 0; font-size: 0.74rem; line-height: 1.6;
     color: var(--accent);
-    background: linear-gradient(180deg, rgba(150, 46, 38, 0.55), rgba(27, 23, 20, 0.12));
+    background: linear-gradient(180deg, rgba(150, 46, 38, 0.55), rgba(var(--tint-rgb), 0.12));
     border: 1px solid rgba(184, 70, 47, 0.6);
     box-shadow: inset 0 1px 0 rgba(255, 220, 210, 0.12);
 }
@@ -834,7 +905,7 @@ select:focus {
     display: inline-flex; align-items: center; justify-content: center;
     min-width: 1.1rem; height: 1.1rem; padding: 0 0.15rem;
     border-radius: 50%; font-size: 0.68rem; font-weight: 700;
-    background: rgba(27, 23, 20, 0.112); color: var(--accent);
+    background: rgba(var(--tint-rgb), 0.112); color: var(--accent);
 }
 .zustand-chip button {
     border: none; background: transparent; color: var(--accent);
@@ -863,7 +934,7 @@ select:focus {
     background: var(--panel);
     border: 1px solid var(--accent-bright);
     border-radius: var(--radius);
-    box-shadow: 0 8px 32px rgba(27, 23, 20, 0.18);
+    box-shadow: 0 8px 32px rgba(var(--schatten-rgb), 0.18);
     padding: 0.8rem 1.1rem;
     cursor: pointer;
     transition: transform 0.35s cubic-bezier(0.2, 0.9, 0.3, 1.2), opacity 0.3s;
@@ -879,7 +950,7 @@ select:focus {
     /* unten rechts statt oben — die Kopfzeile bricht auf schmalen Fenstern um,
        dann lag die Anzeige sonst über den Knöpfen */
     position: fixed; bottom: 1rem; right: 1rem; z-index: 120;
-    background: rgba(27, 23, 20, 0.12);
+    background: rgba(var(--tint-rgb), 0.12);
     border: 1px solid var(--accent);
     border-radius: 0; padding: 0.3rem 0.9rem;
     font-size: 0.85rem; color: var(--accent-bright);
@@ -937,7 +1008,7 @@ select:focus {
 }
 .gm-portrait-leer {
     display: inline-flex; align-items: center; justify-content: center;
-    background: rgba(27, 23, 20, 0.112);
+    background: rgba(var(--tint-rgb), 0.112);
     font-size: 0.75rem; font-weight: bold;
 }
 
@@ -966,7 +1037,7 @@ select:focus {
     align-items: center;
     gap: 0.7rem;
     padding: 0.62rem 0.95rem;
-    background: linear-gradient(180deg, rgba(27, 23, 20, 0.12), rgba(27, 23, 20, 0.075));
+    background: linear-gradient(180deg, rgba(var(--tint-rgb), 0.12), rgba(var(--tint-rgb), 0.075));
     border-bottom: 1px solid var(--gold-line);
     flex: none;
 }
@@ -1280,7 +1351,7 @@ html[lang="en"] [data-only-lang="en"] { display: block; }
     align-items: center;
     gap: 0.5rem;
     padding: 0.45rem 0.5rem 0.45rem 0.7rem;
-    background: linear-gradient(180deg, rgba(27, 23, 20, 0.12), rgba(27, 23, 20, 0.1));
+    background: linear-gradient(180deg, rgba(var(--tint-rgb), 0.12), rgba(var(--tint-rgb), 0.1));
     border-bottom: 1px solid var(--panel-border);
     font-family: 'Georgia', serif;
     font-size: 0.9rem;
@@ -1359,7 +1430,7 @@ details > summary:hover { color: var(--accent-bright); }
 }
 .kampf-kopf.ich-dran {
     border-color: var(--accent-bright);
-    background: linear-gradient(180deg, rgba(27, 23, 20, 0.12), rgba(27, 23, 20, 0.1));
+    background: linear-gradient(180deg, rgba(var(--tint-rgb), 0.12), rgba(var(--tint-rgb), 0.1));
 }
 .kampf-dran {
     color: var(--accent-bright);
@@ -1419,3 +1490,8 @@ h1 .ico, h2 .ico, h3 .ico, h4 .ico { stroke-width: 1.15; margin-right: 0.15em; }
 
 /* Knoepfe ohne Text (nur Symbol) bleiben quadratisch statt breitzulaufen */
 .btn > .ico:only-child { margin: 0 0.1em; }
+
+
+/* ---------- Papier / Nacht ---------- */
+
+.ton-schalter { display: inline-flex; align-items: center; gap: 0.3rem; }

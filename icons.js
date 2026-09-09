@@ -60,6 +60,8 @@ const DS_ICONS = {
     schloss:  '<rect x="3" y="7" width="10" height="7"/><path d="M5.4 7V5a2.6 2.6 0 0 1 5.2 0v2"/>',
     schlossAuf:'<rect x="3" y="7" width="10" height="7"/><path d="M5.4 7V5a2.6 2.6 0 0 1 5.2 0"/>',
     vollbild: '<path d="M2 6V2h4M14 6V2h-4M2 10v4h4M14 10v4h-4"/>',
+    sonne:    '<circle cx="8" cy="8" r="3.2"/><path d="M8 1v1.8M8 13.2V15M1 8h1.8M13.2 8H15M3.05 3.05l1.3 1.3M11.65 11.65l1.3 1.3M12.95 3.05l-1.3 1.3M4.35 11.65l-1.3 1.3"/>',
+    mond:     '<path d="M13.4 9.8A5.9 5.9 0 0 1 6.2 2.6a5.9 5.9 0 1 0 7.2 7.2z"/>',
     lampe:    '<path d="M6.2 13.4h3.6M6 11.2c0-1.6-2.4-2.6-2.4-5A4.4 4.4 0 0 1 12.4 6.2c0 2.4-2.4 3.4-2.4 5z"/>',
     nebel:    '<path d="M2 5.6h9M4.4 8.2h9.6M2.4 10.8h7.4M12 10.8h1.8M13 5.6h1"/>',
     rechteck: '<rect x="2.2" y="4" width="11.6" height="8"/>',
