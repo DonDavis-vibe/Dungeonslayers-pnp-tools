@@ -110,7 +110,7 @@ function renderSpells() {
                 </button>
                 ${routineMax ? `<button class="btn btn-sm ${s.routine ? 'btn-primary' : 'btn-ghost'}" data-routine="${escapeHtml(s.name)}"
                         title="${TT('An diesen Spruch binden — dann ohne Aktion und ohne Probe hierher wechseln. Beim Wirken zählt sein eigener ZB.')}">
-                    ${s.routine ? TT('⚙ gebunden') : TT('⚙ binden')}
+                    ${s.routine ? TT('gebunden') : TT('binden')}
                 </button>` : ''}
                 <strong>${escapeHtml(s.name)}</strong>
                 <span class="tag">${probe}</span>

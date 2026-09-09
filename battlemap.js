@@ -13,7 +13,7 @@
 //         einheit: 1, einheitName: 'm'                     // 1 Feld = 1 Meter
 //     });
 //     map.setBild(dataUrl);
-//     map.addFigur({ id: 'p1', name: 'Thorin', farbe: '#d4a24c', x: 3, y: 4 });
+//     map.addFigur({ id: 'p1', name: 'Thorin', farbe: '#1b1714', x: 3, y: 4 });
 //     map.applyState(vomNetzwerkEmpfangenerZustand);
 //
 // Koordinaten sind IMMER Rasterfelder (Fließkomma), nie Pixel. Damit bleibt der
@@ -85,7 +85,7 @@ const BattleMap = (() => {
         let werkzeug = 'zeigen';
         let malArt = 'freihand';     // 'freihand' | 'linie' | 'kreis' | 'rechteck'
         let nebelForm = 'rechteck';  // Form fürs Auf- und Zudecken
-        let malFarbe = '#f0c069';
+        let malFarbe = '#a3342b';
         let entwurf = null;          // Form, die gerade gezogen wird
 
         const ansicht = { zoom: 1, x: 0, y: 0 };   // Verschiebung in Bildschirmpixeln
@@ -164,7 +164,7 @@ const BattleMap = (() => {
             const breite = canvas.clientWidth, hoehe = canvas.clientHeight;
 
             ctx.clearRect(0, 0, breite, hoehe);
-            ctx.fillStyle = '#14100c';
+            ctx.fillStyle = '#f3eee2';
             ctx.fillRect(0, 0, breite, hoehe);
 
             // Hintergrundbild
@@ -175,7 +175,7 @@ const BattleMap = (() => {
                 ctx.drawImage(bildObjekt, 0, 0);
                 ctx.restore();
             } else {
-                ctx.fillStyle = 'rgba(237,227,212,0.35)';
+                ctx.fillStyle = 'rgba(27,23,20,0.10)';
                 ctx.font = '14px "Segoe UI", sans-serif';
                 ctx.textAlign = 'center';
                 ctx.fillText('Noch keine Karte geladen', breite / 2, hoehe / 2);
@@ -251,7 +251,7 @@ const BattleMap = (() => {
             ctx.setLineDash([]);
             ctx.font = 'bold 12px "Segoe UI", sans-serif';
             const b = ctx.measureText(text).width;
-            ctx.fillStyle = 'rgba(20,16,12,0.88)';
+            ctx.fillStyle = 'rgba(243,238,226,0.92)';
             ctx.fillRect(x - b / 2 - 5, y - 9, b + 10, 18);
             ctx.fillStyle = farbe;
             ctx.textAlign = 'center';
@@ -297,7 +297,7 @@ const BattleMap = (() => {
             nctx.setTransform(dpr, 0, 0, dpr, 0, 0);
             nctx.clearRect(0, 0, breite, hoehe);
 
-            nctx.fillStyle = nebelDeckend ? '#0a0806' : 'rgba(10,8,6,0.62)';
+            nctx.fillStyle = nebelDeckend ? '#b7afa0' : 'rgba(150,142,128,0.66)';
             nctx.fillRect(0, 0, breite, hoehe);
 
             // Freigegebene Bereiche ausstanzen. Beim Spielleiter zusätzlich die
@@ -320,7 +320,7 @@ const BattleMap = (() => {
             // nicht freigegeben und für die Spieler unsichtbar.
             if (!nebelDeckend && (zustand.nebel.entwurf || []).length) {
                 ctx.save();
-                ctx.strokeStyle = '#6fa84a';
+                ctx.strokeStyle = '#3f6b2e';
                 ctx.lineWidth = 2;
                 ctx.setLineDash([7, 5]);
                 zustand.nebel.entwurf.forEach(bereich => {
@@ -343,7 +343,7 @@ const BattleMap = (() => {
             const r = zustand.raster;
 
             ctx.save();
-            ctx.strokeStyle = f.farbe || '#d4a24c';
+            ctx.strokeStyle = f.farbe || '#1b1714';
             ctx.lineWidth = 2;
             ctx.setLineDash([5, 4]);
             ctx.beginPath();
@@ -354,7 +354,7 @@ const BattleMap = (() => {
             ctx.globalAlpha = 0.45;
             ctx.beginPath();
             ctx.arc(zu.x, zu.y, radius, 0, Math.PI * 2);
-            ctx.fillStyle = f.farbe || '#d4a24c';
+            ctx.fillStyle = f.farbe || '#1b1714';
             ctx.fill();
             ctx.globalAlpha = 1;
             ctx.beginPath();
@@ -366,9 +366,9 @@ const BattleMap = (() => {
                 const text = `${felder} Feld${felder === 1 ? '' : 'er'} · ${(felder * r.einheit).toLocaleString('de-DE')}${r.einheitName}`;
                 ctx.font = 'bold 12px "Segoe UI", sans-serif';
                 const tb = ctx.measureText(text).width;
-                ctx.fillStyle = 'rgba(20,16,12,0.9)';
+                ctx.fillStyle = 'rgba(243,238,226,0.92)';
                 ctx.fillRect(zu.x - tb / 2 - 5, zu.y - radius - 22, tb + 10, 18);
-                ctx.fillStyle = f.farbe || '#d4a24c';
+                ctx.fillStyle = f.farbe || '#1b1714';
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
                 ctx.fillText(text, zu.x, zu.y - radius - 13);
@@ -382,7 +382,7 @@ const BattleMap = (() => {
             if (schritt < 6) return;   // zu fein, würde nur flimmern
 
             ctx.save();
-            ctx.strokeStyle = r.rasterFarbe || 'rgba(212,162,76,0.30)';
+            ctx.strokeStyle = r.rasterFarbe || 'rgba(27,23,20,0.18)';
             ctx.lineWidth = 1;
             ctx.beginPath();
 
@@ -424,11 +424,11 @@ const BattleMap = (() => {
             } else {
                 ctx.beginPath();
                 ctx.arc(mitte.x, mitte.y, radius, 0, Math.PI * 2);
-                ctx.fillStyle = f.farbe || '#d4a24c';
+                ctx.fillStyle = f.farbe || '#1b1714';
                 ctx.fill();
 
                 const kuerzel = (f.name || '?').trim().slice(0, 2).toUpperCase();
-                ctx.fillStyle = '#14100c';
+                ctx.fillStyle = '#f3eee2';
                 ctx.font = `bold ${Math.max(8, radius * 0.85)}px "Segoe UI", sans-serif`;
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
@@ -439,7 +439,7 @@ const BattleMap = (() => {
             ctx.beginPath();
             ctx.arc(mitte.x, mitte.y, radius, 0, Math.PI * 2);
             ctx.lineWidth = Math.max(1.5, radius * (portrait ? 0.16 : 0.12));
-            ctx.strokeStyle = portrait ? (f.farbe || '#d4a24c') : 'rgba(0,0,0,0.65)';
+            ctx.strokeStyle = portrait ? (f.farbe || '#1b1714') : 'rgba(27,23,20,0.7)';
             ctx.stroke();
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
@@ -450,9 +450,9 @@ const BattleMap = (() => {
                 ctx.font = `${schrift}px "Segoe UI", sans-serif`;
                 const text = f.name || '';
                 const breite = ctx.measureText(text).width;
-                ctx.fillStyle = 'rgba(0,0,0,0.6)';
+                ctx.fillStyle = 'rgba(243,238,226,0.9)';
                 ctx.fillRect(mitte.x - breite / 2 - 3, mitte.y + radius + 2, breite + 6, schrift + 4);
-                ctx.fillStyle = '#ede3d4';
+                ctx.fillStyle = '#1b1714';
                 ctx.textBaseline = 'top';
                 ctx.fillText(text, mitte.x, mitte.y + radius + 4);
             }
@@ -466,7 +466,7 @@ const BattleMap = (() => {
             const r = zustand.raster;
 
             ctx.save();
-            ctx.strokeStyle = '#f0c069';
+            ctx.strokeStyle = '#a3342b';
             ctx.lineWidth = 2;
             ctx.setLineDash([6, 4]);
             ctx.beginPath();
@@ -479,12 +479,12 @@ const BattleMap = (() => {
             ctx.font = 'bold 13px "Segoe UI", sans-serif';
             const tb = ctx.measureText(text).width;
             const mx = (von.x + zu.x) / 2, my = (von.y + zu.y) / 2;
-            ctx.fillStyle = 'rgba(20,16,12,0.9)';
+            ctx.fillStyle = 'rgba(243,238,226,0.92)';
             ctx.fillRect(mx - tb / 2 - 6, my - 22, tb + 12, 20);
-            ctx.strokeStyle = '#d4a24c';
+            ctx.strokeStyle = '#1b1714';
             ctx.lineWidth = 1;
             ctx.strokeRect(mx - tb / 2 - 6, my - 22, tb + 12, 20);
-            ctx.fillStyle = '#f0c069';
+            ctx.fillStyle = '#a3342b';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             ctx.fillText(text, mx, my - 12);

@@ -267,11 +267,11 @@ function renderKartenListe() {
 
     box.innerHTML = `
         <button class="help-btn" type="button" data-hilfe="karte-mehrere" aria-label="Hilfe: Mehrere Karten" title="Hilfe: Mehrere Karten">?</button>
-        <span class="map-karten-titel">🗺️ Aktive Karte:</span>
+        <span class="map-karten-titel">${ico('karte')}Aktive Karte:</span>
         <select id="map-auswahl" title="Alle Spieler ohne eigene Zuweisung sehen diese Karte">${opts}</select>
-        <button class="btn btn-sm" id="map-karte-neu" title="Neue Karte anlegen">＋ Karte</button>
-        <button class="btn btn-sm btn-ghost" id="map-karte-umbenennen" title="Aktive Karte umbenennen">✎</button>
-        <button class="btn btn-sm btn-ghost" id="map-karte-loeschen"${karten.length < 2 ? ' disabled style="opacity:0.4"' : ''} title="Aktive Karte löschen">🗑️</button>`;
+        <button class="btn btn-sm" id="map-karte-neu" title="Neue Karte anlegen">${ico('plus')}Karte</button>
+        <button class="btn btn-sm btn-ghost" id="map-karte-umbenennen" title="Aktive Karte umbenennen">${ico('pinsel')}</button>
+        <button class="btn btn-sm btn-ghost" id="map-karte-loeschen"${karten.length < 2 ? ' disabled style="opacity:0.4"' : ''} title="Aktive Karte löschen">${ico('muell')}</button>`;
 
     const sel = document.getElementById('map-auswahl');
     if (sel) sel.addEventListener('change', () => karteWechseln(sel.value));
@@ -322,7 +322,7 @@ function renderKartenZuweisung() {
             <select data-zuw-spieler="${escapeHtml(name)}">${opts}</select></span>`;
     }).join('');
 
-    box.innerHTML = `<span class="map-karten-titel">👥 Wer sieht was:</span>${zeilen}
+    box.innerHTML = `<span class="map-karten-titel">${ico('gruppe')}Wer sieht was:</span>${zeilen}
         <button class="btn btn-sm btn-ghost" id="map-zuw-zusammen" title="Alle Spieler zurück auf die aktive Karte">↺ Alle zusammen</button>`;
 
     box.querySelectorAll('select[data-zuw-spieler]').forEach(s => {
@@ -466,8 +466,8 @@ function renderKartenWerkzeuge() {
 
     if (!isGmMode) {
         leiste.innerHTML = `
-            <label class="radio-pill ${aktiv('zeigen')}" onclick="werkzeugWaehlen('zeigen')">${TT('✋ Bewegen')}</label>
-            <label class="radio-pill ${aktiv('messen')}" onclick="werkzeugWaehlen('messen')">${TT('📏 Messen')}</label>
+            <label class="radio-pill ${aktiv('zeigen')}" onclick="werkzeugWaehlen('zeigen')">${TT('Bewegen')}</label>
+            <label class="radio-pill ${aktiv('messen')}" onclick="werkzeugWaehlen('messen')">${TT('Messen')}</label>
             <button class="btn btn-sm btn-ghost" onclick="karte.einpassen()">${TT('Einpassen')}</button>
             <span class="hint">${TT('Mausrad zoomt · deine Figur ziehen meldet einen Zug beim Spielleiter an')}</span>`;
         if (typeof uebersetzeDOM === 'function') uebersetzeDOM(leiste);
@@ -480,40 +480,40 @@ function renderKartenWerkzeuge() {
     const farben = ['#f0c069', '#6fa84a', '#4a90d4', '#c4569e', '#b8462f'];
     // Rasterfarben: Anzeige-Punkt kräftig, gezeichnet wird die halbdurchsichtige Variante
     const rasterFarben = [
-        { punkt: '#d4a24c', linie: 'rgba(212,162,76,0.32)', name: 'Gold' },
-        { punkt: '#ffffff', linie: 'rgba(255,255,255,0.42)', name: 'Weiß' },
-        { punkt: '#111111', linie: 'rgba(0,0,0,0.55)', name: 'Schwarz' },
-        { punkt: '#5aa0ff', linie: 'rgba(90,160,255,0.48)', name: 'Blau' },
-        { punkt: '#5fcf5f', linie: 'rgba(95,207,95,0.46)', name: 'Grün' },
-        { punkt: '#e65a5a', linie: 'rgba(230,90,90,0.46)', name: 'Rot' }
+        { punkt: '#1b1714', linie: 'rgba(27,23,20,0.18)', name: 'Tinte' },
+        { punkt: '#8d8375', linie: 'rgba(27,23,20,0.10)', name: 'Blass' },
+        { punkt: '#111111', linie: 'rgba(27,23,20,0.42)', name: 'Kräftig' },
+        { punkt: '#3a5a96', linie: 'rgba(58,90,150,0.34)', name: 'Blau' },
+        { punkt: '#3f6b2e', linie: 'rgba(63,107,46,0.34)', name: 'Grün' },
+        { punkt: '#a3342b', linie: 'rgba(163,52,43,0.34)', name: 'Rot' }
     ];
 
     leiste.innerHTML = `
         <button class="help-btn" type="button" data-hilfe="karte-werkzeuge" aria-label="Hilfe: Karten-Werkzeuge" title="Hilfe: Karten-Werkzeuge">?</button>
-        <button class="btn btn-sm btn-primary" onclick="document.getElementById('map-file').click()">🖼️ Karte</button>
-        ${karteBildDatenUrl ? '<button class="btn btn-sm" onclick="verteileAlleSpielerKarten(true)" title="Karte(n) erneut an alle verbundenen Spieler schicken">📤 Senden</button>' : ''}
-        <button class="btn btn-sm" onclick="figurenAusKampfUebernehmen()" title="Alle Kampfteilnehmer auf einmal setzen">👥 Aus Kampf</button>
-        <button class="btn btn-sm" onclick="figurSetzenDialog()" title="Einzelne Figur auf die Karte setzen">➕ Figur</button>
+        <button class="btn btn-sm btn-primary" onclick="document.getElementById('map-file').click()">${ico('bild')}Karte</button>
+        ${karteBildDatenUrl ? '<button class="btn btn-sm" onclick="verteileAlleSpielerKarten(true)" title="Karte(n) erneut an alle verbundenen Spieler schicken">Senden</button>' : ''}
+        <button class="btn btn-sm" onclick="figurenAusKampfUebernehmen()" title="Alle Kampfteilnehmer auf einmal setzen">${ico('gruppe')}Aus Kampf</button>
+        <button class="btn btn-sm" onclick="figurSetzenDialog()" title="Einzelne Figur auf die Karte setzen">${ico('plus')}Figur</button>
         <span class="werkzeug-gruppe">
-            <label class="radio-pill ${aktiv('zeigen')}" onclick="werkzeugWaehlen('zeigen')" title="Karte und Figuren bewegen (H)">✋</label>
-            <label class="radio-pill ${aktiv('messen')}" onclick="werkzeugWaehlen('messen')" title="Entfernung messen (R) — Umschalt+Ziehen geht jederzeit">📏</label>
-            <label class="radio-pill ${aktiv('malen')}" onclick="werkzeugWaehlen('malen')" title="Markierung zeichnen (M)">✏️</label>
-            <label class="radio-pill ${aktiv('radieren')}" onclick="werkzeugWaehlen('radieren')" title="Markierung entfernen (E)">🧽</label>
+            <label class="radio-pill ${aktiv('zeigen')}" onclick="werkzeugWaehlen('zeigen')" title="Karte und Figuren bewegen (H)">${ico('hand')}</label>
+            <label class="radio-pill ${aktiv('messen')}" onclick="werkzeugWaehlen('messen')" title="Entfernung messen (R) — Umschalt+Ziehen geht jederzeit">${ico('lineal')}</label>
+            <label class="radio-pill ${aktiv('malen')}" onclick="werkzeugWaehlen('malen')" title="Markierung zeichnen (M)">${ico('pinsel')}</label>
+            <label class="radio-pill ${aktiv('radieren')}" onclick="werkzeugWaehlen('radieren')" title="Markierung entfernen (E)">${ico('radierer')}</label>
             <button class="btn btn-sm btn-ghost" id="map-undo" onclick="karteRueckgaengig()" ${karte.kannRueckgaengig() ? '' : 'disabled style="opacity:0.4"'}
                     title="Letzte Markierung oder Nebel-Aktion zurücknehmen (Strg+Z)">↶</button>
         </span>
         ${malAktiv ? `
         <span class="werkzeug-gruppe">
-            ${[['freihand', '〰️', 'Freihand'], ['linie', '📐', 'Linie'], ['kreis', '⭕', 'Kreis (Zauberwirkung)'], ['rechteck', '▭', 'Rechteck']]
+            ${[['freihand', '〰️', 'Freihand'], ['linie', '📐', 'Linie'], ['kreis', '', 'Kreis (Zauberwirkung)'], ['rechteck', '', 'Rechteck']]
                 .map(([a, sym, titel]) => `<label class="radio-pill ${malArt === a ? 'selected' : ''}" onclick="malArtWaehlen('${a}')" title="${titel}">${sym}</label>`).join('')}
             ${farben.map(f => `<span class="mal-farbe ${karte.getMalFarbe() === f ? 'aktiv' : ''}" style="background:${f}" onclick="malFarbeWaehlen('${f}')"></span>`).join('')}
             <button class="btn btn-sm btn-ghost" onclick="karte.formenLoeschen()">Alle löschen</button>
         </span>` : ''}
         <span class="werkzeug-gruppe" title="Nebel des Krieges">
-            <label class="radio-pill ${aktiv('nebel-auf')}" onclick="werkzeugWaehlen('nebel-auf')" title="Bereich vormerken zum Aufdecken (F)">🔦 Auf</label>
-            <label class="radio-pill ${aktiv('nebel-zu')}" onclick="werkzeugWaehlen('nebel-zu')" title="Bereich wieder zudecken (G)">🌫️ Zu</label>
-            <label class="radio-pill ${karte.getNebelForm() === 'rechteck' ? 'selected' : ''}" onclick="nebelFormWaehlen('rechteck')" title="Rechteckiger Bereich">▭</label>
-            <label class="radio-pill ${karte.getNebelForm() === 'kreis' ? 'selected' : ''}" onclick="nebelFormWaehlen('kreis')" title="Runder Bereich (z.B. Lichtschein)">⭕</label>
+            <label class="radio-pill ${aktiv('nebel-auf')}" onclick="werkzeugWaehlen('nebel-auf')" title="Bereich vormerken zum Aufdecken (F)">${ico('lampe')}Auf</label>
+            <label class="radio-pill ${aktiv('nebel-zu')}" onclick="werkzeugWaehlen('nebel-zu')" title="Bereich wieder zudecken (G)">${ico('nebel')}Zu</label>
+            <label class="radio-pill ${karte.getNebelForm() === 'rechteck' ? 'selected' : ''}" onclick="nebelFormWaehlen('rechteck')" title="Rechteckiger Bereich">${ico('rechteck')}</label>
+            <label class="radio-pill ${karte.getNebelForm() === 'kreis' ? 'selected' : ''}" onclick="nebelFormWaehlen('kreis')" title="Runder Bereich (z.B. Lichtschein)">${ico('kreis')}</label>
             <button class="btn btn-sm btn-ghost" onclick="karte.nebelAllesZudecken();renderKartenWerkzeuge()" title="Ganze Karte verdecken">Alles zu</button>
             <button class="btn btn-sm btn-ghost" onclick="karte.nebelAllesAufdecken();renderKartenWerkzeuge()" title="Nebel abschalten">Alles auf</button>
         </span>
@@ -531,11 +531,11 @@ function renderKartenWerkzeuge() {
         <span class="num-stepper" title="Raster senkrecht verschieben"><button type="button" data-dir="-1">−</button>
             <input type="number" id="map-offy" value="${r.rasterVersatzY}" style="width:2.6rem">
             <button type="button" data-dir="1">+</button></span>
-        <button class="btn btn-sm btn-ghost" onclick="figurGroesseDialog()" title="Größe einer Figur ändern (Drache, Riese ...)">📏 Größe</button>
-        <button class="btn btn-sm btn-ghost" onclick="figurEntfernenDialog()" title="Eine einzelne Figur von der Karte nehmen">🗑️ Figur</button>
+        <button class="btn btn-sm btn-ghost" onclick="figurGroesseDialog()" title="Größe einer Figur ändern (Drache, Riese ...)">${ico('lineal')}Größe</button>
+        <button class="btn btn-sm btn-ghost" onclick="figurEntfernenDialog()" title="Eine einzelne Figur von der Karte nehmen">${ico('muell')}Figur</button>
         <label class="radio-pill ${zuegeFrei ? 'selected' : ''}" onclick="zugFreigabeUmschalten()"
-               title="Aus: jeder Spielerzug muss bestätigt werden. An: Spieler bewegen ihre Figur frei — praktisch außerhalb des Kampfes.">${zuegeFrei ? '🔓 Züge frei' : '🔒 Züge prüfen'}</label>
-        <button class="btn btn-sm btn-ghost" onclick="verdecktUmschalten()" title="Einzelne Gegner vor den Spielern verbergen">🙈</button>
+               title="Aus: jeder Spielerzug muss bestätigt werden. An: Spieler bewegen ihre Figur frei — praktisch außerhalb des Kampfes.">${zuegeFrei ? 'Züge frei' : 'Züge prüfen'}</label>
+        <button class="btn btn-sm btn-ghost" onclick="verdecktUmschalten()" title="Einzelne Gegner vor den Spielern verbergen">${ico('augeAus')}</button>
         <button class="btn btn-sm btn-danger" style="margin-left:auto" onclick="figurenLeeren()">Figuren leeren</button>`;
 
     ['map-gridsize', 'map-offx', 'map-offy'].forEach(id => {
@@ -675,7 +675,7 @@ function renderNebelFreigabe() {
     if (!offen) { box.innerHTML = ''; return; }
 
     box.innerHTML = `<div class="nebel-freigabe">
-        <span>🔦 <strong>${offen}</strong> Bereich(e) vorgemerkt — für die Spieler noch <strong>nicht</strong> sichtbar.
+        <span>${ico('lampe')}<strong>${offen}</strong> Bereich(e) vorgemerkt — für die Spieler noch <strong>nicht</strong> sichtbar.
             Grün gestrichelt umrandet.</span>
         <span style="margin-left:auto;display:flex;gap:0.3rem">
             <button class="btn btn-sm btn-primary" onclick="nebelFreigeben()">Für Spieler freigeben</button>

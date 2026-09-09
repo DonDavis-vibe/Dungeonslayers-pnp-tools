@@ -11,11 +11,11 @@
  */
 
 const HILFE_GRUPPEN = [
-    { id: 'start',  titel: '🚀 Erste Schritte' },
-    { id: 'bogen',  titel: '📋 Der Charakterbogen' },
-    { id: 'wuerfe', titel: '🎲 Würfeln & Proben' },
-    { id: 'runde',  titel: '📡 Zusammen spielen' },
-    { id: 'sl',     titel: '👑 Spielleiter-Dashboard' }
+    { id: 'start',  titel: 'Erste Schritte' },
+    { id: 'bogen',  titel: 'Der Charakterbogen' },
+    { id: 'wuerfe', titel: 'Würfeln & Proben' },
+    { id: 'runde',  titel: 'Zusammen spielen' },
+    { id: 'sl',     titel: 'Spielleiter-Dashboard' }
 ];
 
 const HILFE_THEMEN = {
@@ -34,7 +34,7 @@ const HILFE_THEMEN = {
                  <li>Du wirst geheilt</li>
                  <li>Der Spielleiter flüstert dir etwas oder macht eine Ansage an alle</li>
                </ul>
-               <p><strong>🔊/🔇</strong> in der Kopfzeile schaltet alle Töne auf einmal stumm,
+               <p><strong>${ico('ton')}/${ico('ton')}</strong> in der Kopfzeile schaltet alle Töne auf einmal stumm,
                der <strong>Regler</strong> daneben stellt <em>deine</em> Lautstärke ein — für die
                Hinweistöne <strong>und</strong> das Soundboard des Spielleiters. Er legt sich als
                Gesamtpegel über dessen Mischung, ersetzt sie also nicht. Beides bleibt auf deinem
@@ -49,18 +49,18 @@ const HILFE_THEMEN = {
         text: `<p>Ausgewählte Effekte und Ambient-Tracks für die Runde — nach Gruppen sortiert
                (Reaktionen, Kulisse, Dungeon, Kampf &amp; Magie, Tisch-Kontrolle, Musik).</p>
                <ul>
-                 <li><strong>🎧 Vorhören</strong> spielt den Klang nur bei dir.</li>
-                 <li><strong>▶ Für alle</strong> spielt ihn zusätzlich bei jedem verbundenen
+                 <li><strong>${ico('ton')}Vorhören</strong> spielt den Klang nur bei dir.</li>
+                 <li><strong>${ico('abspielen')}Für alle</strong> spielt ihn zusätzlich bei jedem verbundenen
                      Spieler ab.</li>
-                 <li><strong>🌙 Fade</strong> blendet alles Laufende in 3 Sekunden aus,
-                     <strong>⏹ Stop</strong> bricht sofort ab.</li>
+                 <li><strong>${ico('stopp')}Fade</strong> blendet alles Laufende in 3 Sekunden aus,
+                     <strong>${ico('stopp')}Stop</strong> bricht sofort ab.</li>
                  <li>Der <strong>Gesamtlautstärke</strong>-Regler mischt die laufenden Sounds
                      zueinander und wird an alle mitgeschickt; jeder Spieler hat daneben noch
                      seinen eigenen Regler in der Kopfzeile.</li>
                </ul>
                <p>Sounds stoppen sich <strong>nicht</strong> gegenseitig — so läuft Regen als
                Endlos-Kulisse, während du einen Gong oder einen Schrei darüberlegst.</p>
-               <p><strong>➕ Eigener Sound</strong> legt eine Datei von deiner Festplatte ins
+               <p><strong>${ico('plus')}Eigener Sound</strong> legt eine Datei von deiner Festplatte ins
                Soundboard — lizenzierte Musik, selbst aufgenommene Atmo, ein Jingle. Sie
                erscheint unter <em>Eigene</em> in der Liste und lässt sich wie jeder andere
                Klang vorhören oder für alle abspielen. Solche Dateien bleiben
@@ -81,11 +81,11 @@ const HILFE_THEMEN = {
                alle Kampfwerte selbst aus, kennt Talente, Zauber und Bestiarium aus dem Regelwerk
                und würfelt Proben regelkonform.</p>
                <p>Es läuft alles im Browser: keine Anmeldung, kein Server, keine Installation.
-               Dein Charakter liegt in diesem Browser und wandert über <strong>💾 Speichern</strong>
+               Dein Charakter liegt in diesem Browser und wandert über <strong>${ico('speichern')}Speichern</strong>
                als Datei auf deine Festplatte.</p>
                <ul>
                  <li><strong>Spieler</strong> füllen den Bogen aus und würfeln damit.</li>
-                 <li><strong>Spielleiter</strong> eröffnen unter 📡 Multiplayer einen Raum und
+                 <li><strong>Spielleiter</strong> eröffnen unter ${ico('funk')}Multiplayer einen Raum und
                      bekommen ein eigenes Dashboard mit Kampf-Tracker.</li>
                </ul>`
     },
@@ -93,14 +93,14 @@ const HILFE_THEMEN = {
         gruppe: 'start',
         titel: 'In fünf Minuten losspielen',
         text: `<ol>
-                 <li><strong>🧙 Charakter erschaffen</strong> — der Assistent führt in sieben
+                 <li><strong>${ico('w20')}Charakter erschaffen</strong> — der Assistent führt in sieben
                      Schritten durch Volk, Klasse, Attribute, Eigenschaften und Ausrüstung.
                      Er lässt dich nicht weiter, solange die Punkte nicht regelkonform verteilt sind.</li>
-                 <li>Alternativ <strong>👤 Beispiel</strong> für einen fertigen Helden zum Ausprobieren.</li>
+                 <li>Alternativ <strong>${ico('person')}Beispiel</strong> für einen fertigen Helden zum Ausprobieren.</li>
                  <li>Im Bogen auf einen <strong>Kampfwert klicken</strong> — das würfelt die Probe.</li>
-                 <li><strong>💾 Speichern</strong> legt den Charakter als Datei ab,
-                     <strong>📂 Laden</strong> holt ihn zurück.</li>
-                 <li>Für eine Runde am Tisch oder online: <strong>📡 Multiplayer</strong>,
+                 <li><strong>${ico('speichern')}Speichern</strong> legt den Charakter als Datei ab,
+                     <strong>${ico('ordner')}Laden</strong> holt ihn zurück.</li>
+                 <li>Für eine Runde am Tisch oder online: <strong>${ico('funk')}Multiplayer</strong>,
                      Raum-Code vom Spielleiter eintippen, fertig.</li>
                </ol>`
     },
@@ -111,16 +111,16 @@ const HILFE_THEMEN = {
                Beim nächsten Aufruf ist dein Held wieder da — solange du nicht die Browserdaten
                löschst oder einen anderen Rechner benutzt.</p>
                <ul>
-                 <li><strong>💾 Speichern</strong> — schreibt eine JSON-Datei. Die kannst du
+                 <li><strong>${ico('speichern')}Speichern</strong> — schreibt eine JSON-Datei. Die kannst du
                      sichern, weitergeben oder auf einem anderen Gerät laden.</li>
-                 <li><strong>📂 Laden</strong> — liest so eine Datei wieder ein und ersetzt den
+                 <li><strong>${ico('ordner')}Laden</strong> — liest so eine Datei wieder ein und ersetzt den
                      aktuellen Bogen.</li>
-                 <li><strong>🗑️ Löschen</strong> — leert den Bogen vollständig; nach dem Bild
+                 <li><strong>${ico('muell')}Löschen</strong> — leert den Bogen vollständig; nach dem Bild
                      wird getrennt gefragt.</li>
                </ul>
                <p>Solange du den Bogen in dieser Sitzung noch nicht als Datei gespeichert hast —
                oder seither etwas geändert hast — fragt der Browser beim Schließen des Tabs nach.
-               Eine Erinnerung, <em>💾 Speichern</em> zu drücken: Der Browser-Speicher allein kann
+               Eine Erinnerung, <em>${ico('speichern')}Speichern</em> zu drücken: Der Browser-Speicher allein kann
                verloren gehen (Verlauf gelöscht, anderes Gerät).</p>
                <p>Die Discord-Webhook-URL wird bewusst <strong>nicht</strong> mitgespeichert —
                geteilte Charakterdateien verraten deinen Kanal also nicht.</p>`
@@ -139,7 +139,7 @@ const HILFE_THEMEN = {
                senkst du sie wieder, werden sie sauber abgezogen.</p>
                <p><strong>Lernpunkte (LP)</strong> steigern Eigenschaften und Lebenskraft,
                <strong>Talentpunkte (TP)</strong> kaufen Talentränge. Ausgegeben wird beides im
-               Dialog <em>⬆️ Stufenaufstieg</em>.</p>`
+               Dialog <em>${ico('aufstieg')}Stufenaufstieg</em>.</p>`
     },
     'portrait': {
         gruppe: 'bogen',
@@ -268,7 +268,7 @@ const HILFE_THEMEN = {
                etwas Falsches einzusetzen.</p>
                <p>Die Heldenklassen-Talente <em>Zauberroutine</em> (Erzmagier), <em>Stabbindung</em>
                (Erzmagier) und <em>Zauberwaffe</em> (Kriegszauberer) blenden einen Knopf
-               <strong>⚙ binden</strong> ein — je Talentrang lässt sich ein Zauber binden, wie mit
+               <strong>${ico('zahnrad')}binden</strong> ein — je Talentrang lässt sich ein Zauber binden, wie mit
                einem Zauberstab (bei Stabbindung/Zauberwaffe, solange der Stab bzw. die Waffe
                gehalten wird). Zu einem gebundenen Spruch wechselst du <strong>ohne Aktion und ohne
                GEI+VE-Probe</strong>. Es bleibt trotzdem bei einem vorbereiteten Zauber zur Zeit —
@@ -459,7 +459,7 @@ const HILFE_THEMEN = {
         titel: 'Gruppe & Kampf',
         text: `<p>Der Kasten erscheint nur, solange du mit einem Spielleiter verbunden bist.</p>
                <p><strong>Läuft ein Kampf</strong>, steht hier die Runde und die vollständige
-               Initiative-Reihenfolge — <strong>🛡️ Helden</strong> und <strong>👹 Gegner</strong>
+               Initiative-Reihenfolge — <strong>${ico('schild')}Helden</strong> und <strong>${ico('monster')}Gegner</strong>
                gemischt nach Initiative. Wer gerade dran ist, ist markiert; bist du es selbst,
                wird der Kasten hervorgehoben und du bekommst zusätzlich eine Einblendung samt Ton.
                Ohne Kampf steht dort schlicht, dass gerade keiner läuft.</p>
@@ -475,7 +475,7 @@ const HILFE_THEMEN = {
                Lebenskraft-Balken — praktisch, um zu sehen, wer dringend Heilung braucht.
                Bewusstlose und Tote sind ausgewiesen. Gegner-<strong>Werte</strong> siehst du
                bewusst nicht; in der Reihenfolge stehen sie nur mit Namen.</p>
-               <p><strong>🤫 Flüstern</strong> schickt eine Nachricht, die nur der Spielleiter
+               <p><strong>${ico('fluestern')}Flüstern</strong> schickt eine Nachricht, die nur der Spielleiter
                sieht — die Gegenrichtung zu seinem Flüstern an dich.</p>
                <p><strong>Heilzauber wirken auf Mitspieler:</strong> Wirkst du erfolgreich einen
                Zauber, den der Bogen als Heilung erkennt (z.B. <em>Heilende Hand</em>), fragt er
@@ -507,8 +507,8 @@ const HILFE_THEMEN = {
                damit die ganze Gruppe mitliest und nicht nur der Spielleiter. Auch die
                <strong>Kampfwürfe des Spielleiters</strong> (Angriffe und Abwehr der Gegner) landen
                dort.</p>
-               <p>Einzurichten unter <strong>📡 Verbindung</strong> (Dashboard) bzw.
-               <strong>📡 Multiplayer</strong> (Spielerbogen) — geht jederzeit, auch bei laufendem
+               <p>Einzurichten unter <strong>${ico('funk')}Verbindung</strong> (Dashboard) bzw.
+               <strong>${ico('funk')}Multiplayer</strong> (Spielerbogen) — geht jederzeit, auch bei laufendem
                Raum. In Discord unter <em>Kanal bearbeiten → Integrationen → Webhooks</em> einen
                Webhook anlegen und die URL einfügen. <strong>Test senden</strong> prüft die
                Einrichtung. Würfe und Ereignisse lassen sich getrennt abschalten.</p>
@@ -528,7 +528,7 @@ const HILFE_THEMEN = {
                Spieler, zum Vorbereiten. Die Werkzeugleiste dazu ist ein eigenes Hilfethema
                (<em>Karten-Werkzeuge</em>).</p>
                <ul>
-                 <li><strong>Ansehen und bewegen</strong>: Mausrad zoomt, <strong>✋ Bewegen</strong>
+                 <li><strong>Ansehen und bewegen</strong>: Mausrad zoomt, <strong>${ico('hand')}Bewegen</strong>
                      oder die <strong>mittlere Maustaste</strong> schiebt die Karte,
                      <strong>Einpassen</strong> rückt alles wieder ins Bild. Wer mitten in der
                      Sitzung dazukommt, bekommt den aktuellen Stand automatisch nachgereicht.</li>
@@ -536,9 +536,9 @@ const HILFE_THEMEN = {
                      Ziehst du sie, bleibt sie zunächst stehen und meldet den Zug mit Entfernung als
                      <strong>Vorschlag</strong> an den Spielleiter — er gibt ihn frei. Außerhalb des
                      Kampfes kann er die Züge auch generell freigeben, dann ziehst du direkt.</li>
-                 <li><strong>Messen</strong> per <strong>📏 Messen</strong> oder <em>Umschalt+Ziehen</em>,
+                 <li><strong>Messen</strong> per <strong>${ico('lineal')}Messen</strong> oder <em>Umschalt+Ziehen</em>,
                      angezeigt in Feldern und Metern.</li>
-                 <li><strong>⛶ Vollbild</strong> für den großen Blick; Spieleransicht, Dashboard und
+                 <li><strong>${ico('vollbild')}Vollbild</strong> für den großen Blick; Spieleransicht, Dashboard und
                      Vollbild teilen sich dieselbe Leinwand. <strong>Einklappen</strong> schafft Platz,
                      ohne die Karte zu schließen.</li>
                  <li><strong>Markierungen</strong> (Freihand, Linie, Kreis, Rechteck) und den
@@ -557,18 +557,18 @@ const HILFE_THEMEN = {
                Reihe nach.</p>
                <p><strong>Karte und Figuren</strong></p>
                <ul>
-                 <li><strong>🖼️ Karte</strong> lädt ein Bild; es wird verkleinert und in Stücken
-                     an alle Spieler übertragen. <strong>📤 Senden</strong> schickt es erneut —
+                 <li><strong>${ico('bild')}Karte</strong> lädt ein Bild; es wird verkleinert und in Stücken
+                     an alle Spieler übertragen. <strong>${ico('ausgang')}Senden</strong> schickt es erneut —
                      für alle, die später dazugekommen sind.</li>
-                 <li><strong>👥 Aus Kampf</strong> setzt alle Kampfteilnehmer auf einmal.
-                     <strong>➕ Figur</strong> setzt eine einzelne: einen verbundenen Spieler,
+                 <li><strong>${ico('gruppe')}Aus Kampf</strong> setzt alle Kampfteilnehmer auf einmal.
+                     <strong>${ico('plus')}Figur</strong> setzt eine einzelne: einen verbundenen Spieler,
                      einen Gegner <em>aus dem Bestiarium</em> — der landet mit allen Werten
                      zugleich im Kampf-Tracker — oder einen reinen Marker ohne Werte.</li>
-                 <li><strong>📏 Größe</strong> ändert die Feldzahl einer Figur (Drache, Riese …),
-                     <strong>🙈</strong> verbirgt einzelne Gegner vor den Spielern.</li>
-                 <li><strong>🗑️ Figur</strong> nimmt eine einzelne Figur von der Karte,
+                 <li><strong>${ico('lineal')}Größe</strong> ändert die Feldzahl einer Figur (Drache, Riese …),
+                     <strong>${ico('augeAus')}</strong> verbirgt einzelne Gegner vor den Spielern.</li>
+                 <li><strong>${ico('muell')}Figur</strong> nimmt eine einzelne Figur von der Karte,
                      <strong>Figuren leeren</strong> räumt alle auf einmal ab.</li>
-                 <li><strong>🔒 Züge prüfen / 🔓 Züge frei</strong> — normalerweise meldet ein
+                 <li><strong>${ico('schloss')}Züge prüfen / ${ico('schlossAuf')}Züge frei</strong> — normalerweise meldet ein
                      Spielerzug sich nur als Vorschlag an und du entscheidest. Außerhalb des
                      Kampfes nervt das; ein Klick gibt die Bewegung frei, die Spieler ziehen dann
                      direkt. Die Umstellung gilt sofort für alle und auch für später Beitretende.</li>
@@ -578,25 +578,25 @@ const HILFE_THEMEN = {
                <strong>E</strong> Radieren, <strong>F</strong>/<strong>G</strong> Nebel auf/zu,
                <strong>Esc</strong> zurück zur Hand.</p>
                <ul>
-                 <li><strong>✋</strong> bewegt Karte und Figuren, <strong>📏</strong> misst
-                     (geht auch jederzeit mit <em>Umschalt+Ziehen</em>), <strong>✏️</strong> malt,
-                     <strong>🧽</strong> radiert Markierungen weg. Das <strong>Mausrad zoomt</strong>,
+                 <li><strong>${ico('hand')}</strong> bewegt Karte und Figuren, <strong>${ico('lineal')}</strong> misst
+                     (geht auch jederzeit mit <em>Umschalt+Ziehen</em>), <strong>${ico('pinsel')}</strong> malt,
+                     <strong>${ico('radierer')}</strong> radiert Markierungen weg. Das <strong>Mausrad zoomt</strong>,
                      die <strong>mittlere Maustaste schiebt die Karte</strong> — auch mitten im
                      Messen oder Zeichnen.</li>
                  <li><strong>↶</strong> nimmt die letzte Markierungs- oder Nebel-Aktion zurück
                      (auch <em>Strg+Z</em>) — bis zu 40 Schritte weit. Figuren-Positionen bleiben
                      unberührt, die wandern ja auch über Spieler-Vorschläge.</li>
-                 <li>Bei ✏️ erscheint eine zweite Reihe: Freihand, Linie, Kreis, Rechteck und fünf
+                 <li>Bei ${ico('pinsel')}erscheint eine zweite Reihe: Freihand, Linie, Kreis, Rechteck und fünf
                      Farben. Der <strong>Kreis beschriftet sich mit seinem Radius in Metern</strong> —
                      gedacht für Zauberwirkungen.</li>
                </ul>
                <p><strong>Nebel des Krieges</strong></p>
                <ul>
-                 <li><strong>🔦 Auf</strong> merkt einen Bereich zum Aufdecken <em>vor</em> — grün
+                 <li><strong>${ico('lampe')}Auf</strong> merkt einen Bereich zum Aufdecken <em>vor</em> — grün
                      gestrichelt und für die Spieler noch <strong>nicht</strong> sichtbar. Erst
                      <strong>Für Spieler freigeben</strong> in der Leiste darunter deckt ihn
                      wirklich auf; <em>Verwerfen</em> nimmt den Fehlgriff zurück.</li>
-                 <li><strong>🌫️ Zu</strong> deckt wieder zu, ▭ und ⭕ wählen die Form des Bereichs
+                 <li><strong>${ico('nebel')}Zu</strong> deckt wieder zu, ${ico('rechteck')}und ${ico('kreis')}wählen die Form des Bereichs
                      (rund z.B. für einen Lichtschein).</li>
                  <li><strong>Alles zu</strong> / <strong>Alles auf</strong> für die ganze Karte.</li>
                </ul>
@@ -611,15 +611,15 @@ const HILFE_THEMEN = {
         gruppe: 'runde',
         titel: 'Mehrere Karten',
         text: `<p><strong>Der Spielleiter kann mehrere Karten halten</strong> — je ein Raum, ein
-               Stockwerk, ein Ort. Die Leiste <strong>🗺️ Aktive Karte</strong> ganz oben schaltet
-               um: <strong>＋ Karte</strong> legt eine neue an, <strong>✎</strong> benennt um,
-               <strong>🗑️</strong> löscht (die letzte bleibt). Jede Karte merkt sich ihr eigenes
+               Stockwerk, ein Ort. Die Leiste <strong>${ico('karte')}Aktive Karte</strong> ganz oben schaltet
+               um: <strong>${ico('plus')}Karte</strong> legt eine neue an, <strong>${ico('pinsel')}</strong> benennt um,
+               <strong>${ico('muell')}</strong> löscht (die letzte bleibt). Jede Karte merkt sich ihr eigenes
                Bild, ihre Figuren, ihren Nebel und ihre Markierungen.</p>
                <p>Wechselst du die aktive Karte, <strong>ziehen alle Spieler automatisch mit</strong>.
                Bild und Figuren gehen dabei nur an die Spieler, die sie noch nicht haben — ein
                reiner Kartenwechsel überträgt kein Bild neu.</p>
                <p><strong>Wenn sich die Gruppe aufteilt:</strong> Sobald es zwei Karten und
-               verbundene Spieler gibt, erscheint die Leiste <strong>👥 Wer sieht was</strong>.
+               verbundene Spieler gibt, erscheint die Leiste <strong>${ico('gruppe')}Wer sieht was</strong>.
                Dort weist du jedem Spieler eine Karte zu — die Hälfte der Gruppe bleibt im
                Erdgeschoss, die andere sieht schon den Keller. Spieler auf einer solchen
                <em>eigenen</em> Karte bewegen ihre Figur <strong>frei ohne Bestätigung</strong>;
@@ -664,10 +664,10 @@ const HILFE_THEMEN = {
                <p>Du siehst alle Helden live: Lebenskraft, Kampfwerte, Attribute, Ausrüstung,
                Talente, Zauber samt laufender Abklingzeiten, Inventar und EP/LP/TP — dazu jeden
                Wurf im Live-Log.</p>
-               <p>In der Kopfzeile liegen <strong>🗺️ Karte</strong>, <strong>📡 Verbindung</strong>
+               <p>In der Kopfzeile liegen <strong>${ico('karte')}Karte</strong>, <strong>${ico('funk')}Verbindung</strong>
                (Discord jederzeit ein- und ausrichtbar), <strong>Sitzung speichern/laden</strong>
                und die Hausregeln. Weiter unten der <strong>Kampf-Tracker</strong>, dein
-               <strong>SL-Würfel</strong>, das <strong>🎵 Soundboard</strong> und die
+               <strong>SL-Würfel</strong>, das <strong>${ico('note')}Soundboard</strong> und die
                <strong>Spielerkarten</strong> — alle mit eigenem „?".</p>
                <p><strong>Dashboard verlassen</strong> bringt dich zurück auf den eigenen Bogen;
                der Raum wird dabei geschlossen.</p>`
@@ -688,7 +688,7 @@ const HILFE_THEMEN = {
                      nach einem Treffer sein Ziel im Tracker, würfelt der NSC hier automatisch die
                      Abwehr und der Restschaden wird von seiner LK abgezogen — kein Abtippen.</li>
                  <li>Beim Weiterschalten der Runde bekommt der Spieler, der jetzt dran ist,
-                     automatisch eine Einblendung samt Ton. Zusätzlich stupst <strong>👉</strong>
+                     automatisch eine Einblendung samt Ton. Zusätzlich stupst <strong>${ico('hand')}</strong>
                      einen trödelnden Spieler auf Knopfdruck an.</li>
                  <li><strong>Größenkategorien</strong> fließen automatisch ein — der Oger gegen den
                      Goblin bekommt seine −4 ohne dein Zutun.</li>
@@ -723,12 +723,12 @@ const HILFE_THEMEN = {
                      Heilzauber zwischen Spielern (z.B. ein Heiler, der einen Kameraden heilt)
                      laufen automatisch über dich als Verteiler — im Log siehst du das als
                      <em>System</em>-Eintrag, ohne dass du etwas tun musst.</li>
-                 <li><strong>🎲 Probe von allen</strong> — beim Spieler ist die passende Probe
+                 <li><strong>${ico('wuerfel')}Probe von allen</strong> — beim Spieler ist die passende Probe
                      direkt vorgewählt.</li>
-                 <li><strong>✨ EP vergeben</strong> — nach S.88 die EP-Summe der besiegten Gegner
+                 <li><strong>${ico('funke')}EP vergeben</strong> — nach S.88 die EP-Summe der besiegten Gegner
                      geteilt durch die Zahl der beteiligten Helden. Der Dialog nennt Summe, Teiler
                      und Ergebnis und schlägt das Viertel für ein erreichtes Abenteuerziel vor.</li>
-                 <li><strong>👉 Anstupsen</strong> — ein Klick, und beim Spieler ploppt eine
+                 <li><strong>${ico('hand')}Anstupsen</strong> — ein Klick, und beim Spieler ploppt eine
                      Einblendung samt „du bist am Zug"-Ton auf. Für trödelnde Spieler oder um zu
                      zeigen: jetzt bist DU gemeint. (Beim Weiterschalten der Runde passiert das
                      ohnehin automatisch.)</li>
@@ -739,7 +739,7 @@ const HILFE_THEMEN = {
         gruppe: 'sl',
         titel: 'Kampagnen-Notizen & Ansagen',
         text: `<p>Freitext für die Runde — er wandert mit in die gespeicherte Sitzung.</p>
-               <p><strong>📢 Ansage an alle</strong> schickt eine Nachricht in die Logbücher
+               <p><strong>${ico('megafon')}Ansage an alle</strong> schickt eine Nachricht in die Logbücher
                sämtlicher verbundener Spieler (und, falls eingerichtet, nach Discord).</p>`
     },
     'gm-handout': {
@@ -749,11 +749,11 @@ const HILFE_THEMEN = {
                verbundenen Spielern in einem Fenster ein — für Vorlesetext, ein Rätsel, einen
                Brief, eine Skizze.</p>
                <ul>
-                 <li><strong>▶ Text zeigen</strong> schickt den Inhalt des Feldes; Zeilenumbrüche
+                 <li><strong>${ico('abspielen')}Text zeigen</strong> schickt den Inhalt des Feldes; Zeilenumbrüche
                      bleiben erhalten.</li>
-                 <li><strong>🖼️ Bild zeigen</strong> wählt eine Datei — sie wird für die
+                 <li><strong>${ico('bild')}Bild zeigen</strong> wählt eine Datei — sie wird für die
                      Übertragung verkleinert und an alle geschickt.</li>
-                 <li><strong>⏹ Ausblenden</strong> schließt das Fenster bei allen wieder.</li>
+                 <li><strong>${ico('stopp')}Ausblenden</strong> schließt das Fenster bei allen wieder.</li>
                </ul>
                <p>Der Spieler kann das Fenster selbst schließen und über einen kleinen Knopf unten
                links jederzeit wieder öffnen. Handouts wandern <strong>nicht</strong> in die
@@ -821,14 +821,14 @@ function hilfeAnzeigen(id, knopf) {
     const pop = hilfePopover();
     pop.innerHTML = `
         <div class="help-pop-head">
-            <span>❓ ${escapeHtml(thema.titel)}</span>
+            <span>${ico('frage')}${escapeHtml(thema.titel)}</span>
             <button class="btn btn-sm btn-ghost" onclick="hilfeSchliessen()" title="Schließen">✕</button>
         </div>
         ${typeof hilfeNurDeutschHinweis === 'function' && hilfeNurDeutschHinweis()
             ? `<div class="help-pop-body" style="opacity:.7;font-style:italic">${escapeHtml(hilfeNurDeutschHinweis())}</div>` : ''}
         <div class="help-pop-body">${thema.text}</div>
         <div class="help-pop-foot">
-            <button class="btn btn-sm btn-ghost" onclick="openHilfe('${id}')">📖 Ganze Anleitung</button>
+            <button class="btn btn-sm btn-ghost" onclick="openHilfe('${id}')">${ico('buch')}Ganze Anleitung</button>
         </div>`;
 
     if (hilfeAktiverKnopf) hilfeAktiverKnopf.classList.remove('active');

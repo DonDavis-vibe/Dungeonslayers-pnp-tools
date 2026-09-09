@@ -157,7 +157,7 @@ function sitzungAnbieten() {
     const box = document.getElementById('gm-sitzung');
     if (!box) return;
     box.innerHTML = `<div class="sitzung-hinweis">
-        <span>💾 Eine frühere Sitzung liegt vor (${escapeHtml(teile.join(', '))},
+        <span>${ico('speichern')}Eine frühere Sitzung liegt vor (${escapeHtml(teile.join(', '))},
             vor ${alter < 1 ? 'weniger als einer Minute' : alter + ' Minuten'} gesichert).</span>
         <span style="margin-left:auto;display:flex;gap:0.3rem">
             <button class="btn btn-sm btn-primary" onclick="sitzungWiederherstellen()">Wiederherstellen</button>
@@ -300,7 +300,7 @@ function sitzungAnwenden(daten) {
     if (status && kn.length) {
         status.textContent = ohneBild
             ? 'Figuren und Nebel geladen; Kartenbild(er) fehlen und müssen neu gewählt werden.'
-            : 'Sitzung geladen — über „📤 Senden" erneut an verbundene Spieler schicken.';
+            : 'Sitzung geladen — über „Senden" erneut an verbundene Spieler schicken.';
     }
 }
 
@@ -377,7 +377,7 @@ function sitzungWiederherstellen() {
     kartenUebernehmen(daten, true);
     const status = document.getElementById('map-status');
     if (status && kartenAusDaten(daten).length) {
-        status.textContent = 'Karten wiederhergestellt. Über „📤 Senden" erneut an die Spieler schicken, sobald sie verbunden sind.';
+        status.textContent = 'Karten wiederhergestellt. Über „Senden" erneut an die Spieler schicken, sobald sie verbunden sind.';
     }
 
     sitzungHinweisSchliessen(false);

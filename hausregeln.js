@@ -238,9 +238,9 @@ function renderHausregeln() {
         <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-top:1.2rem;padding-top:0.9rem;border-top:1px solid var(--panel-border)">
             <button class="btn btn-primary" onclick="hausregelnUebernehmen()">${TT('Übernehmen')}</button>
             ${typeof isGmMode !== 'undefined' && isGmMode
-                ? `<button class="btn" onclick="hausregelnVerteilen()">${TT('📤 An Spieler senden')}</button>` : ''}
-            <button class="btn btn-ghost" onclick="hausregelnExportieren()">${TT('💾 Als Datei')}</button>
-            <button class="btn btn-ghost" onclick="document.getElementById('hr-datei').click()">${TT('📂 Laden')}</button>
+                ? `<button class="btn" onclick="hausregelnVerteilen()">${TT('An Spieler senden')}</button>` : ''}
+            <button class="btn btn-ghost" onclick="hausregelnExportieren()">${TT('Als Datei')}</button>
+            <button class="btn btn-ghost" onclick="document.getElementById('hr-datei').click()">${TT('Laden')}</button>
             <input type="file" id="hr-datei" accept=".json" style="display:none" onchange="hausregelnImportieren(event)">
             <button class="btn btn-ghost" style="margin-left:auto" onclick="hausregelnZuruecksetzen()">${TT('Auf Regelwerk zurücksetzen')}</button>
         </div>
@@ -291,9 +291,9 @@ function eigeneListeHtml() {
     const zeilen = [];
     h.eigeneTalente.forEach((t, i) => zeilen.push(`<div class="list-row"><span style="flex:1">⭐ ${escapeHtml(t.name)}</span>
         <button class="icon-btn" data-hrdel="talent" data-i="${i}">✕</button></div>`));
-    h.eigeneZauber.forEach((z, i) => zeilen.push(`<div class="list-row"><span style="flex:1">✨ ${escapeHtml(z.name)}</span>
+    h.eigeneZauber.forEach((z, i) => zeilen.push(`<div class="list-row"><span style="flex:1">${ico('funke')}${escapeHtml(z.name)}</span>
         <button class="icon-btn" data-hrdel="zauber" data-i="${i}">✕</button></div>`));
-    h.eigeneHeldenklassen.forEach((k, i) => zeilen.push(`<div class="list-row"><span style="flex:1">👑 ${escapeHtml(k.name)}</span>
+    h.eigeneHeldenklassen.forEach((k, i) => zeilen.push(`<div class="list-row"><span style="flex:1">${ico('krone')}${escapeHtml(k.name)}</span>
         <button class="icon-btn" data-hrdel="held" data-i="${i}">✕</button></div>`));
     if (!zeilen.length) return '';
 

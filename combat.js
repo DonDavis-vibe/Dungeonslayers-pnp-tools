@@ -440,12 +440,12 @@ function startCombat() {
         const helden = combatants.filter(c => c.type === 'player').map(c => c.name);
         const gegner = combatants.filter(c => c.type === 'npc').map(c => c.name);
         const zeilen = [
-            `⚔️ **Kampf beginnt** — Runde 1`,
+            `${ico('schwerter')}**Kampf beginnt** — Runde 1`,
             `Reihenfolge: ${combatants.map(c => c.name).join(' → ')}`
         ];
-        if (helden.length) zeilen.push(`🛡️ Helden: ${helden.join(', ')}`);
+        if (helden.length) zeilen.push(`${ico('schild')}Helden: ${helden.join(', ')}`);
         // Bewusst nur Namen, keine Gegner-LK — die sehen die Spieler auch im Tool nicht
-        if (gegner.length) zeilen.push(`👹 Gegner: ${gegner.join(', ')}`);
+        if (gegner.length) zeilen.push(`${ico('monster')}Gegner: ${gegner.join(', ')}`);
         discordPostEreignis(zeilen.join('\n'), 'neutral');
     }
     renderCombat();
@@ -652,8 +652,8 @@ function renderCombat() {
                    <button class="btn btn-sm" onclick="prevTurn()">← Zurück</button>
                    <button class="btn btn-sm btn-primary" onclick="nextTurn()">Nächster Zug →</button>
                    <button class="btn btn-sm btn-danger" onclick="endCombat()">Kampf beenden</button>`
-                : `<button class="btn btn-sm btn-primary" onclick="startCombat()">⚔️ Kampf starten</button>`}
-            <button class="btn btn-sm" onclick="openBestiary()">👹 Bestiarium</button>
+                : `<button class="btn btn-sm btn-primary" onclick="startCombat()">${ico('schwerter')}Kampf starten</button>`}
+            <button class="btn btn-sm" onclick="openBestiary()">${ico('monster')}Bestiarium</button>
             <button class="btn btn-sm btn-ghost" onclick="addNpc()">+ Eigener Gegner</button>
             <button class="btn btn-sm btn-ghost" onclick="syncPlayersIntoCombat();sortCombatants();renderCombat()">Spieler übernehmen</button>
         </div>`;
@@ -674,18 +674,18 @@ function renderCombat() {
 
         return `<div class="combat-row ${isTurn ? 'active-turn' : ''} ${down ? 'defeated' : ''}">
             <div class="combat-init" title="${c.abwarten ? 'Initiative ' + c.initiative + ' + ' + Math.min(ABWARTEN_MAX, c.abwarten * 2) + ' vom Abwarten' : 'Initiative'}">
-                ${effektiveInitiative(c)}${c.abwarten ? '<span class="combat-abwarten">⏳</span>' : ''}
+                ${effektiveInitiative(c)}${c.abwarten ? '<span class="combat-abwarten"></span>' : ''}
             </div>
             <div class="combat-main">
                 <div class="combat-name">
-                    ${isTurn ? '<span style="color:var(--accent-bright)">▶</span> ' : ''}
-                    ${c.type === 'player' ? '🛡️' : '👹'}
+                    ${isTurn ? '<span style="color:var(--accent-bright)"></span> ' : ''}
+                    ${c.type === 'player' ? '' : ''}
                     ${c.type === 'npc'
                         ? `<input type="text" value="${escapeHtml(c.name)}" data-cf="name" data-cid="${c.id}" style="width:9rem">`
                         : `<strong>${escapeHtml(c.name)}</strong>`}
                     ${down ? '<span class="tag tag-warn" title="Der schnelle Tod (S.104): Gegner unter 1 LK sollten zugunsten des Spieltempos als tot gelten — wichtige NSC ausgenommen.">besiegt</span>' : ''}
                     ${c.rang && c.rang !== 'normal' ? `<span class="tag" style="border-color:var(--accent-bright);color:var(--accent-bright)">${escapeHtml(DS4_GEGNER_RAENGE[c.rang].name)}</span>` : ''}
-                    ${c.owner ? `<span class="tag" style="border-color:${colorForPlayer(c.owner)};color:${colorForPlayer(c.owner)}" title="Beschworen/gehört zu ${escapeHtml(c.owner)}">👤 ${escapeHtml(c.owner)}</span>` : ''}
+                    ${c.owner ? `<span class="tag" style="border-color:${colorForPlayer(c.owner)};color:${colorForPlayer(c.owner)}" title="Beschworen/gehört zu ${escapeHtml(c.owner)}">${ico('person')}${escapeHtml(c.owner)}</span>` : ''}
                 </div>
                 <div class="lk-bar-track" style="margin-top:0.25rem;height:10px">
                     <div class="lk-bar-fill" style="width:${lkPct}%;background:${lkColor}"></div>
@@ -731,15 +731,15 @@ function renderCombat() {
                         <button class="btn btn-sm" data-do-attack="${c.id}">Angriff</button>
                         <button class="btn btn-sm btn-ghost" data-defend="${c.id}" title="Abwehr gegen Spielerangriff würfeln">Abwehr</button>
                         <button class="btn btn-sm btn-ghost ${c.abwarten ? 'btn-primary' : ''}" data-abwarten="${c.id}"
-                                title="Abwartehandlung: +2 Initiative je Runde ohne Aktion, höchstens +10">⏳</button>
+                                title="Abwartehandlung: +2 Initiative je Runde ohne Aktion, höchstens +10">${ico('sanduhr')}</button>
                         <button class="btn btn-sm btn-danger" data-dmg="${c.id}">− LK</button>
                     ` : `
                         <button class="btn btn-sm btn-danger" data-pattack="${c.peerId}" title="Angriff — der Spieler würfelt seine Abwehr">Angreifen</button>
                         <button class="btn btn-sm" data-pheal="${c.peerId}">Heilen</button>
-                        <button class="btn btn-sm btn-ghost" data-pnudge="${c.peerId}" title="Anstupsen — kurze Einblendung samt Ton, 'du bist dran'">👉</button>
+                        <button class="btn btn-sm btn-ghost" data-pnudge="${c.peerId}" title="Anstupsen — kurze Einblendung samt Ton, 'du bist dran'">${ico('hand')}</button>
                         <button class="btn btn-sm btn-ghost" data-pmsg="${c.peerId}">Flüstern</button>
                         <button class="btn btn-sm btn-ghost ${c.abwarten ? 'btn-primary' : ''}" data-abwarten="${c.id}"
-                                title="Abwartehandlung: +2 Initiative je Runde ohne Aktion, höchstens +10">⏳</button>
+                                title="Abwartehandlung: +2 Initiative je Runde ohne Aktion, höchstens +10">${ico('sanduhr')}</button>
                     `}
                     <button class="icon-btn" data-crm="${c.id}" title="Entfernen">✕</button>
                 </div>

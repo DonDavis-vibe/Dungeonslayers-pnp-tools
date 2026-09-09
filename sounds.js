@@ -312,7 +312,8 @@ function soundStummUmschalten() {
 
 function renderSoundKnopf() {
     document.querySelectorAll('[data-sound-knopf]').forEach(btn => {
-        btn.textContent = soundStumm ? '🔇' : '🔊';
+        btn.innerHTML = typeof ico === 'function'
+            ? ico(soundStumm ? 'tonAus' : 'ton') : (soundStumm ? 'Ton aus' : 'Ton an');
         btn.title = soundStumm
             ? 'Sounds sind stumm — klicken zum Einschalten'
             : 'Sounds sind an — klicken zum Stummschalten';

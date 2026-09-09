@@ -207,7 +207,7 @@ let saveTimer = null;
 // Alles wandert laufend in den localStorage — aber die exportierte Datei ist die
 // eigentliche Sicherung (localStorage kann geleert werden, ein anderer Browser
 // hat nichts). Diese beiden Marker steuern die Rückfrage beim Tab-Schließen.
-let ungespeichertSeitExport = false;  // seit dem letzten „💾 Speichern" geändert
+let ungespeichertSeitExport = false;  // seit dem letzten „Speichern" geändert
 let jemalsExportiert = false;         // in dieser Sitzung schon mal als Datei gesichert
 
 function scheduleSave() {
@@ -1266,7 +1266,7 @@ function showProbeResult(result, targetPrefix = '', modDetail = '') {
         detail.push('Würfe: ' + result.rolls.map(r => `${r.die}/${r.chunkPw}`).join(' + '));
     }
     if (result.success) detail.push(`Ergebnis: <strong>${result.total}</strong>`);
-    if (result.slayendZusatz) detail.push(`⚡ ${escapeHtml(slayendText(result))}`);
+    if (result.slayendZusatz) detail.push(`${ico('blitz')}${escapeHtml(slayendText(result))}`);
     if (modDetail) detail.push(escapeHtml(modDetail));
 
     wuerfelRollen(display, numberEl, primary, () => {
@@ -1317,7 +1317,7 @@ function slayerpunktVerdienen(grund = 'Schaden verursacht') {
     appData.slayerpunkte = vorher + 1;
     renderSlayerpunkte();
     scheduleSave();
-    addLog(`⚡ <strong>+1 Slayerpunkt</strong> (${escapeHtml(grund)}) — jetzt ${appData.slayerpunkte}/${DS4_SLAYERPUNKTE_MAX}`, 'erfolg');
+    addLog(`${ico('blitz')}<strong>+1 Slayerpunkt</strong> (${escapeHtml(grund)}) — jetzt ${appData.slayerpunkte}/${DS4_SLAYERPUNKTE_MAX}`, 'erfolg');
 }
 
 function slayerpunkteAusgeben(kosten, was) {
@@ -1325,7 +1325,7 @@ function slayerpunkteAusgeben(kosten, was) {
     appData.slayerpunkte -= kosten;
     renderSlayerpunkte();
     scheduleSave();
-    const text = `⚡ <strong>${kosten} SP</strong> ausgegeben: ${escapeHtml(was)} — noch ${appData.slayerpunkte} SP`;
+    const text = `${ico('blitz')}<strong>${kosten} SP</strong> ausgegeben: ${escapeHtml(was)} — noch ${appData.slayerpunkte} SP`;
     addLog(text, 'neutral');
     sendMultiplayerLog(text, 'neutral');
 }
@@ -1337,7 +1337,7 @@ function slayerpunkteVerfallen(grund) {
     appData.slayerpunkte = 0;
     renderSlayerpunkte();
     scheduleSave();
-    addLog(`⚡ Slayerpunkte verfallen (${escapeHtml(grund)}).`, 'neutral');
+    addLog(`${ico('blitz')}Slayerpunkte verfallen (${escapeHtml(grund)}).`, 'neutral');
 }
 
 function renderSlayerpunkte() {
@@ -1347,7 +1347,7 @@ function renderSlayerpunkte() {
 
     const sp = appData.slayerpunkte || 0;
     const pips = Array.from({ length: DS4_SLAYERPUNKTE_MAX }, (_, i) =>
-        `<span class="slayer-pip ${i < sp ? 'full' : ''}">⚡</span>`).join('');
+        `<span class="slayer-pip ${i < sp ? 'full' : ''}">${ico('blitz')}</span>`).join('');
 
     const optionen = DS4_SLAYERPUNKTE.filter(o => o.kosten <= sp);
     const liste = optionen.length
@@ -1481,7 +1481,7 @@ function rollMehrereGegner(teilwerte) {
             zeile += ` · Schaden <strong>${result.total}</strong>`;
             trefferSchaden += result.total;
         }
-        if (result.slayendZusatz) zeile += ` · ⚡ ${slayendText(result)}`;
+        if (result.slayendZusatz) zeile += ` · ${ico('blitz')}${slayendText(result)}`;
         if (result.patzer) zeile += ` · ${kampfpatzerText('schlagen')}`;
         zeilen.push(zeile);
     });
@@ -1575,7 +1575,7 @@ function rollKampfwert(key, label, pw) {
         extra = `Schaden um <strong>${result.total}</strong> reduziert`;
     }
 
-    if (result.slayendZusatz) hinweise.unshift('⚡ ' + slayendText(result));
+    if (result.slayendZusatz) hinweise.unshift('' + slayendText(result));
     if (hinweise.length) extra += (extra ? ' · ' : '') + hinweise.join(' · ');
 
     // Ein erfolgreich gewirkter Zauber geht in die Abklingzeit
@@ -1618,7 +1618,7 @@ function zeigeAngriffsZiel(schaden, ga) {
     box.dataset.schaden = schaden;
     box.dataset.ga = ga || 0;
     box.innerHTML = `
-        <span>🎯 Treffer für <strong>${schaden}</strong>${ga ? ` (${ga > 0 ? '+' : ''}${ga} GA)` : ''} an:</span>
+        <span>${ico('stern')}Treffer für <strong>${schaden}</strong>${ga ? ` (${ga > 0 ? '+' : ''}${ga} GA)` : ''} an:</span>
         <select id="dice-ziel-name">${gegner.map(n => `<option>${escapeHtml(n)}</option>`).join('')}</select>
         <button class="btn btn-sm btn-primary" onclick="angriffZielSenden()">Anrechnen</button>`;
     box.style.display = '';
@@ -1639,7 +1639,7 @@ function angriffZielSenden() {
         schaden: parseInt(box.dataset.schaden, 10) || 0,
         ga: parseInt(box.dataset.ga, 10) || 0
     });
-    addLog(`🎯 Treffer an <strong>${escapeHtml(sel.value)}</strong> gemeldet — der Spielleiter würfelt die Abwehr.`, 'neutral');
+    addLog(`${ico('stern')}Treffer an <strong>${escapeHtml(sel.value)}</strong> gemeldet — der Spielleiter würfelt die Abwehr.`, 'neutral');
     versteckeAngriffsZiel();
 }
 
@@ -2295,7 +2295,7 @@ function renderRoundIndicator(round) {
         document.body.appendChild(el);
     }
     if (round > 0) {
-        el.innerHTML = `⚔️ Kampfrunde <strong>${round}</strong>`;
+        el.innerHTML = `${ico('schwerter')}Kampfrunde <strong>${round}</strong>`;
         el.classList.add('visible');
     } else {
         el.classList.remove('visible');
@@ -2370,7 +2370,7 @@ function openRulesModal() {
         <ul class="hint" style="margin:0.3rem 0 0 1.2rem">
             <li><strong>Slayende Würfel:</strong> Ein Immersieg bei Angriff oder Abwehr löst sofort einen weiteren Wurf aus (ohne Patzer-Risiko); gelingt er, kommt sein Ergebnis dazu, und ein erneuter Immersieg wiederholt das Ganze. Bei PW über 20 zählt nur ein Immersieg des ersten Würfels.</li>
             <li><strong>Slayerpunkte:</strong> 1 SP je Kampfrunde, in der man Schaden verursacht (Heiler auch fürs Heilen verletzter Kameraden), höchstens 3 gleichzeitig. Sie verfallen am Kampfende und bei Bewusstlosigkeit.</li>
-            <li>Beide sind unter <strong>⚙️ Hausregeln</strong> einschaltbar. Das Regelwerk empfiehlt, Slayende Würfel nicht ohne Slayerpunkte zu verwenden.</li>
+            <li>Beide sind unter <strong>${ico('zahnrad')}Hausregeln</strong> einschaltbar. Das Regelwerk empfiehlt, Slayende Würfel nicht ohne Slayerpunkte zu verwenden.</li>
         </ul>
 
         <h4 style="color:var(--accent-bright);margin-top:1rem">Kampfpatzer</h4>

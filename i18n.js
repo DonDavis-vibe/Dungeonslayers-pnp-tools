@@ -131,7 +131,9 @@ function sprachschalterAktualisieren() {
         b.setAttribute('aria-pressed', an ? 'true' : 'false');
     });
     document.querySelectorAll('[data-lang-toggle]').forEach(b => {
-        b.textContent = LANG === 'de' ? '🌐 EN' : '🌐 DE';
+        // innerHTML statt textContent: sonst faellt das Globus-Symbol raus
+        b.innerHTML = (typeof ico === 'function' ? ico('globus') : '') +
+            (LANG === 'de' ? 'EN' : 'DE');
         const label = LANG === 'de' ? 'Auf Englisch umstellen' : 'Switch to German';
         b.setAttribute('aria-label', label);
         b.title = label;
@@ -190,16 +192,16 @@ const I18N_EN = {
     // ---- Kopf / Grundnavigation ----
     'Charakterbogen · Kampf-Tracker · Battlemap für Dungeonslayers 4':
         'Character sheet · combat tracker · battlemap for Dungeonslayers 4',
-    '🧙 Charakter erschaffen': '🧙 Create character',
-    '📡 Multiplayer': '📡 Multiplayer',
-    '💾 Speichern': '💾 Save',
-    '📂 Laden': '📂 Load',
-    '🗺️ Karte': '🗺️ Map',
-    '👤 Beispiel': '👤 Example',
-    '🗑️ Löschen': '🗑️ Delete',
-    '📖 Regeln': '📖 Rules',
-    '⚙️ Hausregeln': '⚙️ House rules',
-    '❓ Hilfe': '❓ Help',
+    'Charakter erschaffen': 'Create character',
+    'Multiplayer': 'Multiplayer',
+    'Speichern': 'Save',
+    'Laden': 'Load',
+    'Karte': 'Map',
+    'Beispiel': 'Example',
+    'Löschen': 'Delete',
+    'Regeln': 'Rules',
+    'Hausregeln': 'House rules',
+    'Hilfe': 'Help',
     'Bogen vollständig leeren': 'Wipe the sheet completely',
     'Steigerungskosten, Talentpunkte und eigene Inhalte': 'Advancement costs, talent points and custom content',
     'Kurzanleitung: was das Tool kann und wie': 'Quick guide: what the tool does and how',
@@ -232,8 +234,8 @@ const I18N_EN = {
     'Erfahrungspunkte': 'Experience points',
     'Lernpunkte (offen)': 'Learning points (unspent)',
     'Talentpunkte (offen)': 'Talent points (unspent)',
-    '⬆️ Stufenaufstieg / Punkte ausgeben': '⬆️ Level up / spend points',
-    '⬆️ Stufenaufstieg': '⬆️ Level up',
+    'Stufenaufstieg / Punkte ausgeben': 'Level up / spend points',
+    'Stufenaufstieg': 'Level up',
 
     // ---- Panel: Attribute & Kampfwerte ----
     'Attribute & Eigenschaften': 'Attributes & traits',
@@ -244,7 +246,7 @@ const I18N_EN = {
     'Kampfwerte': 'Combat values',
     'Hilfe: Kampfwerte': 'Help: combat values',
     'Klicken zum Würfeln': 'Click to roll',
-    '⛶ Vollbild': '⛶ Fullscreen',
+    'Vollbild': 'Fullscreen',
     'Einklappen': 'Collapse', 'Ausklappen': 'Expand',
     'Lebenskraft': 'Health',
     'Abwehr': 'Defense',
@@ -263,7 +265,7 @@ const I18N_EN = {
     'Nahkampfwaffe': 'Melee weapon', 'Fernkampfwaffe': 'Ranged weapon',
     'Körperrüstung': 'Body armor', 'Helm': 'Helmet', 'Schienen': 'Greaves', 'Schild': 'Shield',
     'Rüstung': 'Armor', 'Waffe': 'Weapon', 'Schaden': 'Damage',
-    '✨ Verbesserungen & Verzauberungen': '✨ Improvements & enchantments',
+    'Verbesserungen & Verzauberungen': 'Improvements & enchantments',
     'Münzen': 'Coins',
     'Gold': 'Gold', 'Silber': 'Silver', 'Kupfer': 'Copper',
 
@@ -280,8 +282,8 @@ const I18N_EN = {
     'Steigern': 'Raise', 'Senken': 'Lower',
 
     // ---- Gruppe & Kampf (Spielersicht) ----
-    '👥 Gruppe & Kampf': '👥 Party & combat',
-    '🤫 Flüstern': '🤫 Whisper',
+    'Gruppe & Kampf': 'Party & combat',
+    'Flüstern': 'Whisper',
     'Hilfe: Gruppe & Kampf': 'Help: party & combat',
 
     // ---- Würfelkasten ----
@@ -305,7 +307,7 @@ const I18N_EN = {
     'Immersieg!': 'Perfect roll!', 'Patzer!': 'Fumble!', 'Erfolg': 'Success', 'Misserfolg': 'Failure',
 
     // ---- Kampfmodifikatoren ----
-    '⚔️ Kampfmodifikatoren': '⚔️ Combat modifiers',
+    'Kampfmodifikatoren': 'Combat modifiers',
     'Hilfe: Kampfmodifikatoren': 'Help: combat modifiers',
     'Distanz (m)': 'Distance (m)',
     'Runden gezielt': 'Rounds aimed',
@@ -318,24 +320,24 @@ const I18N_EN = {
     'Größenunterschied': 'Size difference', 'gleich groß': 'same size',
     'Zurücksetzen': 'Reset',
     'Kein Modifikator aktiv.': 'No modifier active.',
-    '⚔️ Mehrere Gegner': '⚔️ Multiple opponents',
+    'Mehrere Gegner': 'Multiple opponents',
     'Log leeren': 'Clear log', 'Logbuch': 'Log',
 
     // ---- SL-Dashboard ----
-    '🎲 Spielleiter-Dashboard': '🎲 Game master dashboard',
+    'Spielleiter-Dashboard': 'Game master dashboard',
     'Spielleiter-Dashboard · Dungeonslayers 4': 'Game master dashboard · Dungeonslayers 4',
     'Raum-Code:': 'Room code:',
-    '📡 Verbindung': '📡 Connection',
-    '💾 Sitzung speichern': '💾 Save session',
-    '📂 Sitzung laden': '📂 Load session',
+    'Verbindung': 'Connection',
+    'Sitzung speichern': 'Save session',
+    'Sitzung laden': 'Load session',
     'Dashboard verlassen': 'Leave dashboard',
-    '⚔️ Kampf & Initiative': '⚔️ Combat & initiative',
+    'Kampf & Initiative': 'Combat & initiative',
     'Reihenfolge: absteigende Initiative': 'Order: descending initiative',
-    '🎲 Probe von allen': '🎲 Check from everyone',
-    '✨ EP vergeben': '✨ Award XP',
+    'Probe von allen': 'Check from everyone',
+    'EP vergeben': 'Award XP',
     '0 verbunden': '0 connected',
     'Kampagnen-Notizen': 'Campaign notes',
-    'Kampf starten': 'Start combat', '⚔️ Kampf starten': '⚔️ Start combat',
+    'Kampf starten': 'Start combat', 'Kampf starten': 'Start combat',
     'Kampf beenden': 'End combat', 'Kampf läuft': 'Combat running',
     'Nächster Zug': 'Next turn', 'Nächster Zug →': 'Next turn →', '← Zurück': '← Back',
     'Runde': 'Round',
@@ -358,23 +360,23 @@ const I18N_EN = {
     'Abwehr gegen Spielerangriff würfeln': 'Roll defense against a player attack',
     'Angriff — der Spieler würfelt seine Abwehr': 'Attack — the player rolls their defense',
     'Anstupsen — kurze Einblendung samt Ton, \'du bist dran\'': "Nudge — brief pop-up with a sound, 'your turn'",
-    '📢 Ansage an alle': '📢 Announce to all',
+    'Ansage an alle': 'Announce to all',
     'SL-Würfel': 'GM dice', 'SL-Wurf': 'GM roll',
     'Wer sieht den Wurf?': 'Who sees the roll?',
     'alle Spieler': 'all players', 'verdeckt — nur ich': 'hidden — only me',
     'Probenwert (NSC/Monster)': 'Check value (NPC/monster)',
     'z.B. 2W6, 3W8+2': 'e.g. 2d6, 3d8+2',
     '1W20': '1d20',
-    '🎵 Soundboard': '🎵 Soundboard',
-    '🎧 Vorhören': '🎧 Preview', '▶ Für alle': '▶ For everyone',
-    '🌙 Fade': '🌙 Fade', '⏹ Stop': '⏹ Stop', '⏹ Ausblenden': '⏹ Hide',
+    'Soundboard': 'Soundboard',
+    'Vorhören': 'Preview', 'Für alle': 'For everyone',
+    'Fade': 'Fade', 'Stop': 'Stop', 'Ausblenden': 'Hide',
     'Gesamtlautstärke': 'Master volume',
     '(mischt und geht an alle)': '(mixes and goes to everyone)',
-    '➕ Eigener Sound': '➕ Custom sound',
-    '🖼️ Handout': '🖼️ Handout',
-    '▶ Text zeigen': '▶ Show text', '🖼️ Bild zeigen': '🖼️ Show image',
+    'Eigener Sound': 'Custom sound',
+    'Handout': 'Handout',
+    'Text zeigen': 'Show text', 'Bild zeigen': 'Show image',
     'Live-Log': 'Live log',
-    '🖼️ Vom Spielleiter': '🖼️ From the game master',
+    'Vom Spielleiter': 'From the game master',
     'Noch keine Spieler verbunden. Gib den Raum-Code weiter.':
         'No players connected yet. Share the room code.',
     'Sounds stoppen sich nicht gegenseitig — leg Regen als Kulisse drunter und spiel Kampf, Gong oder einen Schrei darüber.':
@@ -397,7 +399,7 @@ const I18N_EN = {
     'Als Spieler beitreten': 'Join as player',
     'Beitreten': 'Join',
     'Raum-Code': 'Room code', 'Dein Name': 'Your name',
-    '🤖 Discord-Anbindung': '🤖 Discord integration',
+    'Discord-Anbindung': 'Discord integration',
     'Webhook-URL': 'Webhook URL',
     'Würfe posten': 'Post rolls', 'Ereignisse posten': 'Post events',
     'Test senden': 'Send test',
@@ -409,7 +411,7 @@ const I18N_EN = {
     'Verbunden': 'Connected', 'Getrennt': 'Disconnected', 'Verbinde…': 'Connecting…',
 
     // ---- Assistent (Charaktererschaffung) ----
-    '🧙 Charaktererschaffung': '🧙 Character creation',
+    'Charaktererschaffung': 'Character creation',
     '1. Volk': '1. Race', '2. Klasse': '2. Class', '3. Attribute': '3. Attributes',
     '4. Eigenschaften': '4. Traits', '5. Boni': '5. Bonuses',
     '6. Ausrüstung': '6. Equipment', '7. Feinschliff': '7. Finishing touches',
@@ -461,17 +463,17 @@ const I18N_EN = {
 
     // ---- gemeinsame Knöpfe ----
     'Weiter →': 'Next →', 'Fertig': 'Done', 'Abbrechen': 'Cancel',
-    '👤 Beispielcharakter laden': '👤 Load example character',
-    '⭐ Talent wählen': '⭐ Choose talent',
-    '✨ Zauber lernen': '✨ Learn spell',
-    '👹 Bestiarium': '👹 Bestiary',
-    '📖 Regel-Spickzettel': '📖 Rules cheat sheet',
-    '❓ Hilfe & Kurzanleitung': '❓ Help & quick guide',
+    'Beispielcharakter laden': 'Load example character',
+    'Talent wählen': 'Choose talent',
+    'Zauber lernen': 'Learn spell',
+    'Bestiarium': 'Bestiary',
+    'Regel-Spickzettel': 'Rules cheat sheet',
+    'Hilfe & Kurzanleitung': 'Help & quick guide',
     'Übernehmen': 'Apply', 'Speichern': 'Save',
     'Suchen…': 'Search…', 'Suche…': 'Search…', 'Filter': 'Filter',
     'Auf Regelwerk zurücksetzen': 'Reset to rulebook',
-    '📤 An Spieler senden': '📤 Send to players',
-    '💾 Als Datei': '💾 As file',
+    'An Spieler senden': 'Send to players',
+    'Als Datei': 'As file',
 
     // ---- Hausregeln-Dialog ----
     'Steigerungskosten': 'Advancement costs',
@@ -515,8 +517,8 @@ const I18N_EN = {
         'It includes the full talent and spell lists plus the bestiary from the rulebook. Characters can be saved to a file and passed around. No sign-up, no server, no installation.',
 
     // ---- Willkommensfenster ----
-    '👋 Willkommen im Slayer-Arsenal': '👋 Welcome to Slayer-Arsenal',
-    '👤 Beispiel ansehen': '👤 View example',
+    'Willkommen im Slayer-Arsenal': 'Welcome to Slayer-Arsenal',
+    'Beispiel ansehen': 'View example',
     'Erstmal umschauen': 'Just look around',
 
     // Die knappen Regelwerks-Kürzel (ST, HÄ, GEI+VE, KÖR+ST+WB …) bleiben wie
@@ -539,9 +541,9 @@ const I18N_EN = {
     // ---- Kartenwerkzeuge / Hinweise ----
     'Mausrad zoomt · deine Figur ziehen meldet einen Zug beim Spielleiter an':
         'Scroll wheel zooms · dragging your token proposes a move to the GM',
-    '🔓 Züge frei': '🔓 Moves free', '🔒 Züge prüfen': '🔒 Confirm moves',
+    'Züge frei': 'Moves free', 'Züge prüfen': 'Confirm moves',
     'Figuren leeren': 'Clear tokens',
-    '✋ Bewegen': '✋ Pan', '📏 Messen': '📏 Measure', 'Einpassen': 'Fit',
+    'Bewegen': 'Pan', 'Messen': 'Measure', 'Einpassen': 'Fit',
     'Noch keine Würfe.': 'No rolls yet.',
     'Aus: jeder Spielerzug muss bestätigt werden. An: Spieler bewegen ihre Figur frei — praktisch außerhalb des Kampfes.':
         'Off: every player move must be confirmed. On: players move their token freely — handy outside combat.',
@@ -724,7 +726,7 @@ const I18N_EN = {
     ' — zu den gebundenen Sprüchen wechselst du ohne Aktion und ohne Probe':
         ' — you switch to the bound spells without an action and without a check',
     '★ vorbereitet': '★ prepared', '☆ vorbereiten': '☆ prepare',
-    '⚙ gebunden': '⚙ bound', '⚙ binden': '⚙ bind',
+    'gebunden': 'bound', 'binden': 'bind',
     'ZB formelhaft': 'SB formulaic', 'abklingend bis Runde': 'cooling down until round',
     'Vorbereiteten Zauber setzen — als gebundener Spruch ohne Aktion und ohne GEI+VE-Probe':
         'Set the prepared spell — as a bound spell, without an action and without a MND+INT check',
@@ -747,7 +749,7 @@ const I18N_EN = {
     'Abwehr +1.': 'Defense +1.',
 
     // ---- Lebenskraft-Hinweise ----
-    '☠ Tot.': '☠ Dead.', 'Bewusstlos.': 'Unconscious.', 'Noch bei Bewusstsein': 'Still conscious',
+    'Tot.': 'Dead.', 'Bewusstlos.': 'Unconscious.', 'Noch bei Bewusstsein': 'Still conscious',
     'Der Schaden unter 0 übersteigt den Körperwert ({k}) — Tod ab {t} LK. Eine Wiederbelebung kostet dauerhaft 1 Punkt Körper.':
         'The damage below 0 exceeds the Body value ({k}) — death at {t} HP. A resurrection permanently costs 1 point of Body.',
     'Erwacht nach 1W20 Stunden mit 1 LK. Tod ab {t} LK (unter −KÖR {k}).':

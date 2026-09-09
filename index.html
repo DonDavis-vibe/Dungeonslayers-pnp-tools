@@ -61,7 +61,7 @@
 <!-- W20 als Favicon, direkt eingebettet (kein zusätzlicher Netzwerkabruf) -->
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%2314100c'/%3E%3Cpath d='M16 3 29 10.5v11L16 29 3 21.5v-11z' fill='none' stroke='%23d4a24c' stroke-width='2' stroke-linejoin='round'/%3E%3Cpath d='M16 3 16 29M3 10.5 29 21.5M29 10.5 3 21.5' stroke='%23d4a24c' stroke-width='1' opacity='.45'/%3E%3Ctext x='16' y='20' font-family='Georgia,serif' font-size='11' font-weight='bold' fill='%23f0c069' text-anchor='middle'%3E20%3C/text%3E%3C/svg%3E">
 
-<link rel="stylesheet" href="style.css?v=20260906a">
+<link rel="stylesheet" href="style.css?v=20260909e">
 </head>
 <body>
 
@@ -72,7 +72,7 @@
      HTML darüber, bleibt also scharf, übersetzbar und vorlesbar. -->
 <header class="hero">
     <div class="hero-text">
-        <h1>⚔️ Slayer-Arsenal</h1>
+        <h1><svg class="ico"><use href="#i-schwerter"/></svg>Slayer-Arsenal</h1>
         <p>Charakterbogen · Kampf-Tracker · Battlemap für Dungeonslayers 4</p>
     </div>
 </header>
@@ -85,19 +85,19 @@
     </div>
 
     <div class="topbar-actions">
-        <button class="btn" onclick="openWizard()">🧙 Charakter erschaffen</button>
-        <button class="btn" onclick="openMultiplayerModal()">📡 Multiplayer</button>
-        <button class="btn" onclick="exportCharacter()">💾 Speichern</button>
-        <button class="btn" onclick="document.getElementById('import-file').click()">📂 Laden</button>
+        <button class="btn" onclick="openWizard()"><svg class="ico"><use href="#i-w20"/></svg>Charakter erschaffen</button>
+        <button class="btn" onclick="openMultiplayerModal()"><svg class="ico"><use href="#i-funk"/></svg>Multiplayer</button>
+        <button class="btn" onclick="exportCharacter()"><svg class="ico"><use href="#i-speichern"/></svg>Speichern</button>
+        <button class="btn" onclick="document.getElementById('import-file').click()"><svg class="ico"><use href="#i-ordner"/></svg>Laden</button>
         <input type="file" id="import-file" accept=".json" style="display:none" onchange="importCharacter(event)">
-        <button class="btn" onclick="openKarte()">🗺️ Karte</button>
-        <button class="btn btn-ghost" onclick="openBeispiele()">👤 Beispiel</button>
-        <button class="btn btn-ghost" onclick="charakterLoeschen()" title="Bogen vollständig leeren">🗑️ Löschen</button>
-        <button class="btn btn-ghost" onclick="openRulesModal()">📖 Regeln</button>
-        <button class="btn btn-ghost" onclick="openHausregeln()" title="Steigerungskosten, Talentpunkte und eigene Inhalte">⚙️ Hausregeln</button>
-        <button class="btn btn-ghost" onclick="openHilfe()" title="Kurzanleitung: was das Tool kann und wie">❓ Hilfe</button>
-        <button class="btn btn-ghost" type="button" data-lang-toggle aria-label="Switch to English" title="Switch to English">🌐 EN</button>
-        <button class="btn btn-ghost" data-sound-knopf onclick="soundStummUmschalten()">🔊</button>
+        <button class="btn" onclick="openKarte()"><svg class="ico"><use href="#i-karte"/></svg>Karte</button>
+        <button class="btn btn-ghost" onclick="openBeispiele()"><svg class="ico"><use href="#i-person"/></svg>Beispiel</button>
+        <button class="btn btn-ghost" onclick="charakterLoeschen()" title="Bogen vollständig leeren"><svg class="ico"><use href="#i-muell"/></svg>Löschen</button>
+        <button class="btn btn-ghost" onclick="openRulesModal()"><svg class="ico"><use href="#i-buch"/></svg>Regeln</button>
+        <button class="btn btn-ghost" onclick="openHausregeln()" title="Steigerungskosten, Talentpunkte und eigene Inhalte"><svg class="ico"><use href="#i-zahnrad"/></svg>Hausregeln</button>
+        <button class="btn btn-ghost" onclick="openHilfe()" title="Kurzanleitung: was das Tool kann und wie"><svg class="ico"><use href="#i-frage"/></svg>Hilfe</button>
+        <button class="btn btn-ghost" type="button" data-lang-toggle aria-label="Switch to English" title="Switch to English"><svg class="ico"><use href="#i-globus"/></svg>EN</button>
+        <button class="btn btn-ghost" data-sound-knopf onclick="soundStummUmschalten()"><svg class="ico"><use href="#i-ton"/></svg></button>
         <input type="range" data-lautstaerke-slider min="0" max="1" step="0.05" value="1"
                oninput="setGeraetLautstaerke(this.value)" title="Deine Lautstärke — gilt für Hinweistöne und das Soundboard des Spielleiters"
                style="width:4.5rem;vertical-align:middle;accent-color:var(--accent)">
@@ -118,7 +118,7 @@
                 <div class="portrait-frame" id="portrait-frame" onclick="document.getElementById('portrait-file').click()"
                      title="Bild wählen — erscheint beim Spielleiter und als Figur auf der Karte">
                     <img id="portrait-img" alt="" style="display:none">
-                    <span id="portrait-placeholder">＋<br><small>Bild</small></span>
+                    <span id="portrait-placeholder"><svg class="ico ico-gross"><use href="#i-plus"/></svg><br><small>Bild</small></span>
                 </div>
                 <div class="hint" style="flex:1">
                     Ein Bild deines Helden. Der Spielleiter sieht es auf seiner Übersicht, und auf der
@@ -174,7 +174,7 @@
                 </div>
             </div>
             <div style="margin-top:0.7rem">
-                <button class="btn btn-sm btn-primary" onclick="openLevelUp()">⬆️ Stufenaufstieg / Punkte ausgeben</button>
+                <button class="btn btn-sm btn-primary" onclick="openLevelUp()"><svg class="ico"><use href="#i-aufstieg"/></svg>Stufenaufstieg / Punkte ausgeben</button>
                 <button class="help-btn" type="button" data-hilfe="stufenaufstieg" aria-label="Hilfe: Stufenaufstieg" title="Hilfe: Stufenaufstieg">?</button>
             </div>
             <div id="ep-progress" class="hint" style="margin-top:0.6rem"></div>
@@ -202,9 +202,9 @@
     <!-- Karte -->
     <div class="panel" id="map-panel-player">
         <div class="panel-head">
-            <h2>🗺️ Karte</h2><button class="help-btn" type="button" data-hilfe="karte" aria-label="Hilfe: Karte" title="Hilfe: Karte">?</button>
+            <h2><svg class="ico"><use href="#i-karte"/></svg>Karte</h2><button class="help-btn" type="button" data-hilfe="karte" aria-label="Hilfe: Karte" title="Hilfe: Karte">?</button>
             <div class="panel-actions">
-                <button class="btn btn-sm btn-ghost" onclick="karteVollbild(true)">⛶ Vollbild</button>
+                <button class="btn btn-sm btn-ghost" onclick="karteVollbild(true)"><svg class="ico"><use href="#i-vollbild"/></svg>Vollbild</button>
                 <button class="btn btn-sm btn-ghost" id="map-toggle-player" onclick="karteEinklappen('player')">Einklappen</button>
             </div>
         </div>
@@ -265,7 +265,7 @@
 
             <!-- Verbesserungen und Verzauberungen je Ausrüstungsteil -->
             <details style="margin-top:0.7rem">
-                <summary style="cursor:pointer;font-size:0.85rem;color:var(--text-dim)">✨ Verbesserungen &amp; Verzauberungen</summary>
+                <summary style="cursor:pointer;font-size:0.85rem;color:var(--text-dim)"><svg class="ico"><use href="#i-funke"/></svg>Verbesserungen &amp; Verzauberungen</summary>
                 <div id="equipment-boni" style="margin-top:0.5rem"></div>
                 <p class="hint" style="margin-top:0.4rem">
                     Der Bonus fließt direkt in Schlagen, Schießen und Abwehr ein. Die Notiz ist frei —
@@ -338,9 +338,9 @@
 
     <!-- Gruppe & Kampf — erscheint nur, solange eine Verbindung steht -->
     <div class="panel" id="panel-gruppe" style="display:none">
-        <div class="panel-head"><h3>👥 Gruppe &amp; Kampf</h3><button class="help-btn" type="button" data-hilfe="gruppe" aria-label="Hilfe: Gruppe und Kampf" title="Hilfe: Gruppe und Kampf">?</button>
+        <div class="panel-head"><h3><svg class="ico"><use href="#i-gruppe"/></svg>Gruppe &amp; Kampf</h3><button class="help-btn" type="button" data-hilfe="gruppe" aria-label="Hilfe: Gruppe und Kampf" title="Hilfe: Gruppe und Kampf">?</button>
             <div class="panel-actions">
-                <button class="btn btn-sm btn-ghost" onclick="fluesterAnSl()" title="Nur der Spielleiter sieht die Nachricht">🤫 Flüstern</button>
+                <button class="btn btn-sm btn-ghost" onclick="fluesterAnSl()" title="Nur der Spielleiter sieht die Nachricht"><svg class="ico"><use href="#i-fluestern"/></svg>Flüstern</button>
             </div>
         </div>
         <div class="panel-body">
@@ -436,7 +436,7 @@
             </div>
 
             <details style="margin-top:0.7rem">
-                <summary style="cursor:pointer;font-size:0.85rem;color:var(--text-dim)">⚔️ Kampfmodifikatoren</summary>
+                <summary style="cursor:pointer;font-size:0.85rem;color:var(--text-dim)"><svg class="ico"><use href="#i-schwerter"/></svg>Kampfmodifikatoren</summary>
                 <div class="combat-mods" style="margin-top:0.5rem;display:flex;flex-direction:column;gap:0.4rem">
                     <div style="display:flex;gap:0.5rem;align-items:end">
                         <div class="field" style="flex:1"><label>Distanz (m)</label>
@@ -492,7 +492,7 @@
 
             <div style="display:flex;gap:0.4rem;margin-top:0.6rem;flex-wrap:wrap">
                 <button class="btn btn-sm" onclick="openMehrereGegner()"
-                        title="Den Schlagen-Wert auf bis zu vier angrenzende Gegner aufteilen (Regelwerk S.43)">⚔️ Mehrere Gegner</button>
+                        title="Den Schlagen-Wert auf bis zu vier angrenzende Gegner aufteilen (Regelwerk S.43)"><svg class="ico"><use href="#i-schwerter"/></svg>Mehrere Gegner</button>
                 <button class="help-btn" type="button" data-hilfe="mehrere-gegner" aria-label="Hilfe: Mehrere Gegner" title="Hilfe: Mehrere Gegner">?</button>
                 <button class="btn btn-sm btn-ghost" onclick="rollPlainD20()">Blanker 1W20</button>
                 <button class="btn btn-sm btn-ghost" onclick="clearLog()">Log leeren</button>
@@ -513,23 +513,23 @@
 <!-- ============ GM DASHBOARD ============ -->
 <div id="gm-dashboard">
     <div class="topbar" style="margin:-1.2rem -1.2rem 1.2rem">
-        <h1>👑 Slayer-Arsenal<small>Spielleiter-Dashboard · Dungeonslayers 4</small></h1>
+        <h1><svg class="ico"><use href="#i-krone"/></svg>Slayer-Arsenal<small>Spielleiter-Dashboard · Dungeonslayers 4</small></h1>
         <div style="display:flex;align-items:center;gap:0.8rem;flex-wrap:wrap">
             <span class="hint">Raum-Code:</span>
             <span class="room-code" id="gm-room-code">----</span>
             <span class="status-dot" id="gm-room-status"></span>
         </div>
         <div class="topbar-actions">
-            <button class="btn" onclick="openKarte()">🗺️ Karte</button>
-            <button class="btn" onclick="openMultiplayerModal()" title="Raum-Code, Verbindung und Discord-Anbindung">📡 Verbindung</button>
-            <button class="btn" onclick="openHausregeln()" title="Regeln der Runde festlegen und verteilen">⚙️ Hausregeln</button>
-            <button class="btn" onclick="sitzungExportieren()" title="Notizen, Kampf und Karte als Datei sichern">💾 Sitzung speichern</button>
-            <button class="btn" onclick="document.getElementById('gm-sitzung-datei').click()">📂 Sitzung laden</button>
+            <button class="btn" onclick="openKarte()"><svg class="ico"><use href="#i-karte"/></svg>Karte</button>
+            <button class="btn" onclick="openMultiplayerModal()" title="Raum-Code, Verbindung und Discord-Anbindung"><svg class="ico"><use href="#i-funk"/></svg>Verbindung</button>
+            <button class="btn" onclick="openHausregeln()" title="Regeln der Runde festlegen und verteilen"><svg class="ico"><use href="#i-zahnrad"/></svg>Hausregeln</button>
+            <button class="btn" onclick="sitzungExportieren()" title="Notizen, Kampf und Karte als Datei sichern"><svg class="ico"><use href="#i-speichern"/></svg>Sitzung speichern</button>
+            <button class="btn" onclick="document.getElementById('gm-sitzung-datei').click()"><svg class="ico"><use href="#i-ordner"/></svg>Sitzung laden</button>
             <button class="help-btn" type="button" data-hilfe="gm-sitzung" aria-label="Hilfe: Sitzung speichern und laden" title="Hilfe: Sitzung speichern und laden">?</button>
             <input type="file" id="gm-sitzung-datei" accept=".json" style="display:none" onchange="sitzungImportieren(event)">
-            <button class="btn btn-ghost" onclick="openHilfe('gm-dashboard')" title="Kurzanleitung für das Dashboard">❓ Hilfe</button>
-            <button class="btn btn-ghost" type="button" data-lang-toggle aria-label="Switch to English" title="Switch to English">🌐 EN</button>
-            <button class="btn btn-ghost" data-sound-knopf onclick="soundStummUmschalten()">🔊</button>
+            <button class="btn btn-ghost" onclick="openHilfe('gm-dashboard')" title="Kurzanleitung für das Dashboard"><svg class="ico"><use href="#i-frage"/></svg>Hilfe</button>
+            <button class="btn btn-ghost" type="button" data-lang-toggle aria-label="Switch to English" title="Switch to English"><svg class="ico"><use href="#i-globus"/></svg>EN</button>
+            <button class="btn btn-ghost" data-sound-knopf onclick="soundStummUmschalten()"><svg class="ico"><use href="#i-ton"/></svg></button>
             <input type="range" data-lautstaerke-slider min="0" max="1" step="0.05" value="1"
                    oninput="setGeraetLautstaerke(this.value)" title="Deine Lautstärke"
                    style="width:4.5rem;vertical-align:middle;accent-color:var(--accent)">
@@ -544,9 +544,9 @@
         <div>
             <div class="panel" id="map-panel-gm" style="margin-bottom:1.2rem">
                 <div class="panel-head">
-                    <h3>🗺️ Karte</h3><button class="help-btn" type="button" data-hilfe="karte" aria-label="Hilfe: Karte" title="Hilfe: Karte">?</button>
+                    <h3><svg class="ico"><use href="#i-karte"/></svg>Karte</h3><button class="help-btn" type="button" data-hilfe="karte" aria-label="Hilfe: Karte" title="Hilfe: Karte">?</button>
                     <div class="panel-actions">
-                        <button class="btn btn-sm btn-ghost" onclick="karteVollbild(true)">⛶ Vollbild</button>
+                        <button class="btn btn-sm btn-ghost" onclick="karteVollbild(true)"><svg class="ico"><use href="#i-vollbild"/></svg>Vollbild</button>
                         <button class="btn btn-sm btn-ghost" id="map-toggle-gm" onclick="karteEinklappen('gm')">Einklappen</button>
                     </div>
                 </div>
@@ -554,7 +554,7 @@
             </div>
 
             <div class="panel" style="margin-bottom:1.2rem">
-                <div class="panel-head"><h3>⚔️ Kampf &amp; Initiative</h3><button class="help-btn" type="button" data-hilfe="gm-kampf" aria-label="Hilfe: Kampf und Initiative" title="Hilfe: Kampf und Initiative">?</button>
+                <div class="panel-head"><h3><svg class="ico"><use href="#i-schwerter"/></svg>Kampf &amp; Initiative</h3><button class="help-btn" type="button" data-hilfe="gm-kampf" aria-label="Hilfe: Kampf und Initiative" title="Hilfe: Kampf und Initiative">?</button>
                     <div class="panel-actions"><span class="hint">Reihenfolge: absteigende Initiative</span></div>
                 </div>
                 <div class="panel-body"><div id="combat-tracker"></div></div>
@@ -563,8 +563,8 @@
             <div class="panel" style="margin-bottom:1.2rem">
                 <div class="panel-head"><h3>Spieler</h3><button class="help-btn" type="button" data-hilfe="gm-spieler" aria-label="Hilfe: Spielerkarten" title="Hilfe: Spielerkarten">?</button>
                     <div class="panel-actions">
-                        <button class="btn btn-sm" onclick="promptRequestProbe()">🎲 Probe von allen</button>
-                        <button class="btn btn-sm" onclick="promptGrantEp()">✨ EP vergeben</button>
+                        <button class="btn btn-sm" onclick="promptRequestProbe()"><svg class="ico"><use href="#i-wuerfel"/></svg>Probe von allen</button>
+                        <button class="btn btn-sm" onclick="promptGrantEp()"><svg class="ico"><use href="#i-funke"/></svg>EP vergeben</button>
                         <span class="hint" id="gm-player-count">0 verbunden</span>
                     </div>
                 </div>
@@ -577,7 +577,7 @@
             <div class="panel">
                 <div class="panel-head"><h3>Kampagnen-Notizen</h3><button class="help-btn" type="button" data-hilfe="gm-notizen" aria-label="Hilfe: Kampagnen-Notizen" title="Hilfe: Kampagnen-Notizen">?</button>
                     <div class="panel-actions">
-                        <button class="btn btn-sm" onclick="promptBroadcast()">📢 Ansage an alle</button>
+                        <button class="btn btn-sm" onclick="promptBroadcast()"><svg class="ico"><use href="#i-megafon"/></svg>Ansage an alle</button>
                     </div>
                 </div>
                 <div class="panel-body">
@@ -626,14 +626,14 @@
             </div>
 
             <div class="panel" style="margin-bottom:1.2rem">
-                <div class="panel-head"><h3>🎵 Soundboard</h3><button class="help-btn" type="button" data-hilfe="soundboard" aria-label="Hilfe: Soundboard" title="Hilfe: Soundboard">?</button></div>
+                <div class="panel-head"><h3><svg class="ico"><use href="#i-note"/></svg>Soundboard</h3><button class="help-btn" type="button" data-hilfe="soundboard" aria-label="Hilfe: Soundboard" title="Hilfe: Soundboard">?</button></div>
                 <div class="panel-body">
                     <select id="sl-sound-auswahl" style="width:100%"></select>
                     <div style="display:flex;gap:0.4rem;margin-top:0.5rem;flex-wrap:wrap">
-                        <button class="btn btn-sm btn-ghost" onclick="slSoundVorhoeren(document.getElementById('sl-sound-auswahl').value)" title="Nur du hörst es">🎧 Vorhören</button>
-                        <button class="btn btn-sm btn-primary" onclick="slSoundAbspielen(document.getElementById('sl-sound-auswahl').value)" title="Bei allen verbundenen Spielern abspielen">▶ Für alle</button>
-                        <button class="btn btn-sm btn-ghost" onclick="slSoundFade()" title="Alles sanft ausblenden (3 s)">🌙 Fade</button>
-                        <button class="btn btn-sm btn-ghost" onclick="slSoundStop()" title="Alles sofort stoppen">⏹ Stop</button>
+                        <button class="btn btn-sm btn-ghost" onclick="slSoundVorhoeren(document.getElementById('sl-sound-auswahl').value)" title="Nur du hörst es"><svg class="ico"><use href="#i-ton"/></svg>Vorhören</button>
+                        <button class="btn btn-sm btn-primary" onclick="slSoundAbspielen(document.getElementById('sl-sound-auswahl').value)" title="Bei allen verbundenen Spielern abspielen"><svg class="ico"><use href="#i-abspielen"/></svg>Für alle</button>
+                        <button class="btn btn-sm btn-ghost" onclick="slSoundFade()" title="Alles sanft ausblenden (3 s)"><svg class="ico"><use href="#i-stopp"/></svg>Fade</button>
+                        <button class="btn btn-sm btn-ghost" onclick="slSoundStop()" title="Alles sofort stoppen"><svg class="ico"><use href="#i-stopp"/></svg>Stop</button>
                     </div>
                     <div class="field" style="margin-top:0.6rem">
                         <label>Gesamtlautstärke <span class="hint">(mischt und geht an alle)</span></label>
@@ -641,7 +641,7 @@
                     </div>
                     <p class="hint" style="margin-top:0.4rem">Sounds stoppen sich nicht gegenseitig — leg Regen als Kulisse drunter und spiel Kampf, Gong oder einen Schrei darüber.</p>
                     <div style="margin-top:0.6rem;padding-top:0.6rem;border-top:1px solid var(--border)">
-                        <button class="btn btn-sm btn-ghost" type="button" onclick="document.getElementById('sl-eigener-sound-datei').click()" title="Eigene Audiodatei ins Soundboard legen">➕ Eigener Sound</button>
+                        <button class="btn btn-sm btn-ghost" type="button" onclick="document.getElementById('sl-eigener-sound-datei').click()" title="Eigene Audiodatei ins Soundboard legen"><svg class="ico"><use href="#i-plus"/></svg>Eigener Sound</button>
                         <input type="file" id="sl-eigener-sound-datei" accept="audio/*" style="display:none" onchange="slEigenenSoundHochladen(event)">
                         <div id="sl-eigene-sounds" class="sl-eigene-sounds"></div>
                         <p class="hint" id="sl-sound-hinweis" style="margin-top:0.3rem"></p>
@@ -651,15 +651,15 @@
             </div>
 
             <div class="panel" style="margin-bottom:1.2rem">
-                <div class="panel-head"><h3>🖼️ Handout</h3><button class="help-btn" type="button" data-hilfe="gm-handout" aria-label="Hilfe: Handout" title="Hilfe: Handout">?</button></div>
+                <div class="panel-head"><h3><svg class="ico"><use href="#i-bild"/></svg>Handout</h3><button class="help-btn" type="button" data-hilfe="gm-handout" aria-label="Hilfe: Handout" title="Hilfe: Handout">?</button></div>
                 <div class="panel-body">
                     <p class="hint" style="margin-bottom:0.5rem">Ein Bild oder einen Textblock (Vorlesetext, Rätsel, Karte …) bei allen Spielern einblenden.</p>
                     <textarea id="sl-handout-text" rows="3" style="width:100%" placeholder="Text für die Spieler …"></textarea>
                     <div style="display:flex;gap:0.4rem;margin-top:0.5rem;flex-wrap:wrap">
-                        <button class="btn btn-sm btn-primary" onclick="slHandoutText()">▶ Text zeigen</button>
-                        <button class="btn btn-sm" onclick="document.getElementById('sl-handout-datei').click()">🖼️ Bild zeigen</button>
+                        <button class="btn btn-sm btn-primary" onclick="slHandoutText()"><svg class="ico"><use href="#i-abspielen"/></svg>Text zeigen</button>
+                        <button class="btn btn-sm" onclick="document.getElementById('sl-handout-datei').click()"><svg class="ico"><use href="#i-bild"/></svg>Bild zeigen</button>
                         <input type="file" id="sl-handout-datei" accept="image/*" style="display:none" onchange="slHandoutBild(event)">
-                        <button class="btn btn-sm btn-ghost" onclick="slHandoutAusblenden()">⏹ Ausblenden</button>
+                        <button class="btn btn-sm btn-ghost" onclick="slHandoutAusblenden()"><svg class="ico"><use href="#i-stopp"/></svg>Ausblenden</button>
                     </div>
                     <p class="hint" id="sl-handout-hinweis" style="margin-top:0.4rem"></p>
                     <img id="sl-handout-vorschau" alt="" style="display:none;max-width:100%;border-radius:4px;margin-top:0.3rem;border:1px solid var(--panel-border)">
@@ -712,7 +712,7 @@
             </p>
             <p>
                 <a class="footer-discord" href="https://discord.gg/DPk8QRSZ5W" target="_blank" rel="noopener">
-                    💬 Discord-Server beitreten
+                    <svg class="ico"><use href="#i-fluestern"/></svg>Discord-Server beitreten
                 </a>
             </p>
         </section>
@@ -730,7 +730,7 @@
             </p>
             <p>
                 The interface is available in <strong>English and German</strong> — use the
-                <span aria-hidden="true">🌐</span> button at the top of the page, or open
+                <span aria-hidden="true"><svg class="ico"><use href="#i-globus"/></svg></span> button at the top of the page, or open
                 <a href="?lang=en">?lang=en</a>. Talent, spell and creature names stay in German,
                 matching the rulebook. The rules system <em>Dungeonslayers</em> by Christian Kennig
                 is free at <a href="https://www.dungeonslayers.net/" target="_blank" rel="noopener">dungeonslayers.net</a>.
@@ -757,7 +757,7 @@
         <a href="imp/impressum.html">Impressum &amp; Datenschutz</a><br>
         <span class="footer-tester">Am Tisch getestet von <strong>StCuthbert</strong></span><br>
         <span class="footer-lang" role="group" aria-label="Sprache / Language">
-            🌐
+            <svg class="ico"><use href="#i-globus"/></svg>
             <button type="button" class="lang-btn" data-setlang="de">Deutsch</button>
             <button type="button" class="lang-btn" data-setlang="en">English</button>
         </span><br>
@@ -783,7 +783,7 @@
 </div>
 <div id="map-overlay">
     <div class="map-head">
-        <h3>🗺️ Karte</h3><button class="help-btn" type="button" data-hilfe="karte" aria-label="Hilfe: Karte" title="Hilfe: Karte">?</button>
+        <h3><svg class="ico"><use href="#i-karte"/></svg>Karte</h3><button class="help-btn" type="button" data-hilfe="karte" aria-label="Hilfe: Karte" title="Hilfe: Karte">?</button>
         <span class="hint" style="margin-left:auto"></span>
         <button class="btn btn-sm" onclick="karteVollbild(false)">Verkleinern</button>
         <button class="btn btn-sm btn-ghost" onclick="karteVollbild(false)" title="Schließen">✕</button>
@@ -797,7 +797,7 @@
 <!-- Multiplayer -->
 <div class="modal-overlay" id="multiplayer-modal">
     <div class="modal">
-        <div class="panel-head"><h3>📡 Multiplayer</h3><button class="help-btn" type="button" data-hilfe="multiplayer" aria-label="Hilfe: Multiplayer" title="Hilfe: Multiplayer">?</button>
+        <div class="panel-head"><h3><svg class="ico"><use href="#i-funk"/></svg>Multiplayer</h3><button class="help-btn" type="button" data-hilfe="multiplayer" aria-label="Hilfe: Multiplayer" title="Hilfe: Multiplayer">?</button>
             <div class="panel-actions"><button class="btn btn-sm btn-ghost" onclick="closeMultiplayerModal()">✕</button></div>
         </div>
         <div class="panel-body">
@@ -822,11 +822,11 @@
                 <h4 style="color:var(--accent);font-size:0.9rem;margin-bottom:0.4rem">Dein Raum läuft</h4>
                 <p class="hint" style="margin-bottom:0.4rem" data-only-lang="de">
                     Raum-Code: <strong style="letter-spacing:0.2em;color:var(--accent-bright)" id="mp-modal-room">----</strong>
-                    — die Spieler geben ihn unter <em>📡 Multiplayer → Beitreten</em> ein.
+                    — die Spieler geben ihn unter <em><svg class="ico"><use href="#i-funk"/></svg>Multiplayer → Beitreten</em> ein.
                 </p>
                 <p class="hint" style="margin-bottom:0.4rem" data-only-lang="en">
                     Room code: <strong style="letter-spacing:0.2em;color:var(--accent-bright)" id="mp-modal-room-en">----</strong>
-                    — players enter it under <em>📡 Multiplayer → Join</em>.
+                    — players enter it under <em><svg class="ico"><use href="#i-funk"/></svg>Multiplayer → Join</em>.
                 </p>
                 <p class="hint" data-only-lang="de">Den Raum schließt du über <em>Dashboard verlassen</em>.</p>
                 <p class="hint" data-only-lang="en">Close the room via <em>Leave dashboard</em>.</p>
@@ -835,7 +835,7 @@
             <hr style="margin:1.2rem 0;border:none;border-top:1px solid var(--panel-border)">
 
             <div style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap">
-                <h4 style="color:var(--accent);font-size:0.9rem">🤖 Discord-Anbindung</h4><button class="help-btn" type="button" data-hilfe="discord" aria-label="Hilfe: Discord-Anbindung" title="Hilfe: Discord-Anbindung">?</button>
+                <h4 style="color:var(--accent);font-size:0.9rem"><svg class="ico"><use href="#i-funk"/></svg>Discord-Anbindung</h4><button class="help-btn" type="button" data-hilfe="discord" aria-label="Hilfe: Discord-Anbindung" title="Hilfe: Discord-Anbindung">?</button>
                 <span id="discord-state" style="margin-left:auto"></span>
             </div>
             <p class="hint" style="margin:0.4rem 0 0.6rem" data-only-lang="de">
@@ -891,18 +891,18 @@
 <!-- Handout des Spielleiters (Bild oder Text) -->
 <div class="modal-overlay" id="handout-modal">
     <div class="modal modal-lg">
-        <div class="panel-head"><h3>🖼️ Vom Spielleiter</h3>
+        <div class="panel-head"><h3><svg class="ico"><use href="#i-bild"/></svg>Vom Spielleiter</h3>
             <div class="panel-actions"><button class="btn btn-sm btn-ghost" onclick="closeModal('handout-modal')">✕</button></div>
         </div>
         <div class="panel-body" id="handout-body"></div>
     </div>
 </div>
-<button id="handout-wieder" class="handout-wieder" style="display:none" onclick="handoutErneutZeigen()" title="Das letzte Handout erneut anzeigen">🖼️ Handout</button>
+<button id="handout-wieder" class="handout-wieder" style="display:none" onclick="handoutErneutZeigen()" title="Das letzte Handout erneut anzeigen"><svg class="ico"><use href="#i-bild"/></svg>Handout</button>
 
 <!-- Begrüßung beim ersten Besuch -->
 <div class="modal-overlay" id="welcome-modal">
     <div class="modal">
-        <div class="panel-head"><h3>👋 Willkommen im Slayer-Arsenal</h3>
+        <div class="panel-head"><h3><svg class="ico"><use href="#i-hand"/></svg>Willkommen im Slayer-Arsenal</h3>
             <div class="panel-actions"><button class="btn btn-sm btn-ghost" onclick="welcomeSchliessen()">✕</button></div>
         </div>
         <div class="panel-body">
@@ -910,19 +910,19 @@
             <p>Das <strong>Slayer-Arsenal</strong> ist ein kostenloses Werkzeug für
             <strong>Dungeonslayers 4</strong> — ein digitaler Charakterbogen und ein
             Spielleiter-Dashboard in einem. Kein Konto, keine Installation. Alles, was du eingibst,
-            bleibt <strong>in deinem Browser</strong>; erst <em>💾 Speichern</em> macht eine Datei
+            bleibt <strong>in deinem Browser</strong>; erst <em><svg class="ico"><use href="#i-speichern"/></svg>Speichern</em> macht eine Datei
             zum Mitnehmen oder Weitergeben.</p>
 
             <div class="welcome-rollen">
                 <div>
-                    <h4>🛡️ Als Spieler</h4>
+                    <h4><svg class="ico"><use href="#i-schild"/></svg>Als Spieler</h4>
                     <p>Leg mit dem Assistenten einen Helden an, lade eine Datei oder schau dir über
-                    <em>👤 Beispiel</em> einen fertigen Charakter an. Kampfwerte, Proben und
+                    <em><svg class="ico"><use href="#i-person"/></svg>Beispiel</em> einen fertigen Charakter an. Kampfwerte, Proben und
                     Stufenaufstieg rechnet der Bogen regelkonform mit.</p>
                 </div>
                 <div>
-                    <h4>👑 Als Spielleiter</h4>
-                    <p>Über <em>📡 Multiplayer → Raum eröffnen</em> kommst du ins Dashboard: alle
+                    <h4><svg class="ico"><use href="#i-krone"/></svg>Als Spielleiter</h4>
+                    <p>Über <em><svg class="ico"><use href="#i-funk"/></svg>Multiplayer → Raum eröffnen</em> kommst du ins Dashboard: alle
                     Helden live, Initiative- und Kampf-Tracker, Battlemap mit Nebel des Krieges,
                     Soundboard und optionale Discord-Anbindung. Die Spieler treten mit einem
                     4-stelligen Code bei.</p>
@@ -930,7 +930,7 @@
             </div>
 
             <p class="hint">Neben jeder Funktion sitzt ein <strong>?</strong>, das eine Kurzhilfe
-            öffnet — die komplette Anleitung steckt hinter <em>❓ Hilfe</em> oben.</p>
+            öffnet — die komplette Anleitung steckt hinter <em><svg class="ico"><use href="#i-frage"/></svg>Hilfe</em> oben.</p>
             <p class="hint">Ein inoffizielles Fan-Projekt. <em>Dungeonslayers</em> stammt von
             Christian Kennig; das Regelwerk gibt es kostenlos auf
             <a href="https://www.dungeonslayers.net/" target="_blank" rel="noopener">dungeonslayers.net</a>.</p>
@@ -939,34 +939,34 @@
             <p>The <strong>Slayer-Arsenal</strong> is a free tool for
             <strong>Dungeonslayers 4</strong> — a digital character sheet and a game master
             dashboard in one. No account, no install. Everything you enter stays
-            <strong>in your browser</strong>; only <em>💾 Save</em> turns it into a file to take
+            <strong>in your browser</strong>; only <em><svg class="ico"><use href="#i-speichern"/></svg>Save</em> turns it into a file to take
             along or pass on.</p>
 
             <div class="welcome-rollen">
                 <div>
-                    <h4>🛡️ As a player</h4>
+                    <h4><svg class="ico"><use href="#i-schild"/></svg>As a player</h4>
                     <p>Build a hero with the wizard, load a file, or look at a finished character
-                    via <em>👤 Example</em>. The sheet handles combat values, checks and levelling
+                    via <em><svg class="ico"><use href="#i-person"/></svg>Example</em>. The sheet handles combat values, checks and levelling
                     by the book.</p>
                 </div>
                 <div>
-                    <h4>👑 As a game master</h4>
-                    <p>Via <em>📡 Multiplayer → Open room</em> you reach the dashboard: every hero
+                    <h4><svg class="ico"><use href="#i-krone"/></svg>As a game master</h4>
+                    <p>Via <em><svg class="ico"><use href="#i-funk"/></svg>Multiplayer → Open room</em> you reach the dashboard: every hero
                     live, an initiative and combat tracker, a battlemap with fog of war, a
                     soundboard and optional Discord integration. Players join with a 4-digit code.</p>
                 </div>
             </div>
 
             <p class="hint">Next to every feature sits a <strong>?</strong> that opens a quick
-            hint — the full guide is behind <em>❓ Help</em> at the top.</p>
+            hint — the full guide is behind <em><svg class="ico"><use href="#i-frage"/></svg>Help</em> at the top.</p>
             <p class="hint">An unofficial fan project. <em>Dungeonslayers</em> is by Christian
             Kennig; the rulebook is free at
             <a href="https://www.dungeonslayers.net/" target="_blank" rel="noopener">dungeonslayers.net</a>.</p>
           </div>
 
             <div class="welcome-aktionen">
-                <button class="btn btn-primary" onclick="welcomeSchliessen('wizard')">🧙 Charakter erschaffen</button>
-                <button class="btn" onclick="welcomeSchliessen('beispiel')">👤 Beispiel ansehen</button>
+                <button class="btn btn-primary" onclick="welcomeSchliessen('wizard')"><svg class="ico"><use href="#i-w20"/></svg>Charakter erschaffen</button>
+                <button class="btn" onclick="welcomeSchliessen('beispiel')"><svg class="ico"><use href="#i-person"/></svg>Beispiel ansehen</button>
                 <button class="btn btn-ghost" onclick="welcomeSchliessen()">Erstmal umschauen</button>
             </div>
         </div>
@@ -976,7 +976,7 @@
 <!-- Charakter-Wizard -->
 <div class="modal-overlay" id="wizard-modal">
     <div class="modal modal-lg">
-        <div class="panel-head"><h3>🧙 Charaktererschaffung</h3><button class="help-btn" type="button" data-hilfe="wizard" aria-label="Hilfe: Charaktererschaffung" title="Hilfe: Charaktererschaffung">?</button>
+        <div class="panel-head"><h3><svg class="ico"><use href="#i-w20"/></svg>Charaktererschaffung</h3><button class="help-btn" type="button" data-hilfe="wizard" aria-label="Hilfe: Charaktererschaffung" title="Hilfe: Charaktererschaffung">?</button>
             <div class="panel-actions"><button class="btn btn-sm btn-ghost" onclick="closeWizard()">✕</button></div>
         </div>
         <div class="wizard-steps" id="wizard-steps"></div>
@@ -992,7 +992,7 @@
 <!-- Hausregeln -->
 <div class="modal-overlay" id="hausregeln-modal">
     <div class="modal modal-lg">
-        <div class="panel-head"><h3>⚙️ Hausregeln</h3><button class="help-btn" type="button" data-hilfe="hausregeln" aria-label="Hilfe: Hausregeln" title="Hilfe: Hausregeln">?</button>
+        <div class="panel-head"><h3><svg class="ico"><use href="#i-zahnrad"/></svg>Hausregeln</h3><button class="help-btn" type="button" data-hilfe="hausregeln" aria-label="Hilfe: Hausregeln" title="Hilfe: Hausregeln">?</button>
             <div class="panel-actions"><button class="btn btn-sm btn-ghost" onclick="closeModal('hausregeln-modal')">✕</button></div>
         </div>
         <div class="panel-body" id="hausregeln-body"></div>
@@ -1002,7 +1002,7 @@
 <!-- Beispielcharaktere -->
 <div class="modal-overlay" id="beispiele-modal">
     <div class="modal">
-        <div class="panel-head"><h3>👤 Beispielcharakter laden</h3>
+        <div class="panel-head"><h3><svg class="ico"><use href="#i-person"/></svg>Beispielcharakter laden</h3>
             <div class="panel-actions"><button class="btn btn-sm btn-ghost" onclick="closeModal('beispiele-modal')">✕</button></div>
         </div>
         <div class="panel-body" id="beispiele-body"></div>
@@ -1012,7 +1012,7 @@
 <!-- Talent-Auswahl -->
 <div class="modal-overlay" id="talent-modal">
     <div class="modal modal-lg">
-        <div class="panel-head"><h3>⭐ Talent wählen</h3><button class="help-btn" type="button" data-hilfe="talente" aria-label="Hilfe: Talente" title="Hilfe: Talente">?</button>
+        <div class="panel-head"><h3><svg class="ico"><use href="#i-stern"/></svg>Talent wählen</h3><button class="help-btn" type="button" data-hilfe="talente" aria-label="Hilfe: Talente" title="Hilfe: Talente">?</button>
             <div class="panel-actions"><button class="btn btn-sm btn-ghost" onclick="closeModal('talent-modal')">✕</button></div>
         </div>
         <div class="panel-body" id="talent-picker-body"></div>
@@ -1022,7 +1022,7 @@
 <!-- Zauber-Auswahl -->
 <div class="modal-overlay" id="spell-modal">
     <div class="modal modal-lg">
-        <div class="panel-head"><h3>✨ Zauber lernen</h3><button class="help-btn" type="button" data-hilfe="zauber" aria-label="Hilfe: Zauber" title="Hilfe: Zauber">?</button>
+        <div class="panel-head"><h3><svg class="ico"><use href="#i-funke"/></svg>Zauber lernen</h3><button class="help-btn" type="button" data-hilfe="zauber" aria-label="Hilfe: Zauber" title="Hilfe: Zauber">?</button>
             <div class="panel-actions"><button class="btn btn-sm btn-ghost" onclick="closeModal('spell-modal')">✕</button></div>
         </div>
         <div class="panel-body" id="spell-picker-body"></div>
@@ -1032,7 +1032,7 @@
 <!-- Bestiarium -->
 <div class="modal-overlay" id="bestiary-modal">
     <div class="modal modal-lg">
-        <div class="panel-head"><h3>👹 Bestiarium</h3><button class="help-btn" type="button" data-hilfe="bestiarium" aria-label="Hilfe: Bestiarium" title="Hilfe: Bestiarium">?</button>
+        <div class="panel-head"><h3><svg class="ico"><use href="#i-monster"/></svg>Bestiarium</h3><button class="help-btn" type="button" data-hilfe="bestiarium" aria-label="Hilfe: Bestiarium" title="Hilfe: Bestiarium">?</button>
             <div class="panel-actions"><button class="btn btn-sm btn-ghost" onclick="closeModal('bestiary-modal')">✕</button></div>
         </div>
         <div class="panel-body" id="bestiary-body"></div>
@@ -1042,7 +1042,7 @@
 <!-- Stufenaufstieg -->
 <div class="modal-overlay" id="levelup-modal">
     <div class="modal">
-        <div class="panel-head"><h3>⬆️ Stufenaufstieg</h3><button class="help-btn" type="button" data-hilfe="stufenaufstieg" aria-label="Hilfe: Stufenaufstieg" title="Hilfe: Stufenaufstieg">?</button>
+        <div class="panel-head"><h3><svg class="ico"><use href="#i-aufstieg"/></svg>Stufenaufstieg</h3><button class="help-btn" type="button" data-hilfe="stufenaufstieg" aria-label="Hilfe: Stufenaufstieg" title="Hilfe: Stufenaufstieg">?</button>
             <div class="panel-actions"><button class="btn btn-sm btn-ghost" onclick="closeModal('levelup-modal')">✕</button></div>
         </div>
         <div class="panel-body" id="levelup-body"></div>
@@ -1052,7 +1052,7 @@
 <!-- Schlagen auf mehrere Gegner aufteilen (Regelwerk S.43) -->
 <div class="modal-overlay" id="mehrere-modal">
     <div class="modal">
-        <div class="panel-head"><h3>⚔️ Mehrere Gegner</h3><button class="help-btn" type="button" data-hilfe="mehrere-gegner" aria-label="Hilfe: Mehrere Gegner" title="Hilfe: Mehrere Gegner">?</button>
+        <div class="panel-head"><h3><svg class="ico"><use href="#i-schwerter"/></svg>Mehrere Gegner</h3><button class="help-btn" type="button" data-hilfe="mehrere-gegner" aria-label="Hilfe: Mehrere Gegner" title="Hilfe: Mehrere Gegner">?</button>
             <div class="panel-actions"><button class="btn btn-sm btn-ghost" onclick="closeModal('mehrere-modal')">✕</button></div>
         </div>
         <div class="panel-body" id="mehrere-body"></div>
@@ -1062,7 +1062,7 @@
 <!-- Regeln -->
 <div class="modal-overlay" id="rules-modal">
     <div class="modal modal-lg">
-        <div class="panel-head"><h3>📖 Regel-Spickzettel</h3><button class="help-btn" type="button" data-hilfe="regeln" aria-label="Hilfe: Regel-Spickzettel" title="Hilfe: Regel-Spickzettel">?</button>
+        <div class="panel-head"><h3><svg class="ico"><use href="#i-buch"/></svg>Regel-Spickzettel</h3><button class="help-btn" type="button" data-hilfe="regeln" aria-label="Hilfe: Regel-Spickzettel" title="Hilfe: Regel-Spickzettel">?</button>
             <div class="panel-actions"><button class="btn btn-sm btn-ghost" onclick="closeRulesModal()">✕</button></div>
         </div>
         <div class="panel-body" id="rules-body"></div>
@@ -1072,31 +1072,32 @@
 <!-- Hilfe / Kurzanleitung -->
 <div class="modal-overlay" id="hilfe-modal">
     <div class="modal modal-lg">
-        <div class="panel-head"><h3>❓ Hilfe &amp; Kurzanleitung</h3>
+        <div class="panel-head"><h3><svg class="ico"><use href="#i-frage"/></svg>Hilfe &amp; Kurzanleitung</h3>
             <div class="panel-actions"><button class="btn btn-sm btn-ghost" onclick="closeModal('hilfe-modal')">✕</button></div>
         </div>
         <div class="panel-body" id="hilfe-body"></div>
     </div>
 </div>
 
-<script src="i18n.js?v=20260906a"></script>
-<script src="data.js?v=20260906a"></script>
-<script src="talents.js?v=20260906a"></script>
-<script src="zauber.js?v=20260906a"></script>
-<script src="bestiarium.js?v=20260906a"></script>
-<script src="sounds.js?v=20260906a"></script>
-<script src="hausregeln.js?v=20260906a"></script>
-<script src="rules.js?v=20260906a"></script>
-<script src="app.js?v=20260906a"></script>
-<script src="talentPicker.js?v=20260906a"></script>
-<script src="spellPicker.js?v=20260906a"></script>
-<script src="wizard.js?v=20260906a"></script>
-<script src="combat.js?v=20260906a"></script>
-<script src="battlemap.js?v=20260906a"></script>
-<script src="multiplayer.js?v=20260906a"></script>
-<script src="mapui.js?v=20260906a"></script>
-<script src="session.js?v=20260906a"></script>
-<script src="discord.js?v=20260906a"></script>
-<script src="hilfe.js?v=20260906a"></script>
+<script src="i18n.js?v=20260909e"></script>
+<script src="icons.js?v=20260909e"></script>
+<script src="data.js?v=20260909e"></script>
+<script src="talents.js?v=20260909e"></script>
+<script src="zauber.js?v=20260909e"></script>
+<script src="bestiarium.js?v=20260909e"></script>
+<script src="sounds.js?v=20260909e"></script>
+<script src="hausregeln.js?v=20260909e"></script>
+<script src="rules.js?v=20260909e"></script>
+<script src="app.js?v=20260909e"></script>
+<script src="talentPicker.js?v=20260909e"></script>
+<script src="spellPicker.js?v=20260909e"></script>
+<script src="wizard.js?v=20260909e"></script>
+<script src="combat.js?v=20260909e"></script>
+<script src="battlemap.js?v=20260909e"></script>
+<script src="multiplayer.js?v=20260909e"></script>
+<script src="mapui.js?v=20260909e"></script>
+<script src="session.js?v=20260909e"></script>
+<script src="discord.js?v=20260909e"></script>
+<script src="hilfe.js?v=20260909e"></script>
 </body>
 </html>

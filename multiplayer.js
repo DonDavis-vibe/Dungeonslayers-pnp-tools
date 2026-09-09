@@ -462,7 +462,7 @@ function handleIncomingData(peerId, payload) {
     } else if (payload.type === 'whisper') {
         const player = connectedPlayers[peerId];
         const name = player ? player.name : 'Unbekannt';
-        addGmLog(name, `🤫 <em>flüstert:</em> ${sichererHtml(payload.text)}`, 'neutral');
+        addGmLog(name, `<em>flüstert:</em> ${sichererHtml(payload.text)}`, 'neutral');
         if (typeof spielSound === 'function') spielSound('fluestern');
     } else if (payload.type === 'healRequest') {
         behandleHealRequest(peerId, payload);
@@ -496,7 +496,7 @@ function slHandoutText() {
     if (!text) { setHandoutHinweis('Erst einen Text eintippen.'); return; }
     broadcastToPlayers({ type: 'handout', text });
     setHandoutHinweis('Text an alle Spieler geschickt.');
-    addGmLog('Spielleiter', '🖼️ Handout (Text) an alle geschickt.', 'neutral');
+    addGmLog('Spielleiter', 'Handout (Text) an alle geschickt.', 'neutral');
 }
 
 function slHandoutBild(event) {
@@ -513,7 +513,7 @@ function slHandoutBild(event) {
         const vorschau = document.getElementById('sl-handout-vorschau');
         if (vorschau) { vorschau.src = ergebnis.dataUrl; vorschau.style.display = 'block'; }
         setHandoutHinweis(`Bild an ${Object.keys(clientConnections).length} Spieler geschickt${ergebnis.verkleinert ? ' (verkleinert)' : ''}.`);
-        addGmLog('Spielleiter', '🖼️ Handout (Bild) an alle geschickt.', 'neutral');
+        addGmLog('Spielleiter', 'Handout (Bild) an alle geschickt.', 'neutral');
     }).catch(fehler => setHandoutHinweis('Fehler: ' + (fehler && fehler.message || fehler)));
 }
 
@@ -522,7 +522,7 @@ function slHandoutAusblenden() {
     const vorschau = document.getElementById('sl-handout-vorschau');
     if (vorschau) { vorschau.style.display = 'none'; vorschau.removeAttribute('src'); }
     setHandoutHinweis('Handout bei den Spielern ausgeblendet.');
-    addGmLog('Spielleiter', '🖼️ Handout ausgeblendet.', 'neutral');
+    addGmLog('Spielleiter', 'Handout ausgeblendet.', 'neutral');
 }
 
 function setHandoutHinweis(text) {
@@ -605,7 +605,9 @@ function sendeKampfstand() {
 
 // --- GM Dashboard Rendering -------------------------------------------------
 
-const GM_COLORS = ['#d4a24c', '#6fa84a', '#4a90d4', '#c4569e', '#d4784a', '#8a6fd4', '#4ac4b8', '#c44a4a'];
+// Gedeckte Druckfarben statt Bildschirm-Bunt — sie sitzen auf Papier,
+// nicht auf schwarzem Grund.
+const GM_COLORS = ['#a3342b', '#3f6b2e', '#3a5a96', '#8a4a72', '#a86a2c', '#5a4a8c', '#2f6f6a', '#7a3030'];
 
 function colorForPlayer(name) {
     const stored = localStorage.getItem('ds4_color_' + name);
@@ -700,7 +702,7 @@ function renderGmDashboard() {
                 <details style="margin-top:0.4rem">
                     <summary style="cursor:pointer;font-size:0.85rem;color:var(--text-dim)">Zauber (${p.spells.length})</summary>
                     <div class="hint" style="margin-top:0.4rem">
-                        ${p.spells.map(s => `${s.prepared ? '★ ' : (s.routine ? '⚙ ' : '')}${escapeHtml(s.name)}${s.cooldownUntil ? ` <span style="color:var(--fail)">(abklingend bis Runde ${s.cooldownUntil})</span>` : ''}`).join('<br>')}
+                        ${p.spells.map(s => `${s.prepared ? '★ ' : (s.routine ? '' : '')}${escapeHtml(s.name)}${s.cooldownUntil ? ` <span style="color:var(--fail)">(abklingend bis Runde ${s.cooldownUntil})</span>` : ''}`).join('<br>')}
                     </div>
                 </details>` : (p.preparedSpell ? `<div class="hint" style="margin-top:0.4rem"><strong>Vorbereitet:</strong> ${escapeHtml(p.preparedSpell)}</div>` : '')}
 
@@ -715,7 +717,7 @@ function renderGmDashboard() {
                 <div style="display:flex;gap:0.3rem;margin-top:0.6rem;flex-wrap:wrap">
                     <button class="btn btn-sm btn-danger" data-card-attack="${peerId}">Angreifen</button>
                     <button class="btn btn-sm" data-card-heal="${peerId}">Heilen</button>
-                    <button class="btn btn-sm btn-ghost" data-card-nudge="${peerId}" title="Kurze Einblendung samt Ton beim Spieler — 'du bist dran'">👉 Anstupsen</button>
+                    <button class="btn btn-sm btn-ghost" data-card-nudge="${peerId}" title="Kurze Einblendung samt Ton beim Spieler — 'du bist dran'">Anstupsen</button>
                     <button class="btn btn-sm btn-ghost" data-card-probe="${peerId}">Probe fordern</button>
                     <button class="btn btn-sm btn-ghost" data-card-msg="${peerId}">Flüstern</button>
                     <button class="btn btn-sm btn-ghost" data-card-ep="${peerId}">EP</button>
@@ -1103,10 +1105,10 @@ function broadcastToPlayers(payload, ausserPeerId) {
 function verteileSlWurf(msg, status, result) {
     const sicht = (document.getElementById('gm-wurf-sicht') || {}).value || 'alle';
     let logMsg = msg;
-    if (sicht === 'verdeckt') logMsg += ' <span class="hint">🔒 verdeckt</span>';
+    if (sicht === 'verdeckt') logMsg += ' <span class="hint">verdeckt</span>';
     else if (sicht !== 'alle') {
         const p = connectedPlayers[sicht];
-        logMsg += ` <span class="hint">🔒 nur ${escapeHtml(p ? p.name : '?')}</span>`;
+        logMsg += ` <span class="hint">nur ${escapeHtml(p ? p.name : '?')}</span>`;
     }
     addGmLog('Spielleiter', logMsg, status);
 
@@ -1266,7 +1268,7 @@ function slSoundAbspielen(id) {
     } else {
         broadcastToPlayers({ type: 'soundboard', soundId: id, pegel });
     }
-    addGmLog('Spielleiter', `🎵 <strong>${escapeHtml(name)}</strong> — für alle abgespielt`, 'neutral');
+    addGmLog('Spielleiter', `<strong>${escapeHtml(name)}</strong> — für alle abgespielt`, 'neutral');
 }
 
 function slSoundStop() {
@@ -1382,7 +1384,7 @@ function handleGmCommand(payload) {
             let extra = result.success
                 ? `Schaden ${payload.damage} − ${reduced} Abwehr = <strong>${finalDamage}</strong>`
                 : `Abwehr misslungen — voller Schaden <strong>${finalDamage}</strong>`;
-            if (result.slayendZusatz) extra += ` · ⚡ ${slayendText(result)}`;
+            if (result.slayendZusatz) extra += ` · ${slayendText(result)}`;
             if (result.patzer) extra += ` · ${kampfpatzerText('abwehr')}`;
 
             addLog(`Angriff${payload.quelle ? ' von ' + escapeHtml(payload.quelle) : ''}: ${payload.damage} Schaden — ${DS4_STATUS_TEXT[result.status]} · ${extra}`, result.status);
@@ -1418,8 +1420,8 @@ function handleGmCommand(payload) {
             zeigeHandout(payload);
             break;
         case 'nudge':
-            showGmMessage('<strong>👉 Der Spielleiter stupst dich an!</strong>');
-            addLog('👉 <strong>Der Spielleiter stupst dich an</strong> — du bist wohl dran.', 'neutral');
+            showGmMessage('<strong>Der Spielleiter stupst dich an!</strong>');
+            addLog('<strong>Der Spielleiter stupst dich an</strong> — du bist wohl dran.', 'neutral');
             if (typeof spielSound === 'function') spielSound('dein-zug');
             break;
         case 'mitschrieb': {
@@ -1560,9 +1562,9 @@ function renderGruppe() {
             const lk = (e.lkCurrent !== null && e.lkCurrent !== undefined)
                 ? ` <span class="hint">${e.lkCurrent}/${e.lkMax}</span>` : '';
             // Freund/Feind auf einen Blick — die Initiative-Reihenfolge bleibt gemischt
-            const symbol = e.istSpieler ? '🛡️' : '👹';
+            const symbol = e.istSpieler ? '' : '';
             const zst = (e.zustaende && e.zustaende.length) ? ` ${chips(e.zustaende)}` : '';
-            return `<div class="${klassen.join(' ')}">${e.amZug ? '▶ ' : ''}${symbol} ${escapeHtml(e.name)}${lk}${zst}</div>`;
+            return `<div class="${klassen.join(' ')}">${e.amZug ? '' : ''}${symbol} ${escapeHtml(e.name)}${lk}${zst}</div>`;
         }).join('');
 
         const meine = (kampfStand.reihenfolge.find(e => e.name === characterName()) || {}).zustaende || [];
@@ -1571,7 +1573,7 @@ function renderGruppe() {
 
         kampfBox.innerHTML = `
             <div class="kampf-kopf ${kampfStand.amZug ? 'ich-dran' : ''}">
-                ⚔️ <strong>Kampf läuft</strong> — Runde ${kampfStand.runde}
+                <strong>Kampf läuft</strong> — Runde ${kampfStand.runde}
                 ${kampfStand.amZug
                     ? '<div class="kampf-dran">Du bist am Zug!</div>'
                     : `<div class="hint">Am Zug: ${dran ? escapeHtml(dran.name) : '—'}</div>`}
@@ -1616,7 +1618,7 @@ function fluesterAnSl() {
     const text = prompt('Nachricht an den Spielleiter (nur er sieht sie):');
     if (!text) return;
     hostConnection.send({ type: 'whisper', text });
-    addLog(`🤫 <em>An den Spielleiter:</em> ${escapeHtml(text)}`, 'neutral');
+    addLog(`<em>An den Spielleiter:</em> ${escapeHtml(text)}`, 'neutral');
 }
 
 // --- Handout beim Spieler anzeigen --------------------------------------
@@ -1661,7 +1663,7 @@ function showGmMessage(html) {
         box.className = 'gm-toast';
         document.body.appendChild(box);
     }
-    box.innerHTML = `<div class="gm-toast-head">👑 Spielleiter</div><div>${html}</div>`;
+    box.innerHTML = `<div class="gm-toast-head">${ico('krone')}Spielleiter</div><div>${html}</div>`;
     box.classList.add('visible');
     clearTimeout(box._timer);
     box._timer = setTimeout(() => box.classList.remove('visible'), 9000);
