@@ -189,9 +189,8 @@ function karteWechseln(id) {
 
     aktiveKarteId = id;
     karteBildDatenUrl = ziel.bild || null;
-    karte.applyState(ziel.zustand || {}, ziel.bild || null);
+    karte.applyState(ziel.zustand || {}, ziel.bild || null, true);
     Object.entries(ziel.figurBilder || {}).forEach(([fid, url]) => karte.setFigurBild(fid, url));
-    setTimeout(() => karte.einpassen(), 60);
 
     renderKartenListe();
     renderKartenWerkzeuge();
@@ -811,8 +810,7 @@ function karteBildLaden(datei) {
 
     BattleMap.bildVerkleinern(datei).then(ergebnis => {
         karteBildDatenUrl = ergebnis.dataUrl;
-        karte.setBild(ergebnis.dataUrl);
-        setTimeout(() => karte.einpassen(), 50);
+        karte.setBild(ergebnis.dataUrl, () => karte.einpassen());
 
         const kb = Math.round(ergebnis.dataUrl.length * 0.75 / 1024);
         status.textContent = `Karte geladen: ${ergebnis.breite}×${ergebnis.hoehe} Pixel, ~${kb} KB` +
@@ -1141,8 +1139,7 @@ function handleKartenNachricht(payload, vonPeer) {
             if (puffer && puffer.every(t => t !== null)) {
                 karteBildDatenUrl = puffer.join('');
                 karteEinhaengen();
-                karte.applyState(payload.zustand || {}, karteBildDatenUrl);
-                setTimeout(() => karte.einpassen(), 60);
+                karte.applyState(payload.zustand || {}, karteBildDatenUrl, true);
                 zeigeKartenHinweis('Der Spielleiter hat eine Karte geteilt.');
             } else {
                 zeigeKartenHinweis('Die Karte kam unvollständig an.');

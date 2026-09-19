@@ -325,10 +325,9 @@ function kartenUebernehmen(daten, bilderLaden) {
 
         const aktiv = karten.find(k => k.id === aktiveKarteId);
         if (aktiv) {
-            karte.applyState(aktiv.zustand, aktiv.bild || undefined);
+            karte.applyState(aktiv.zustand, aktiv.bild || undefined, !!aktiv.bild);
             Object.entries(aktiv.figurBilder || {}).forEach(([id, url]) => karte.setFigurBild(id, url));
-            if (aktiv.bild) { karteBildDatenUrl = aktiv.bild; setTimeout(() => karte.einpassen(), 60); }
-            else karteBildDatenUrl = null;
+            karteBildDatenUrl = aktiv.bild || null;
         }
 
         // Bilder dauerhaft je Karten-ID sichern; Legacy-Bild von 'aktuell' umziehen

@@ -772,8 +772,13 @@ const BattleMap = (() => {
             }));
         }
 
-        // Zustand von außen übernehmen, ohne dadurch erneut zu melden
-        function applyState(neu, mitBild) {
+        // Zustand von außen übernehmen, ohne dadurch erneut zu melden. Beim
+        // Kartenwechsel (`einpassenAuto`) muss die Sicht erst dann neu
+        // eingepasst werden, wenn das NEUE Bild tatsächlich geladen ist —
+        // sonst rechnet der Nebel seine Löcher kurzzeitig mit dem Zoom der
+        // vorigen Karte, was auf einer anders skalierten Karte wie ein
+        // kurzes, komplettes Aufdecken aussehen kann.
+        function applyState(neu, mitBild, einpassenAuto) {
             // Ein von außen gesetzter Zustand (Sitzung geladen, Netz-Sync)
             // macht den bisherigen Rückgängig-Verlauf gegenstandslos.
             verlauf.length = 0;
@@ -782,17 +787,32 @@ const BattleMap = (() => {
             if (neu.figuren) zustand.figuren = JSON.parse(JSON.stringify(neu.figuren));
             if (neu.formen) zustand.formen = JSON.parse(JSON.stringify(neu.formen));
             if (neu.nebel) zustand.nebel = JSON.parse(JSON.stringify(neu.nebel));
-            if (mitBild !== undefined) setBild(mitBild);
+            if (mitBild !== undefined) setBild(mitBild, einpassenAuto ? einpassen : undefined);
             meldeSperre = false;
             zeichnen();
         }
 
-        function setBild(dataUrl) {
-            zustand.bild = dataUrl || null;
-            if (!dataUrl) { bildObjekt = null; zeichnen(); return; }
+        // `bereit` feuert erst, wenn `bildObjekt` wirklich zum neuen `dataUrl`
+        // passt (auch bei Fehlern) — Aufrufer, die danach einpassen wollen,
+        // greifen so nie auf die Abmessungen des vorigen Bildes zurück.
+        function setBild(dataUrl, bereit) {
+            const neuesBild = dataUrl || null;
+            const bildWechselt = neuesBild !== zustand.bild;
+            zustand.bild = neuesBild;
+            if (!neuesBild) {
+                bildObjekt = null;
+                zeichnen();
+                if (bereit) bereit();
+                return;
+            }
+            // Wechselt das Bild wirklich, bis dahin nichts Falsches zeigen:
+            // sonst zeichnet der nächste zeichnen()-Aufruf (z.B. aus
+            // applyState) das ALTE Bild mit dem NEUEN Nebel-/Rasterzustand —
+            // Zoom und Nebellöcher passen dann nicht zum Bild darunter.
+            if (bildWechselt) bildObjekt = null;
             const bild = new Image();
-            bild.onload = () => { bildObjekt = bild; zeichnen(); };
-            bild.onerror = () => { bildObjekt = null; zeichnen(); };
+            bild.onload = () => { bildObjekt = bild; zeichnen(); if (bereit) bereit(); };
+            bild.onerror = () => { bildObjekt = null; zeichnen(); if (bereit) bereit(); };
             bild.src = dataUrl;
         }
 
