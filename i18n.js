@@ -504,6 +504,7 @@ const I18N_EN = {
         'and is not affiliated with Christian Kennig or Burning Books Verlag.',
     'Entwickelt von': 'Developed by',
     'Repository auf GitHub': 'Repository on GitHub',
+    '☕ Unterstützen auf Ko-fi': '☕ Support on Ko-fi',
     'Am Tisch getestet von': 'Playtested by',
     'Das Pen-&-Paper-Regelsystem': 'The pen & paper rules system',
     'wurde geschaffen von': 'was created by',
